@@ -100,6 +100,46 @@ export function formatMessage(type: NotificationType, data: TriggerPayload): str
     return `« ${q.text} » — ${q.author}`;
   }
 
+  // Medication-specific messages with empathetic tone
+  if (type === 'medication') {
+    const medName = data.medicationName ?? data.eventTitle ?? 'votre traitement';
+    const text = String(medName);
+    const isConfirmation = data.isMedication === true || text.toLowerCase().includes('prendre');
+    if (isConfirmation) {
+      return `Rappel important : ${text}. N'oubliez pas ! Je peux noter si c'est fait.`;
+    }
+    return `Rappel médicament : ${text}.`;
+  }
+
+  // Air quality with contextual advice
+  if (type === 'airQuality') {
+    const aqiLevel = data.aqiLevel ?? 'indéterminé';
+    const advice = data.airAdvice ?? 'Consultez les recommandations locales.';
+    if (String(aqiLevel) === 'good' || String(aqiLevel) === 'bon') {
+      return "La qualité de l'air est bonne aujourd'hui. Profitez de l'extérieur !";
+    }
+    return `Alerte qualité de l'air : Niveau ${aqiLevel}. ${advice}`;
+  }
+
+  // Emergency override — always urgent
+  if (type === 'emergency') {
+    const desc = data.emergencyDescription ?? 'Situation d\'urgence';
+    return `ALERTE URGENCE : ${desc}. Contactez les secours si nécessaire.`;
+  }
+
+  // Checkout reminder with checklist
+  if (type === 'checkout' || type === 'checkoutReminder') {
+    const time = data.checkoutTime ?? 'bientôt';
+    return `Votre départ est prévu à ${time}. Checklist : clés, fenêtres fermées, poubelles sorties, appareils éteints.`;
+  }
+
+  // Welcome guest with WiFi
+  if (type === 'welcome') {
+    const name = data.guestName ?? '';
+    const wifi = data.wifiCode ?? 'affiché sur le routeur';
+    return `Bienvenue ${name} ! Le code WiFi est ${wifi}. Je suis là pour vous aider.`;
+  }
+
   const tmpl = NOTIFICATION_TEMPLATES[type];
   if (!tmpl) {
     return `Notification: ${type}`;

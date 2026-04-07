@@ -13,13 +13,15 @@
    4. News Ticker — Horizontal scrollable headlines
    5. Voice Control — HybridVoiceControl component
    6. Quick Access — WhatsApp, Rappels, POI
-   7. Footer — Maison Consciente · v2.0
+   7. Emergency Button — Fixed SOS button (bottom-left)
+   8. Footer — Maison Consciente · v2.0
    ═══════════════════════════════════════════════════════ */
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import HybridVoiceControl from "@/components/voice/HybridVoiceControl";
+import EmergencyButton from "@/components/tablet/EmergencyButton";
 import { GlassCard } from "@/components/shared/glass-card";
 import {
   Sheet,
@@ -914,7 +916,15 @@ export default function TabletDisplayPage() {
         </motion.section>
 
         {/* ═══════════════════════════════════════════
-            7. FOOTER
+            7. EMERGENCY BUTTON
+            ═══════════════════════════════════════════ */}
+        <EmergencyButton
+          hostWhatsapp={household?.whatsappNumber ?? null}
+          householdName={household?.householdName ?? "Maison"}
+        />
+
+        {/* ═══════════════════════════════════════════
+            8. FOOTER
             ═══════════════════════════════════════════ */}
         <motion.footer
           initial={{ opacity: 0 }}

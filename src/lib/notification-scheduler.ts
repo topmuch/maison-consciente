@@ -15,6 +15,7 @@ import {
   NOTIFICATION_CATEGORIES,
 } from './notification-config';
 import { evaluateTrigger, formatMessage, getPriority } from './notification-engine';
+import { getAirQuality, generateAirQualityAlert } from './pollen-service';
 
 /* ── Interval cleanup reference ── */
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
@@ -262,13 +263,27 @@ async function checkCalendarTriggers(
         notified: false,
         triggerAt: { lte: fifteenMinFromNow },
       },
+      select: {
+        id: true,
+        text: true,
+        type: true,
+        notified: true,
+      },
     });
 
     for (const reminder of upcomingReminders) {
-      triggers.push({
-        type: 'reminder15min',
-        data: { eventTitle: reminder.text },
-      });
+      // If medication type, use medication notification type with specific flag
+      if ((reminder as { type?: string }).type === 'medication') {
+        triggers.push({
+          type: 'medication',
+          data: { eventTitle: reminder.text, medicationName: reminder.text, isMedication: true },
+        });
+      } else {
+        triggers.push({
+          type: 'reminder15min',
+          data: { eventTitle: reminder.text },
+        });
+      }
       // Mark as notified
       await db.reminder.update({
         where: { id: reminder.id },
@@ -282,6 +297,12 @@ async function checkCalendarTriggers(
         householdId,
         notified: false,
         triggerAt: { lte: now },
+      },
+      select: {
+        id: true,
+        text: true,
+        type: true,
+        notified: true,
       },
     });
 
@@ -461,10 +482,34 @@ async function tick(): Promise<void> {
 
         // 2. Weather triggers (only if Open-Meteo enabled and coordinates available)
         let weatherTriggers: { type: NotificationType; data: TriggerPayload }[] = [];
+        let airQualityTriggers: { type: NotificationType; data: TriggerPayload }[] = [];
         if (isOpenMeteoEnabled(household.apiSettings)) {
           const coords = getCoordinates(household.coordinates);
           if (coords) {
             weatherTriggers = await checkWeatherTriggers(coords, log);
+
+            // Air quality check (once per 3 hours max)
+            const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60_000).toISOString();
+            const recentlyAirAlerted = log.some(
+              (entry) => entry.type === 'airQuality' && entry.createdAt >= threeHoursAgo,
+            );
+
+            if (!recentlyAirAlerted) {
+              const airData = await getAirQuality(coords.lat, coords.lon);
+              if (airData) {
+                const airAlert = generateAirQualityAlert(airData);
+                if (airAlert) {
+                  airQualityTriggers.push({
+                    type: 'airQuality',
+                    data: {
+                      aqiLevel: airAlert.level,
+                      airAdvice: airAlert.advice,
+                      message: airAlert.message,
+                    },
+                  });
+                }
+              }
+            }
           }
         }
 
@@ -472,7 +517,7 @@ async function tick(): Promise<void> {
         const calendarTriggers = await checkCalendarTriggers(household.id);
 
         // Combine all triggers
-        const allTriggers = [...temporalTriggers, ...weatherTriggers, ...calendarTriggers];
+        const allTriggers = [...temporalTriggers, ...weatherTriggers, ...airQualityTriggers, ...calendarTriggers];
 
         // Evaluate each trigger and queue if allowed
         for (const trigger of allTriggers) {

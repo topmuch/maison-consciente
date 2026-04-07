@@ -12,6 +12,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ReminderType {
+  general
+  medication
+  birthday
+  appointment
+}
+
 /* ═══ FOYER ═══ */
 model Household {
   id                  String    @id @default(uuid())
@@ -510,15 +517,16 @@ model Appointment {
 
 /* ═══ REMINDER (Rappel) ═══ */
 model Reminder {
-  id              String    @id @default(uuid())
+  id              String       @id @default(uuid())
   householdId     String
   text            String
   triggerAt       DateTime
-  isRecurring     Boolean   @default(false)
+  type            ReminderType @default(general)
+  isRecurring     Boolean      @default(false)
   recurrenceRule  String?
-  notified        Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  household       Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  notified        Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  household       Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
   @@index([householdId, triggerAt(sort: Asc)])
 }

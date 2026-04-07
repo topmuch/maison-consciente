@@ -234,3 +234,52 @@ Stage Summary:
 - All routes compile and respond correctly
 - Voice API processes "météo" command and returns: "Actuellement le ciel est dégagé avec 21 degrés..."
 - Project is production-ready
+
+---
+Task ID: 2
+Agent: components-services
+Task: Create EmergencyButton component and pollen-service.ts
+
+Work Log:
+- Created src/components/tablet/EmergencyButton.tsx with WhatsApp integration, visual feedback, and responsive design
+- Created src/lib/pollen-service.ts with Open-Meteo Air Quality API integration, alert generation, AQI level detection, and voice formatting
+
+Stage Summary:
+- EmergencyButton ready for integration in tablet display page
+- Air quality service provides data fetching, alert generation, and voice formatting
+
+---
+Task ID: 3
+Agent: notification-updater
+Task: Update notification-engine.ts and notification-scheduler.ts with medication, air quality, emergency, checkout, and welcome message handling
+
+Work Log:
+- Updated formatMessage in notification-engine.ts with medication-specific empathetic messages
+- Added air quality contextual formatting with AQI level detection
+- Added emergency override with urgent tone
+- Added checkout reminder with departure checklist
+- Added welcome guest message with WiFi code
+- Updated notification-scheduler.ts to import pollen-service
+- Added air quality trigger check (3-hour cooldown) in the scheduler tick loop
+- Updated calendar triggers to detect medication-type reminders and route to 'medication' notification type
+- Added type field to reminder queries for proper type detection
+
+Stage Summary:
+- Notification engine now handles all health/hospitality specific message templates
+- Scheduler checks air quality alongside weather every tick
+- Medication reminders get dedicated notification type with empathetic voice
+
+---
+Task ID: 1
+Agent: prisma-health-setup
+Task: Update Prisma schema with ReminderType enum + type field; Create health-actions.ts
+
+Work Log:
+- Added ReminderType enum (general, medication, birthday, appointment)
+- Added type field to Reminder model with default 'general'
+- Ran prisma db push to apply schema changes
+- Created src/actions/health-actions.ts with CRUD operations: getReminders, createReminder, updateReminder, deleteReminder, toggleReminderNotified
+
+Stage Summary:
+- Prisma schema updated with medication support
+- Health server actions ready for use
