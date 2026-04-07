@@ -1,0 +1,4 @@
+# Maison Consciente — Private Application
+# Block all crawlers from indexing
+User-agent: *
+Disallow: /

@@ -1,0 +1,521 @@
+/* ═══════════════════════════════════════════════════════
+   MAISON CONSCIENTE V1 — Prisma Schema
+   Ready for PostgreSQL (change provider + url for prod)
+   ═══════════════════════════════════════════════════════ */
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"          // "postgresql" en production
+  url      = env("DATABASE_URL")
+}
+
+/* ═══ FOYER ═══ */
+model Household {
+  id                  String    @id @default(uuid())
+  name                String
+  type                String    @default("home")      // "home" | "hospitality"
+  settings            String    @default("{}")        // { "lang":"fr", "accent":"gold", "quietHours":[23,7] }
+  stripeCustomerId    String?   @unique
+  subscriptionPlan    String    @default("free")      // "free" | "comfort" | "prestige" | "starter" | "pro"
+  subscriptionStatus  String    @default("inactive")  // "active" | "trialing" | "past_due" | "canceled"
+  subscriptionEndsAt  DateTime?
+  /* ═══ SETTINGS V2 — Identity / SEO / Preferences ═══ */
+  contactPhone        String?
+  contactEmail        String?
+  contactAddress      String?
+  seoTitle            String?
+  seoDescription      String?
+  seoKeywords         String    @default("[]")        // JSON array: ["smart-home", "luxury"]
+  seoOgImage          String?
+  timezone            String    @default("Europe/Paris")
+  isQuietMode         Boolean   @default(false)
+  /* ═══ TABLETTE FAMILIALE ═══ */
+  displayToken        String?   @unique
+  displayEnabled      Boolean   @default(false)
+  displayConfig       String    @default("{}")
+  coordinates         Json?                                   // { lat: number, lon: number } pour météo localisée
+  voiceSettings       Json?     // { "enabled":true, "rate":1.0, "volume":0.8, "language":"fr-FR", "conversationWindow":10 }
+  apiSettings         Json?     // {"openMeteo":true,"icecast":true,"foursquare":false,"deepl":false,"news":false,"transit":false}
+  modulesConfig       Json?     // { "roomService":{"active":false,"status":"pending"}, "activities":{"active":false,"status":"pending"}, "wellness":{"active":false,"status":"pending"} }
+  notificationPrefs   Json?     // NotificationPrefs from notification-config
+  notificationLog     Json?     // NotificationLogEntry[] from notification-config
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt @default(now())
+  users               User[]
+  zones               Zone[]
+  messages            Message[]
+  recipes             Recipe[]
+  soundscapes         Soundscape[]
+  pointsOfInterest    PointOfInterest[]
+  emergencyContacts   EmergencyContact[]
+  guestAccesses       GuestAccess[]
+  maintenanceTasks    MaintenanceTask[]
+  groceryItems        GroceryItem[]
+  secretVaults        SecretVault[]
+  purchaseHistory     PurchaseHistory[]
+  ritualTasks         RitualTask[]
+  checkInStates       CheckInState[]
+  travelJournals      TravelJournal[]
+  stayFeedbacks       StayFeedback[]
+  userLogs            UserLog[]
+  invoices            Invoice[]
+  supportTickets      SupportTicket[]
+  internalFeedbacks   InternalFeedback[]
+  calendarEvents      CalendarEvent[]
+  voiceLogs           VoiceLog[]
+  appointments        Appointment[]
+  reminders           Reminder[]
+  /* ═══ HOSPITALITY EXTENDED ═══ */
+  googlePlaceId       String?
+  googleRating        Float?
+  reviewSettings      String   @default("{}")
+  contactSettings     String   @default("{}")
+}
+
+/* ═══ CHECK-IN / CHECK-OUT DIGITAL (Hospitalité) ═══ */
+model CheckInState {
+  id          String    @id @default(uuid())
+  householdId String
+  guestName   String
+  checkInAt   DateTime  @default(now())
+  checkOutAt  DateTime?
+  status      String    @default("checked-in") // "checked-in" | "checked-out" | "pending"
+  notes       String?
+  createdAt   DateTime  @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, status])
+  @@index([checkInAt(sort: Desc)])
+}
+
+/* ═══ CARNET DE SÉJOUR (Hospitalité) ═══ */
+model TravelJournal {
+  id          String   @id @default(uuid())
+  householdId String
+  guestId     String?                      // null si accès invité
+  title       String
+  content     String                        // Markdown
+  photos      String   @default("[]")      // JSON array of URLs
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, createdAt(sort: Desc)])
+}
+
+/* ═══ AVIS POST-SÉJOUR (Hospitalité) ═══ */
+model StayFeedback {
+  id          String   @id @default(uuid())
+  householdId String
+  stayRef     String                        // Référence booking ou CheckInState ID
+  rating      Int                            // 1-5 global
+  cleanliness Int                            // 1-5
+  comfort     Int                            // 1-5
+  location    Int                            // 1-5
+  comment     String?
+  submittedAt DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, submittedAt(sort: Desc)])
+}
+
+/* ═══ UTILISATEUR ═══ */
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String    @default("")
+  role         String    @default("member") // "member" | "owner" | "superadmin"
+  avatar       String?
+  householdId  String?
+  preferences  String    @default("{}")     // { "haptic":true, "theme":"dark" }
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  household    Household? @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+  interactions Interaction[]
+  messagesSent Message[] @relation("SentMessages")
+  moodEntries  MoodEntry[]
+  userLogs     UserLog[]
+
+  @@index([householdId])
+}
+
+/* ═══ SESSION (Lucia Auth) ═══ */
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/* ═══ ZONE (QR / NFC) ═══ */
+model Zone {
+  id          String   @id @default(uuid())
+  householdId String
+  name        String                    // "Entrée", "Salon", "Cuisine"
+  icon        String    @default("home")
+  color       String    @default("#d4a853")
+  qrCode      String    @unique         // Slug public ex: "salon-abc123"
+  nfcUid      String?   @unique
+  config      String    @default("{}")  // { "activeHours":[8,23], "mood":"relax" }
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  interactions Interaction[]
+
+  @@index([householdId])
+}
+
+/* ═══ INTERACTION (Scan) ═══ */
+model Interaction {
+  id        String   @id @default(uuid())
+  zoneId    String
+  userId    String
+  createdAt DateTime @default(now())
+  context   String   @default("{}")  // { "hour":20, "weather":"clear", "weekday":"ven" }
+  response  String?  @default("{}")  // { "suggestion":"Musique", "recipe":{...} }
+  zone      Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+/* ═══ MESSAGE (Mur du foyer) ═══ */
+model Message {
+  id          String   @id @default(uuid())
+  householdId String
+  senderId    String?
+  content     String
+  type        String   @default("note")  // "note" | "alert" | "reminder"
+  isRead      Boolean  @default(false)
+  isPublic    Boolean  @default(false)  // Affiché uniquement sur la tablette
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  sender      User?     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, createdAt(sort: Desc)])
+  @@index([senderId])
+}
+
+/* ═══ RECETTE ═══ */
+model Recipe {
+  id          String   @id @default(uuid())
+  householdId String?                  // Null = globale
+  title       String
+  description String   @default("")
+  prepTimeMin Int      @default(0)
+  tags        String   @default("[]")  // JSON array: ["dessert","rapide"]
+  ingredients String   @default("[]")  // JSON array
+  steps       String   @default("[]")  // JSON array
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  household   Household? @relation(fields: [householdId], references: [id])
+  translations RecipeTranslation[]
+
+  @@index([isActive, householdId])
+}
+
+/* ═══ POINT D'INTÉRÊT (Hospitalité) ═══ */
+model PointOfInterest {
+  id           String   @id @default(uuid())
+  householdId  String
+  name         String
+  category     String                      // "coffee" | "restaurant" | "pharmacy" | "activity" | "museum" | "spa" | "bar" | "nightlife" | "market" | "park" | "cafe" | "transport"
+  distanceMin  Int                          // en minutes à pied
+  description  String   @default("")
+  rating       Float?
+  imageUrl     String?
+  address      String   @default("")
+  tags         String   @default("[]")      // JSON array: ["indoor", "rainy-day", "family", "romantic"]
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  household    Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, category])
+}
+
+/* ═══ CONTACT URGENCE ═══ */
+model EmergencyContact {
+  id          String    @id @default(uuid())
+  householdId String
+  name        String
+  phone       String
+  type        String    @default("emergency") // "emergency" | "service" | "family"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId])
+}
+
+/* ═══ ACCÈS INVITÉ ═══ */
+model GuestAccess {
+  id          String   @id @default(uuid())
+  householdId String
+  token       String   @unique
+  name        String
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId])
+}
+
+/* ═══ TÂCHE MAINTENANCE ═══ */
+model MaintenanceTask {
+  id          String   @id @default(uuid())
+  householdId String
+  title       String
+  dueDate     DateTime
+  isDone      Boolean  @default(false)
+  recurrence  String?                   // "monthly" | "yearly" | null
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, isDone])
+}
+
+/* ═══ HUMEUR ═══ */
+model MoodEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  mood      Int                        // 1 à 5
+  note      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+/* ═══ COURSE ═══ */
+model GroceryItem {
+  id          String    @id @default(uuid())
+  householdId String
+  name        String
+  isBought    Boolean   @default(false)
+  category    String    @default("food") // "food" | "hygiene" | "other" | "dairy" | "bakery" | "meat" | "produce" | "beverages" | "frozen"
+  barcode     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, isBought])
+}
+
+/* ═══ COFFRE-FORT NUMÉRIQUE ═══ */
+model SecretVault {
+  id          String   @id @default(uuid())
+  householdId String
+  title       String                        // ex: "WiFi Salon", "Netflix"
+  username    String?
+  password    String                        // Chiffré en prod, clair pour MVP local
+  type        String   @default("other")    // "wifi" | "streaming" | "banking" | "other"
+  isPublic    Boolean  @default(false)       // Affiché sur tablette ?
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId])
+}
+
+/* ═══ HISTORIQUE D'ACHAT (Suggestions Auto) ═══ */
+model PurchaseHistory {
+  id          String   @id @default(uuid())
+  householdId String
+  itemName    String
+  boughtAt    DateTime @default(now())
+  category    String?
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, itemName])
+}
+
+/* ═══ RITUEL QUOTIDIEN ═══ */
+model RitualTask {
+  id          String   @id @default(uuid())
+  householdId String
+  title       String
+  timeOfDay   String   @default("morning") // "morning" | "evening"
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, timeOfDay])
+}
+
+/* ═══ LOGS D'AUDIT (Admin) ═══ */
+model UserLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  householdId String
+  action      String                       // "login", "scan", "settings_update", "vault_access", "subscription_change"
+  details     String?
+  ip          String?
+  createdAt   DateTime @default(now())
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, createdAt(sort: Desc)])
+  @@index([action])
+}
+
+/* ═══ FACTURE (Stripe) ═══ */
+model Invoice {
+  id              String   @id @default(uuid())
+  householdId     String
+  stripeInvoiceId String?  @unique
+  amountCents     Int
+  currency        String   @default("eur")
+  status          String   @default("paid")  // "paid" | "open" | "past_due" | "void"
+  pdfUrl          String?
+  periodStart     DateTime
+  periodEnd       DateTime
+  createdAt       DateTime @default(now())
+  household       Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId])
+  @@index([status])
+}
+
+/* ═══ TRADUCTION DE RECETTE (DeepL) ═══ */
+model RecipeTranslation {
+  id          String   @id @default(uuid())
+  recipeId    String
+  targetLang  String                       // "en", "es", "de", etc.
+  title       String
+  ingredients String                       // JSON string translated
+  steps       String                       // Translated steps
+  createdAt   DateTime @default(now())
+  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, targetLang])
+  @@index([recipeId])
+}
+
+/* ═══ SOUNDSCAPE (Ambiance sonore) ═══ */
+model Soundscape {
+  id          String   @id @default(uuid())
+  householdId String?                  // Null = bibliothèque globale
+  title       String
+  category    String   @default("nature")  // "nature" | "instrumental" | "urban"
+  sourceType  String   @default("local")   // "local" | "youtube"
+  url         String                       // /audio/rain.mp3 ou URL
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  household   Household? @relation(fields: [householdId], references: [id])
+
+  @@index([isActive, householdId])
+}
+
+/* ═══ CALENDRIER D'ÉVÉNEMENTS ═══ */
+model CalendarEvent {
+  id          String   @id @default(uuid())
+  householdId String
+  title       String
+  date        DateTime
+  type        String   @default("reminder") // "birthday" | "holiday" | "reminder" | "checkout"
+  isRecurring Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, date])
+}
+
+/* ═══ TICKET SUPPORT (Contact Hôte) ═══ */
+model SupportTicket {
+  id          String   @id @default(uuid())
+  householdId String
+  type        String   @default("other")    // "cleaning" | "equipment" | "access" | "other"
+  message     String
+  photoUrl    String?
+  status      String   @default("open")     // "open" | "resolved" | "ignored"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, status])
+  @@index([createdAt(sort: Desc)])
+}
+
+/* ═══ FEEDBACK INTERNE (Smart Review) ═══ */
+model InternalFeedback {
+  id          String   @id @default(uuid())
+  householdId String
+  rating      Int                            // 1-5
+  comment     String?
+  isExpired   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, createdAt(sort: Desc)])
+}
+
+/* ═══ API CONFIG (SuperAdmin — Services Externes) ═══ */
+model ApiConfig {
+  id          String   @id @default(uuid())
+  serviceKey  String   @unique              // "FOURSQUARE", "DEEPL", "STRIPE", "RESEND", "OPENWEATHER", "GOOGLE_PLACES"
+  apiKey      String                         // Chiffré AES-256-GCM
+  baseUrl     String?                         // Optionnel, ex: "https://api.foursquare.com"
+  isActive    Boolean  @default(true)
+  lastTested   DateTime?
+  status      String   @default("unknown")    // "ok", "error", "untested"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([serviceKey])
+}
+
+/* ═══ VOICE LOG (AI Assistant) ═══ */
+model VoiceLog {
+  id           String   @id @default(uuid())
+  householdId  String
+  token        String?
+  intent       String
+  originalText String
+  success      Boolean  @default(false)
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  household    Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, createdAt(sort: Desc)])
+}
+
+/* ═══ APPOINTMENT (Rendez-vous) ═══ */
+model Appointment {
+  id           String   @id @default(uuid())
+  householdId  String
+  title        String
+  date         DateTime
+  location     String?
+  reminderSent Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  household    Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, date(sort: Asc)])
+}
+
+/* ═══ REMINDER (Rappel) ═══ */
+model Reminder {
+  id              String    @id @default(uuid())
+  householdId     String
+  text            String
+  triggerAt       DateTime
+  isRecurring     Boolean   @default(false)
+  recurrenceRule  String?
+  notified        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  household       Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, triggerAt(sort: Asc)])
+}
