@@ -220,11 +220,10 @@ export function SignatureLoading() {
         >
           <motion.div
             className="h-px w-8"
-            style={{ backgroundColor: 'var(--accent-primary)' }}
+            style={{ backgroundColor: 'var(--accent-primary)', transformOrigin: 'right center' }}
             initial={{ scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 0.4 }}
             transition={{ delay: 2.7, duration: 0.5 }}
-            originX={1}
           />
           <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
             <motion.path
@@ -239,11 +238,10 @@ export function SignatureLoading() {
           </svg>
           <motion.div
             className="h-px w-8"
-            style={{ backgroundColor: 'var(--accent-primary)' }}
+            style={{ backgroundColor: 'var(--accent-primary)', transformOrigin: 'left center' }}
             initial={{ scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 0.4 }}
             transition={{ delay: 2.7, duration: 0.5 }}
-            originX={0}
           />
         </motion.div>
 

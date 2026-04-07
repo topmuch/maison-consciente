@@ -158,8 +158,8 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
       toast.error('Adresse e-mail invalide');
       return false;
     }
-    if (!regPassword || regPassword.length < 6) {
-      toast.error('Le mot de passe doit contenir au moins 6 caractères');
+    if (!regPassword || regPassword.length < 8) {
+      toast.error('Le mot de passe doit contenir au moins 8 caractères');
       return false;
     }
     if (regPassword !== regConfirmPassword) {
@@ -581,7 +581,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                       <Input
                         id="reg-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="Min. 6 caractères"
+                        placeholder="Min. 8 caractères"
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         disabled={isLoading}

@@ -492,3 +492,23 @@ Stage Summary:
 - Voice context enables follow-up questions without repeating activity name (60s memory window)
 - All files pass lint (0 new errors in src/)
 - Dev server verified: /dashboard/settings/activities returns 200
+
+---
+Task ID: fix-auth-buttons
+Agent: main
+Task: Fix Connexion and Essai Gratuit button errors on landing page
+
+Work Log:
+- Investigated AirHomePage buttons: Connexion calls onShowAuth(), Essai Gratuit calls onShowAuthType('hospitality') — both correct
+- AuthPage component verified: renders login/register forms correctly
+- Auth API routes verified: /api/auth/register and /api/auth/login both return correct responses (tested via Caddy proxy)
+- **BUG 1 FIXED**: Password validation mismatch — client validated min 6 chars but server Zod schema requires min 8 chars. Updated auth-page.tsx: validation error message and placeholder both changed to "8 caractères"
+- **BUG 2 FIXED**: React `originX` DOM warning in signature-loading.tsx — Framer Motion's `originX={1}` and `originX={0}` props passed to DOM elements. Replaced with `style={{ transformOrigin: 'right center' }}` and `style={{ transformOrigin: 'left center' }}`
+- Cleaned up test user from database
+- Restarted dev server, verified all API endpoints working through Caddy (port 81)
+- ESLint passes: 0 new errors (5 pre-existing in maison-consciente-ref/ only)
+
+Stage Summary:
+- Root cause of button errors: password validation mismatch causing confusing error toasts when users entered 6-7 char passwords
+- Also fixed React warning about unrecognized `originX` prop on DOM elements
+- Both fixes improve user experience on auth flow
