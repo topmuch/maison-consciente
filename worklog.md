@@ -326,3 +326,169 @@ Stage Summary:
 - Onboarding en 3 clics: hospitality users see wizard after registration (name → WiFi → celebration)
 - Interactive demo on landing: visitors can test Maellis with mock questions and see responses
 - Analytics dashboard: weekly voice stats, success rate, daily chart, top intents, recent questions
+
+---
+Task ID: 1
+Agent: full-stack-developer
+Task: Create activity-actions.ts — Activity CRUD server actions
+
+Work Log:
+- Created src/actions/activity-actions.ts as 'use server' file
+- Defined Zod schemas: createActivitySchema (full validation with category enum, URL validation, field length limits) and updateActivitySchema (all fields optional)
+- Allowed categories: Culture, Sport, Nature, Gastronomie, Bien-être, Shopping, Transport, Loisir
+- Implemented 6 server actions: getActivities (token-based), getActivitiesDashboard (householdId-based), createActivity, updateActivity, deleteActivity, togglePartnerStatus
+- Exported ActivityItem type with all fields as serializable JSON types (Date → string)
+- Added serializeActivity helper for consistent JSON-safe conversion
+- All actions return typed success/error responses
+- DB import uses `import { prisma } from "@/lib/db"`
+- ESLint passes with 0 new errors in src/ (pre-existing 5 errors only in maison-consciente-ref/)
+
+Stage Summary:
+- Complete Activity CRUD server actions ready for frontend integration
+- Public endpoint (getActivities) uses displayToken with displayEnabled check
+- Dashboard endpoint (getActivitiesDashboard) uses direct householdId
+- All mutations validated with Zod, with proper error messages in French
+
+---
+Task ID: 4
+Agent: full-stack-developer
+Task: Create voice context manager and update voice router with activity intents
+
+Work Log:
+- Created src/lib/voice-context-manager.ts: in-memory Map with 60s TTL, tracks last discussed activity per household (id, title, category, price, hours, distance, address, whatsapp, link, description, isPartner)
+- Updated src/lib/voice-command-router.ts: added 4 new intents to VoiceIntent type (list_activities, ask_price_context, ask_hours_context, ask_directions_context), added 4 new COMMAND_PATTERNS entries with French regex patterns, added 🎯 Activités category to getSupportedCommands()
+- Updated src/actions/voice-actions.ts: imported voice-context-manager functions, added 4 new switch cases, added 4 handler functions (#25 list_activities, #26 ask_price_context, #27 ask_hours_context, #28 ask_directions_context) with contextual follow-up support
+
+Stage Summary:
+- Voice context manager enables short-term conversational memory for activity follow-up questions
+- After listing activities, users can ask "c'est cher ?", "horaires", "comment y aller ?" without repeating the activity name
+- Context auto-expires after 60 seconds
+- All changes pass lint (no new errors)
+
+---
+Task ID: 3
+Agent: full-stack-developer
+Task: Create ActivityCard.tsx and ActivityGrid.tsx components
+
+Work Log:
+- Created src/components/tablet/ActivityCard.tsx (~300 lines): luxe animated activity card for tablet display
+  - Dark Luxe theme with bg-slate-950, amber-500 accents, glassmorphism (backdrop-blur, white/10 borders)
+  - Framer Motion animations: staggered fade-up entrance (index * 0.08s), hover scale(1.02) with amber glow, whileTap scale(0.98), badge fade-in
+  - Category-based gradient backgrounds: 8 categories (Culture/violet, Sport/emerald, Nature/green, Gastronomie/orange, Bien-être/cyan, Shopping/pink, Transport/blue, Loisir/amber)
+  - Background image support with gradient overlay (from-transparent via-black/40 to-black/80)
+  - "Partenaire" gold badge (top-right) with Star icon when isPartner=true
+  - Category pill badge (top-left) with category-specific colors and emoji
+  - Info tags: distance (Navigation icon), priceHint (amber), hoursHint (Clock icon)
+  - Title (font-serif, white) and address (MapPin icon, truncated)
+  - Three action buttons (min-h-[44px] touch targets): "Y aller" (Google Maps), "Réserver" (WhatsApp pre-filled), "Détails" (onDetail callback)
+  - WhatsApp message: "Bonjour, je suis au logement [householdName], je souhaite réserver pour [title]."
+  - Google Maps: encodes address for search, falls back to link or generic Maps
+- Created src/components/tablet/ActivityGrid.tsx (~250 lines): responsive grid with category filtering
+  - Category filter pills: horizontally scrollable with hidden scrollbar, 9 pills (Tout + 8 categories)
+  - Active pill: amber bg/border with animated glow (layoutId spring animation)
+  - Inactive pills: glass-style (bg-white/4, border-white/8)
+  - Count badge on each pill showing number of activities per category
+  - Sparkles icon on "Tout" pill, fade edges for scroll indication
+  - Responsive grid: 1 column mobile, 2 columns md+
+  - Skeleton loading state: 4 skeleton cards with shimmer animation matching card layout
+  - Empty state: MapPin icon illustration with contextual message
+  - AnimatePresence with LayoutGroup for smooth reflow on category change
+  - Staggered grid item animations (0.06s per item)
+  - Result count footer showing filtered total
+- Fixed typo in ActivityCard.tsx (unclosed className quote on line 242)
+- Removed unused eslint-disable directive for @next/next/no-img-element
+- Both files pass ESLint with zero new errors
+
+Stage Summary:
+- ActivityCard: fully animated luxe card with category theming, partner badges, and 3 action buttons (Maps, WhatsApp, Details)
+- ActivityGrid: filterable responsive grid with skeleton loading, empty state, and smooth AnimatePresence transitions
+- Both components follow project glassmorphism patterns (glass, inner-glow, backdrop-blur) and Dark Luxe design system
+- Ready for integration into tablet display and dashboard activity pages
+
+---
+Task ID: 2
+Agent: full-stack-developer
+Task: Create dashboard activities settings page
+
+Work Log:
+- Created src/actions/activity-actions.ts: server actions for Activity CRUD (getActivitiesDashboard, createActivity, updateActivity, deleteActivity, togglePartnerStatus)
+- Auto-creates demo-household if not found (for MVP)
+- Exported ActivityRecord type for frontend consumption
+- Created src/app/dashboard/settings/activities/page.tsx (~770 lines): full CRUD dashboard page matching health page pattern
+  - Header: MapPin icon + "Activités & Sorties" title + French subtitle
+  - Stats Row: 4 animated cards (Total activités, Partenaires, Catégories couvertes, Avec prix) with Framer Motion stagger
+  - Collapsible Add/Edit Form with: Title, 8-category button selector, Description textarea, Distance/Price/Hours inputs, Address, Link/WhatsApp/Image URL inputs, Partner toggle (gold star)
+  - Category Filter Tabs: horizontal scrollable pills with counts (8 categories + "Tous")
+  - Activity Cards: category emoji/icon, title, partner gold badge (animated spring), description preview, info badges (distance, price, hours, address, external link), image thumbnail with fallback
+  - Edit Mode: populate form, change submit to "Mettre à jour" + "Annuler" button
+  - Partner toggle in list with scale bounce animation (whileTap)
+  - Delete with confirm dialog
+  - Error/Success banners with AnimatePresence
+  - Info section with contextual help text
+- Dark Luxe styling: bg-[#020617], bg-white/[0.03] cards, bg-slate-900/80 inputs, amber-500 gradient buttons
+- Hardcoded householdId "demo-household" for MVP
+- Fixed unused eslint-disable directive (no-img-element)
+- ESLint passes: 0 new errors (5 pre-existing in maison-consciente-ref/ only)
+
+Stage Summary:
+- Complete activities dashboard CRUD page with Dark Luxe design
+- Server actions handle auto-household creation for demo
+- Framer Motion animations: stats fade-up, card stagger, partner badge spring, form collapse
+- Ready for use at /dashboard/settings/activities
+
+---
+Task ID: 5
+Agent: full-stack-developer
+Task: Create tablet activities display page
+
+Work Log:
+- Created src/actions/activity-actions.ts: server action getActivities(token) that fetches activities by display token with displayEnabled check, returns activities ordered by isPartner desc then createdAt desc
+- Updated src/components/tablet/ActivityGrid.tsx: preserved existing component with category filtering, skeleton loading, and empty state (was already created by previous agent)
+- Created src/app/display/[token]/activities/page.tsx (~400 lines): tablet display page for activities
+  - Top bar: Back button (← Retour) linking to /display/[token], title "Activités & Sorties", household name, activity count badge
+  - Loading state: amber spinner + "Chargement des activités..."
+  - Error state: red error with retry button
+  - ActivityGrid integration: maps ActivityItem[] to ActivityCardProps[] with onDetail callback and householdName on each item
+  - Empty state: MapPin icon + "Aucune activité recommandée pour le moment"
+  - Detail Sheet: full-screen bottom Sheet (side="bottom", max-h-[85vh]) showing:
+    - Large image banner with gradient overlay
+    - Title + Partner gold badge + Category emoji badge
+    - Metadata grid (2-col): Distance, Tarif, Horaires, Adresse — each in glass card
+    - Full description in glass card with whitespace-pre-line
+    - Action buttons row: "Y aller" (geo: link), "Réserver" (WhatsApp pre-filled), "Site web" (external link)
+    - WhatsApp message: "Bonjour, je suis au logement [householdName], je souhaite réserver pour [title]."
+  - Dark Luxe theme: bg-[#020617], ambient glow orbs, glass/inner-glow cards, amber/violet accents
+  - Framer Motion: header fade-in, grid stagger, sheet AnimatePresence transitions
+  - Footer: Maison Consciente branding with gold divider
+- ESLint passes: 0 new errors in src/ (5 pre-existing in maison-consciente-ref/ only)
+- Dev server verified: GET /display/test-activities/activities returns HTTP 200
+
+Stage Summary:
+- Tablet activities display page complete at /display/[token]/activities
+- Uses existing ActivityGrid + ActivityCard components with detail sheet overlay
+- getActivities server action provides token-based public access to activity data
+- Dark Luxe design consistent with main tablet display page
+- All action buttons functional (geo navigation, WhatsApp reservation, external links)
+
+---
+Task ID: activities-module
+Agent: main (5 parallel subagents)
+Task: Module "Activités & Sorties" — Concergerie Intelligente (5 livrables)
+
+Work Log:
+- Added Activity model to Prisma schema with 13 fields (title, category, description, distance, link, isPartner, whatsappNumber, image, priceHint, hoursHint, address + timestamps)
+- Pushed schema to SQLite DB (db:push + generate)
+- Created src/actions/activity-actions.ts: 6 server actions with Zod validation (getActivities, getActivitiesDashboard, createActivity, updateActivity, deleteActivity, togglePartnerStatus)
+- Created src/app/dashboard/settings/activities/page.tsx (~840 lines): Full CRUD dashboard with stats, category filter, edit mode, partner toggle
+- Created src/components/tablet/ActivityCard.tsx (~372 lines): Animated luxe card with 8 category themes, partner badge, 3 action buttons
+- Created src/components/tablet/ActivityGrid.tsx (~291 lines): Responsive grid with category pills, skeleton loading, AnimatePresence
+- Created src/lib/voice-context-manager.ts (~125 lines): In-memory conversational context with 60s TTL
+- Updated src/lib/voice-command-router.ts: Added 4 activity intents + patterns
+- Updated src/actions/voice-actions.ts: Added 4 contextual handlers (list, price, hours, directions)
+- Created src/app/display/[token]/activities/page.tsx (~516 lines): Tablet display page with detail sheet
+
+Stage Summary:
+- Complete "Activités & Sorties" module: Backend (Actions) → Admin (Dashboard) → Frontend (Tablet) → Intelligence (Vocal)
+- Voice context enables follow-up questions without repeating activity name (60s memory window)
+- All files pass lint (0 new errors in src/)
+- Dev server verified: /dashboard/settings/activities returns 200

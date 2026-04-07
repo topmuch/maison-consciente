@@ -19,7 +19,10 @@ export type VoiceIntent =
   | 'preference_like' | 'preference_dislike' | 'preference_zodiac' | 'preference_dietary'
   // Système
   | 'name_change' | 'name_ask' | 'quiet_mode' | 'volume_up' | 'volume_down' | 'help' | 'greeting'
-  | 'thank_you' | 'goodbye' | 'unknown';
+  | 'thank_you' | 'goodbye'
+  // Activités & Sorties
+  | 'list_activities' | 'ask_price_context' | 'ask_hours_context' | 'ask_directions_context'
+  | 'unknown';
 
 export interface VoiceCommand {
   intent: VoiceIntent;
@@ -263,6 +266,33 @@ const COMMAND_PATTERNS: CommandPattern[] = [
       /\b(au revoir|bonne nuit|à plus|à bientôt|bye|ciao|dorénavant)\b/i,
     ],
   },
+
+  // ═══ ACTIVITÉS & SORTIES ═══
+  {
+    intent: 'list_activities',
+    patterns: [
+      /\b(activité|activités|sortie|sorties|que faire|quoi faire|visite|excursion|balade|découverte)\b/i,
+      /\b(activité|sortie)\s+(proposée|disponible|autour|proche|à faire)\b/i,
+    ],
+  },
+  {
+    intent: 'ask_price_context',
+    patterns: [
+      /\b(cher|prix|coûte|combien|gratuit|payant|tarif|budget)\b/i,
+    ],
+  },
+  {
+    intent: 'ask_hours_context',
+    patterns: [
+      /\b(ouvert|horaire|fermé|quand|heure[s]?|ouverture|fermeture)\b/i,
+    ],
+  },
+  {
+    intent: 'ask_directions_context',
+    patterns: [
+      /\b(comment\s+y\s+aller|itinéraire|chemin|direction|comment\s+aller|accès|route)\b/i,
+    ],
+  },
 ];
 
 // ── Main Router Function ──
@@ -326,6 +356,7 @@ export function getSupportedCommands(): { category: string; commands: string[] }
     { category: '🏠 Maison', commands: ['"Minuteur 5 minutes"', '"Calcule 15 + 27"', '"Contacter propriétaire"', '"Itinéraire [lieu]"'] },
     { category: '🧠 Apprentissage', commands: ['"J\'aime le jazz"', '"Je suis Scorpion"', '"Je suis végétarien"'] },
     { category: '⚙️ Système', commands: ['"Comment tu t\'appelles"', '"Mode silencieux"', '"Aide"'] },
+    { category: '🎯 Activités', commands: ['"Activités"', "Que faire ?", "C'est cher ?", '"Horaires"', '"Comment y aller ?"'] },
   ];
 }
 

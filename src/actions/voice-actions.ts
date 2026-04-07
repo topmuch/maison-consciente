@@ -51,6 +51,12 @@ import {
   ASSISTANT_NAMES,
   isValidAssistantName,
 } from '@/lib/config';
+import {
+  setActivityContext,
+  getVoiceContext,
+  hasActiveActivityContext,
+  clearVoiceContext,
+} from '@/lib/voice-context-manager';
 
 /* ═══ TYPES ═══ */
 
@@ -178,6 +184,14 @@ export async function processVoiceCommand(
       return handleVolumeChange(householdId, 'down');
     case 'help':
       return handleHelp();
+    case 'list_activities':
+      return handleListActivities(householdId);
+    case 'ask_price_context':
+      return handleAskPriceContext(householdId);
+    case 'ask_hours_context':
+      return handleAskHoursContext(householdId);
+    case 'ask_directions_context':
+      return handleAskDirectionsContext(householdId);
     case 'thank_you':
       return {
         message: randomPick([
@@ -884,6 +898,151 @@ function handleHelp(): VoiceActionResponse {
     message,
     actionType: 'help',
     data: commands,
+  };
+}
+
+/* ─── 25. List Activities ─── */
+async function handleListActivities(householdId: string): Promise<VoiceActionResponse> {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: { householdId },
+      orderBy: { isPartner: 'desc' },
+      take: 10,
+    });
+
+    if (activities.length === 0) {
+      return {
+        message: 'Aucune activité n\'a été configurée pour le moment. Demandez au propriétaire d\'ajouter des recommandations !',
+        actionType: 'activities_empty',
+      };
+    }
+
+    // Set context to first activity for follow-up questions
+    const first = activities[0];
+    setActivityContext(householdId, {
+      id: first.id,
+      title: first.title,
+      category: first.category,
+      priceHint: first.priceHint,
+      hoursHint: first.hoursHint,
+      distance: first.distance,
+      address: first.address,
+      whatsappNumber: first.whatsappNumber,
+      link: first.link,
+      description: first.description,
+      isPartner: first.isPartner,
+    });
+
+    const categories = [...new Set(activities.map(a => a.category))];
+    const partnerCount = activities.filter(a => a.isPartner).length;
+
+    const list = activities.slice(0, 5).map((a, i) => {
+      let entry = `${i + 1}. ${a.title}`;
+      if (a.distance) entry += ` — ${a.distance}`;
+      return entry;
+    }).join('. ');
+
+    let message = `Voici ${activities.length} activité${activities.length > 1 ? 's' : ''} recommandée${activities.length > 1 ? 's' : ''}`;
+    if (categories.length > 0) message += ` dans les catégories ${categories.join(', ')}`;
+    if (partnerCount > 0) message += ` dont ${partnerCount} partenaire${partnerCount > 1 ? 's' : ''}`;
+    message += ` : ${list}.`;
+    if (activities.length > 5) message += ` Et ${activities.length - 5} autres. Demandez "c'est cher ?" ou "horaires" pour en savoir plus sur la première activité.`;
+
+    return {
+      message,
+      actionType: 'activities_list',
+      data: { activities: activities.map(a => ({ id: a.id, title: a.title, category: a.category, distance: a.distance, isPartner: a.isPartner })) },
+    };
+  } catch {
+    return { message: 'Impossible de récupérer les activités. Réessayez.', actionType: 'activities_error' };
+  }
+}
+
+/* ─── 26. Ask Price (contextual) ─── */
+async function handleAskPriceContext(householdId: string): Promise<VoiceActionResponse> {
+  const context = getVoiceContext(householdId);
+
+  if (!context || !context.lastActivityId) {
+    return {
+      message: 'Je ne suis pas sûr de quelle activité vous parlez. Dites "activités" pour voir la liste d\'abord.',
+      actionType: 'activities_no_context',
+    };
+  }
+
+  if (context.lastActivityPrice) {
+    const priceMsg = context.lastActivityPrice.toLowerCase().includes('gratuit')
+      ? `${context.lastActivityTitle} est gratuit !`
+      : `Le tarif pour ${context.lastActivityTitle} est ${context.lastActivityPrice}.`;
+    return {
+      message: priceMsg + (context.lastActivityIsPartner ? ' C\'est un partenaire recommandé.' : ''),
+      actionType: 'activity_price',
+      data: { title: context.lastActivityTitle, price: context.lastActivityPrice },
+    };
+  }
+
+  if (context.lastActivityWhatsapp) {
+    return {
+      message: `Je ne connais pas le prix exact pour ${context.lastActivityTitle}. Je peux vous mettre en contact par WhatsApp pour demander.`,
+      actionType: 'activity_price_unknown',
+      data: { title: context.lastActivityTitle, whatsapp: context.lastActivityWhatsapp },
+    };
+  }
+
+  return {
+    message: `Je n'ai pas d'information de prix pour ${context.lastActivityTitle}. Vous pouvez vérifier sur leur site ou demander au propriétaire.`,
+    actionType: 'activity_price_unknown',
+  };
+}
+
+/* ─── 27. Ask Hours (contextual) ─── */
+async function handleAskHoursContext(householdId: string): Promise<VoiceActionResponse> {
+  const context = getVoiceContext(householdId);
+
+  if (!context || !context.lastActivityId) {
+    return {
+      message: 'De quelle activité souhaitez-vous connaître les horaires ? Dites "activités" pour voir la liste.',
+      actionType: 'activities_no_context',
+    };
+  }
+
+  if (context.lastActivityHours) {
+    return {
+      message: `${context.lastActivityTitle} est ouvert ${context.lastActivityHours}.`,
+      actionType: 'activity_hours',
+      data: { title: context.lastActivityTitle, hours: context.lastActivityHours },
+    };
+  }
+
+  return {
+    message: `Je n'ai pas les horaires de ${context.lastActivityTitle}. Vérifiez sur leur site ou contactez-les directement.`,
+    actionType: 'activity_hours_unknown',
+  };
+}
+
+/* ─── 28. Ask Directions (contextual) ─── */
+async function handleAskDirectionsContext(householdId: string): Promise<VoiceActionResponse> {
+  const context = getVoiceContext(householdId);
+
+  if (!context || !context.lastActivityId) {
+    return {
+      message: 'Où souhaitez-vous aller ? Dites "activités" pour voir les recommandations.',
+      actionType: 'activities_no_context',
+    };
+  }
+
+  let message = `Pour aller à ${context.lastActivityTitle}`;
+  if (context.lastActivityDistance) {
+    message += ` — c'est ${context.lastActivityDistance}`;
+  }
+  message += '. Je vous recommande d\'ouvrir Google Maps pour l\'itinéraire en temps réel.';
+
+  return {
+    message,
+    actionType: 'open_maps',
+    data: {
+      title: context.lastActivityTitle,
+      address: context.lastActivityAddress || context.lastActivityLink || '',
+    },
   };
 }
 

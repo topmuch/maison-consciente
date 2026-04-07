@@ -76,6 +76,7 @@ model Household {
   appointments        Appointment[]
   reminders           Reminder[]
   knowledgeBase       KnowledgeBaseItem[]
+  activities          Activity[]
   whatsappNumber      String?
   /* ═══ MEMORY & PREFERENCES (Maellis) ═══ */
   userPreferences     Json?     // { "musicGenre":"jazz", "zodiacSign":null, "dietaryRestrictions":[], "learningMode":true, "knownInterests":[] }
@@ -548,4 +549,27 @@ model KnowledgeBaseItem {
 
   @@index([householdId, category])
   @@index([isActive])
+}
+
+/* ═══ ACTIVITÉ & SORTIES (Conciergerie) ═══ */
+model Activity {
+  id             String   @id @default(uuid())
+  householdId    String
+  title          String
+  category       String                        // Culture, Sport, Nature, Gastronomie, Bien-être, Shopping, Transport, Loisir
+  description    String?                       // Description détaillée (markdown)
+  distance       String?                       // Ex: "À 10 min à pied"
+  link           String?                       // URL externe (Google Maps, site web, etc.)
+  isPartner      Boolean  @default(false)      // Badge "Partenaire" doré
+  whatsappNumber String?                       // Numéro WhatsApp pour réservation
+  image          String?                       // URL image ou base64 (MVP)
+  priceHint      String?                       // Ex: "Gratuit", "~15€", "20-50€"
+  hoursHint      String?                       // Ex: "09h-18h", "Sur rendez-vous"
+  address        String?                       // Adresse pour Google Maps intent
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  household      Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, category])
+  @@index([isPartner])
 }
