@@ -1,29 +1,65 @@
-/* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE — Configuration
-   
-   Default settings, constants, and validation helpers
-   for the Maellis intelligent assistant.
-   ═══════════════════════════════════════════════════════ */
+// ═══════════════════════════════════════════════════════
+// MAISON CONSCIENTE — Global Configuration
+// Assistant name, available names, system constants
+// ═══════════════════════════════════════════════════════
 
-// ── Assistant Names ──
+export const ASSISTANT_CONFIG = {
+  /** Default assistant name */
+  defaultName: 'Maellis' as const,
 
-export const ASSISTANT_NAMES = [
-  'Maellis',
-  'Jonia',
-  'Amina',
-  'Corine',
-  'Clara',
-  'Cathy',
-  'Mouna',
-] as const;
+  /** All available assistant names */
+  availableNames: [
+    'Maellis',
+    'Jonia',
+    'Amina',
+    'Corine',
+    'Clara',
+    'Cathy',
+    'Mouna',
+  ] as const,
 
-export type AssistantName = (typeof ASSISTANT_NAMES)[number];
+  /** Minimum confidence threshold for wake word detection */
+  wakeWordConfidence: 0.7,
 
-export const DEFAULT_ASSISTANT_NAME = 'Maellis' as const;
+  /** Default voice settings */
+  defaultVoiceSettings: {
+    enabled: true,
+    wakeWord: 'Maellis',
+    wakeWordEnabled: true,
+    rate: 1.0,
+    volume: 0.8,
+    language: 'fr-FR',
+    conversationWindow: 10, // seconds to wait for follow-up
+  },
 
-export function isValidAssistantName(name: string): boolean {
-  return (ASSISTANT_NAMES as readonly string[]).includes(name);
+  /** Maximum retries for API calls */
+  maxApiRetries: 2,
+
+  /** Cache TTL in seconds */
+  cacheTtl: {
+    weather: 1800,      // 30 min
+    news: 1800,          // 30 min
+    horoscope: 3600,     // 1 hour
+    airQuality: 3600,    // 1 hour
+    recipes: 86400,      // 24 hours
+  },
+} as const;
+
+export type AssistantName = (typeof ASSISTANT_CONFIG.availableNames)[number];
+
+/** Validate if a name is a valid assistant name */
+export function isValidAssistantName(name: string): name is AssistantName {
+  return (ASSISTANT_CONFIG.availableNames as readonly string[]).includes(name);
 }
+
+// ═══════════════════════════════════════════════════════
+// BACKWARD-COMPATIBLE RE-EXPORTS
+// These keep existing imports working across the codebase.
+// ═══════════════════════════════════════════════════════
+
+export const ASSISTANT_NAMES = ASSISTANT_CONFIG.availableNames;
+export const DEFAULT_ASSISTANT_NAME = ASSISTANT_CONFIG.defaultName;
+export const DEFAULT_VOICE_SETTINGS = ASSISTANT_CONFIG.defaultVoiceSettings;
 
 // ── Voice Settings ──
 
@@ -34,14 +70,6 @@ export interface VoiceSettings {
   volume: number;
   language: string;
 }
-
-export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
-  wakeWord: DEFAULT_ASSISTANT_NAME,
-  wakeWordEnabled: true,
-  rate: 1.0,
-  volume: 0.8,
-  language: 'fr-FR',
-};
 
 // ── Music Genres ──
 

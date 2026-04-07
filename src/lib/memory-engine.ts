@@ -1,234 +1,186 @@
+// ═══════════════════════════════════════════════════════
+// MAISON CONSCIENTE — Memory Engine
+// Tracks user preferences, learning mode, and action history
+// ═══════════════════════════════════════════════════════
+
+import { db } from '@/lib/db';
+
+/* ── Types ── */
+interface UserPreferences {
+  musicGenre?: string | null;
+  zodiacSign?: string | null;
+  dietaryRestrictions?: string[];
+  learningMode?: boolean;
+  knownInterests?: string[];
+  favoriteRecipes?: string[];
+  lastQueries?: { query: string; timestamp: string }[];
+  preferredNewsSources?: string[];
+  wakeTime?: string | null;
+  sleepTime?: string | null;
+  preferredTemperature?: string | null;
+  language?: string | null;
+}
+
+const DEFAULT_PREFERENCES: UserPreferences = {
+  musicGenre: null,
+  zodiacSign: null,
+  dietaryRestrictions: [],
+  learningMode: true,
+  knownInterests: [],
+  favoriteRecipes: [],
+  lastQueries: [],
+  preferredNewsSources: ['franceinfo', 'lemonde'],
+  wakeTime: null,
+  sleepTime: null,
+  preferredTemperature: null,
+  language: 'fr-FR',
+};
+
+/* ── Helpers ── */
+function safeJsonParse<T>(value: unknown, fallback: T): T {
+  if (!value) return fallback;
+  if (typeof value === 'object' && value !== null) return value as T;
+  try { return JSON.parse(String(value)) as T; } catch { return fallback; }
+}
+
+function mergeDefaults(partial: Partial<UserPreferences>): UserPreferences {
+  return { ...DEFAULT_PREFERENCES, ...partial };
+}
+
 /* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE — Memory Engine (Cœur Intelligent)
-   
-   Manages user preferences, learning mode, and proactive
-   suggestions. The system remembers what users like and
-   progressively personalizes responses.
+   GET / SET PREFERENCES
    ═══════════════════════════════════════════════════════ */
 
-import { prisma } from '@/lib/db';
-import {
-  DEFAULT_USER_PREFERENCES,
-  MUSIC_GENRES,
-  ZODIAC_SIGNS,
-  isValidZodiacSign,
-} from './config';
-
-export interface UserPreferences {
-  musicGenre: string | null;
-  zodiacSign: string | null;
-  dietaryRestrictions: string[];
-  learningMode: boolean;
-  knownInterests: string[];
-}
-
-/** Recent action history (kept in-memory, max 50 entries) */
-interface RecentAction {
-  intent: string;
-  detail?: string;
-  timestamp: number;
-}
-
-const MAX_HISTORY = 50;
-const actionHistory: RecentAction[] = [];
-
-// ── Preference Getters/Setters ──
-
-/**
- * Get user preferences for a household.
- * Returns defaults if none stored.
- */
 export async function getPreferences(householdId: string): Promise<UserPreferences> {
   try {
-    const household = await prisma.household.findUnique({
+    const household = await db.household.findUnique({
       where: { id: householdId },
       select: { userPreferences: true },
     });
-    if (household?.userPreferences && typeof household.userPreferences === 'object') {
-      return { ...DEFAULT_USER_PREFERENCES, ...(household.userPreferences as Partial<UserPreferences>) };
-    }
-  } catch { /* fallback to defaults */ }
-  return { ...DEFAULT_USER_PREFERENCES };
+    if (!household) return { ...DEFAULT_PREFERENCES };
+    return mergeDefaults(safeJsonParse<UserPreferences>(household.userPreferences, {}));
+  } catch {
+    return { ...DEFAULT_PREFERENCES };
+  }
 }
 
-/**
- * Set a single preference key for a household.
- */
 export async function setPreference(
   householdId: string,
   key: keyof UserPreferences,
-  value: unknown
-): Promise<UserPreferences> {
-  const current = await getPreferences(householdId);
-  const updated = { ...current, [key]: value };
+  value: unknown,
+): Promise<boolean> {
+  try {
+    const household = await db.household.findUnique({
+      where: { id: householdId },
+      select: { userPreferences: true },
+    });
+    if (!household) return false;
 
-  await prisma.household.update({
-    where: { id: householdId },
-    data: { userPreferences: updated as any },
-  });
+    const prefs = mergeDefaults(safeJsonParse<UserPreferences>(household.userPreferences, {}));
+    (prefs as Record<string, unknown>)[key] = value;
 
-  return updated;
+    await db.household.update({
+      where: { id: householdId },
+      data: { userPreferences: prefs },
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-/**
- * Set multiple preferences at once.
- */
-export async function setPreferences(
-  householdId: string,
-  updates: Partial<UserPreferences>
-): Promise<UserPreferences> {
-  const current = await getPreferences(householdId);
-  const updated = { ...current, ...updates };
+/* ═══════════════════════════════════════════════════════
+   LEARNING / SUGGESTIONS
+   ═══════════════════════════════════════════════════════ */
 
-  await prisma.household.update({
-    where: { id: householdId },
-    data: { userPreferences: updated as any },
-  });
-
-  return updated;
-}
-
-// ── Action History ──
-
-/**
- * Record a user action (intent) in the in-memory history.
- */
-export function recordAction(intent: string, detail?: string): void {
-  actionHistory.push({ intent, detail, timestamp: Date.now() });
-  if (actionHistory.length > MAX_HISTORY) actionHistory.shift();
-}
-
-/**
- * Get recent action history (last N entries).
- */
-export function getRecentActions(limit: number = 20): RecentAction[] {
-  return actionHistory.slice(-limit);
-}
-
-/**
- * Count how many times an intent was triggered recently (last 24h).
- */
-export function countRecentIntent(intent: string): number {
-  const oneDayAgo = Date.now() - 86400000;
-  return actionHistory.filter(
-    a => a.intent === intent && a.timestamp >= oneDayAgo
-  ).length;
-}
-
-// ── Learning & Suggestions ──
-
-/**
- * Suggest a learning question based on recent usage patterns.
- * Returns null if learning mode is off or no suggestion available.
- */
-export async function suggestLearning(householdId: string): Promise<string | null> {
+export async function addInterest(householdId: string, interest: string): Promise<void> {
   const prefs = await getPreferences(householdId);
-  if (!prefs.learningMode) return null;
-
-  const musicCount = countRecentIntent('music') + countRecentIntent('ambiance');
-  const recipeCount = countRecentIntent('recipe');
-  const newsCount = countRecentIntent('news') + countRecentIntent('actualites');
-  const weatherCount = countRecentIntent('weather') + countRecentIntent('meteo');
-
-  // Pattern: user frequently asks for music but hasn't set a genre
-  if (musicCount >= 3 && !prefs.musicGenre) {
-    recordAction('learning_suggestion', 'music_genre');
-    return "Je remarque que vous écoutez souvent de la musique. Avez-vous un genre préféré ? Jazz, classique, rock ?";
-  }
-
-  // Pattern: user asks for recipes but hasn't set dietary restrictions
-  if (recipeCount >= 3 && prefs.dietaryRestrictions.length === 0) {
-    recordAction('learning_suggestion', 'dietary');
-    return "Vous aimez les recettes ! Avez-vous des restrictions alimentaires que je devrais connaître ? Végétarien, sans gluten ?";
-  }
-
-  // Pattern: user checks weather often — suggest zodiac
-  if (weatherCount >= 3 && !prefs.zodiacSign) {
-    recordAction('learning_suggestion', 'zodiac');
-    return "Je pourrais vous donner votre horoscope quotidien ! Quel est votre signe astrologique ?";
-  }
-
-  // Pattern: user reads news but no preferred source set
-  if (newsCount >= 5) {
-    recordAction('learning_suggestion', 'news_source');
-    return "Vous suivez beaucoup l'actualité. Souhaitez-vous que je privilégie un source en particulier ?";
-  }
-
-  return null;
+  const interests = new Set(prefs.knownInterests || []);
+  interests.add(interest.toLowerCase());
+  await setPreference(householdId, 'knownInterests', Array.from(interests));
 }
 
-/**
- * Process a potential preference declaration from user speech.
- * E.g. "j'aime le jazz" → set musicGenre to "jazz"
- * Returns true if a preference was detected and saved.
- */
-export async function processPreferenceFromSpeech(
+export async function recordQuery(householdId: string, query: string): Promise<void> {
+  const prefs = await getPreferences(householdId);
+  const queries = [...(prefs.lastQueries || [])];
+  queries.unshift({ query: query.toLowerCase(), timestamp: new Date().toISOString() });
+  // Keep only last 50 queries
+  if (queries.length > 50) queries.length = 50;
+  await setPreference(householdId, 'lastQueries', queries);
+}
+
+export async function suggestLearning(
   householdId: string,
-  text: string
-): Promise<{ detected: boolean; message?: string }> {
-  const lower = text.toLowerCase();
+  context: string,
+): Promise<{ suggestion: string | null; confidence: number }> {
+  const prefs = await getPreferences(householdId);
+  if (!prefs.learningMode) return { suggestion: null, confidence: 0 };
 
-  // Music genre detection
-  for (const genre of MUSIC_GENRES) {
-    if (lower.includes(`j'aime ${genre}`) || lower.includes(`j'adore ${genre}`) || lower.includes(`je kiffe ${genre}`)) {
-      const prefs = await setPreference(householdId, 'musicGenre', genre);
-      recordAction('preference_set', `musicGenre:${genre}`);
+  const interests = prefs.knownInterests || [];
+
+  // Suggest based on context
+  const contextLower = context.toLowerCase();
+
+  // Music suggestion
+  if (contextLower.includes('musique') || contextLower.includes('son') || contextLower.includes('ambiance')) {
+    if (prefs.musicGenre && interests.includes(prefs.musicGenre.toLowerCase())) {
       return {
-        detected: true,
-        message: `C'est noté ! Je mémorise que vous aimez le ${genre}. Je vous en proposerai plus souvent.`,
+        suggestion: `Je remarque que vous aimez ${prefs.musicGenre}. Voulez-vous que je mette une ambiance ${prefs.musicGenre} ?`,
+        confidence: 0.7,
       };
     }
-    if (lower.includes(`je n'aime pas ${genre}`) || lower.includes(`j'aime pas ${genre}`)) {
-      recordAction('preference_rejected', `musicGenre:${genre}`);
+    if (!prefs.musicGenre && interests.length > 0) {
       return {
-        detected: true,
-        message: `Compris, pas de ${genre} alors !`,
-      };
-    }
-  }
-
-  // Zodiac sign detection
-  for (const sign of ZODIAC_SIGNS) {
-    if (lower.includes(`mon signe est ${sign}`) || lower.includes(`je suis ${sign}`) || lower.includes(`signe ${sign}`)) {
-      await setPreference(householdId, 'zodiacSign', sign);
-      recordAction('preference_set', `zodiacSign:${sign}`);
-      return {
-        detected: true,
-        message: `Parfait ! Je mémorise que vous êtes ${sign.charAt(0).toUpperCase() + sign.slice(1)}. Je vous donnerai votre horoscope chaque matin.`,
+        suggestion: 'Vous n\'avez pas encore de genre musical préféré enregistré. Quel style de musique vous plaît ?',
+        confidence: 0.4,
       };
     }
   }
 
-  // Dietary restriction detection
-  if (lower.includes('végétarien') || lower.includes('vegetarien')) {
-    const prefs = await getPreferences(householdId);
-    if (!prefs.dietaryRestrictions.includes('végétarien')) {
-      await setPreference(householdId, 'dietaryRestrictions', [...prefs.dietaryRestrictions, 'végétarien']);
-      recordAction('preference_set', 'dietary:végétarien');
-      return { detected: true, message: "Noté ! Je vous proposerai des recettes végétariennes." };
+  // Recipe suggestion
+  if (contextLower.includes('recette') || contextLower.includes('cuisine') || contextLower.includes('manger')) {
+    if (prefs.dietaryRestrictions && prefs.dietaryRestrictions.length > 0) {
+      return {
+        suggestion: `Je sais que vous avez des restrictions : ${prefs.dietaryRestrictions.join(', ')}. Je vais filtrer les recettes en conséquence.`,
+        confidence: 0.6,
+      };
+    }
+    if (interests.some(i => i.includes('cuisine'))) {
+      return {
+        suggestion: 'Je vois que vous aimez la cuisine ! Voulez-vous une recette spéciale aujourd\'hui ?',
+        confidence: 0.5,
+      };
     }
   }
 
-  if (lower.includes('sans gluten') || lower.includes('intolérant gluten') || lower.includes('coeliaque')) {
-    const prefs = await getPreferences(householdId);
-    if (!prefs.dietaryRestrictions.includes('sans gluten')) {
-      await setPreference(householdId, 'dietaryRestrictions', [...prefs.dietaryRestrictions, 'sans gluten']);
-      recordAction('preference_set', 'dietary:sans gluten');
-      return { detected: true, message: "Compris ! Je filtrerai les recettes sans gluten pour vous." };
-    }
+  // General learning prompt if we have few interests
+  if (interests.length < 3 && Math.random() < 0.3) {
+    return {
+      suggestion: 'Plus j\'apprends vos préférences, mieux je peux vous aider. N\'hésitez pas à me dire ce que vous aimez !',
+      confidence: 0.3,
+    };
   }
 
-  return { detected: false };
+  return { suggestion: null, confidence: 0 };
 }
 
-/**
- * Clear all learned preferences for a household (reset to defaults).
- */
-export async function clearMemory(householdId: string): Promise<UserPreferences> {
-  await prisma.household.update({
-    where: { id: householdId },
-    data: { userPreferences: DEFAULT_USER_PREFERENCES as any },
-  });
-  actionHistory.length = 0;
-  return { ...DEFAULT_USER_PREFERENCES };
+/* ═══════════════════════════════════════════════════════
+   ACTION HISTORY
+   ═══════════════════════════════════════════════════════ */
+
+export async function getActionHistory(householdId: string, limit = 10): Promise<{ query: string; timestamp: string }[]> {
+  const prefs = await getPreferences(householdId);
+  return (prefs.lastQueries || []).slice(0, limit);
+}
+
+export async function clearMemory(householdId: string): Promise<boolean> {
+  try {
+    await db.household.update({
+      where: { id: householdId },
+      data: { userPreferences: DEFAULT_PREFERENCES },
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }

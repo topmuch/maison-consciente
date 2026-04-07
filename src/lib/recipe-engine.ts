@@ -1,166 +1,142 @@
-/* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE — Recipe Engine
-   Local-first recipe management with optional API fallback.
-   Supports step-by-step vocal mode.
-   ═══════════════════════════════════════════════════════ */
+// ═══════════════════════════════════════════════════════
+// MAISON CONSCIENTE — Recipe Engine
+// Local recipe search, random selection, step-by-step mode
+// ═══════════════════════════════════════════════════════
 
 import { LOCAL_RECIPES, type LocalRecipe } from './constants';
 
-export interface RecipeResult {
-  title: string;
-  description: string;
-  prepTimeMin: number;
-  cookTimeMin: number;
-  servings: number;
-  difficulty: string;
-  tags: string[];
-  ingredients: string[];
-  steps: string[];
-  source: 'local' | 'api';
+/* ── Types ── */
+export interface RecipeSearchResult {
+  recipe: LocalRecipe;
+  matchReason: string;
 }
 
-/**
- * Search local recipes by keyword (title, tags, ingredients).
- */
-export function searchLocalRecipes(query: string): RecipeResult[] {
-  if (!query || query.length < 2) return [];
-  const q = query.toLowerCase();
-
-  return LOCAL_RECIPES
-    .filter(r =>
-      r.title.toLowerCase().includes(q) ||
-      r.tags.some(t => t.toLowerCase().includes(q)) ||
-      r.ingredients.some(i => i.toLowerCase().includes(q))
-    )
-    .slice(0, 10)
-    .map(localToResult);
+export interface StepByStepRecipe {
+  recipe: LocalRecipe;
+  currentStep: number;
+  totalSteps: number;
+  currentInstruction: string;
+  isComplete: boolean;
 }
 
-/**
- * Get a random recipe from local database.
- * Optionally filter by tag.
- */
-export function getRandomRecipe(tag?: string): RecipeResult {
-  let pool = LOCAL_RECIPES;
-  if (tag) {
-    const t = tag.toLowerCase();
-    pool = pool.filter(r => r.tags.some(tag => tag.toLowerCase().includes(t)));
-  }
-  if (pool.length === 0) pool = LOCAL_RECIPES;
+/* ═══════════════════════════════════════════════════════
+   SEARCH
+   ═══════════════════════════════════════════════════════ */
 
-  const recipe = pool[Math.floor(Math.random() * pool.length)];
-  return localToResult(recipe);
+function normalize(text: string): string {
+  return text.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
 }
 
-/**
- * Get recipe by ID (local).
- */
-export function getLocalRecipeById(id: string): RecipeResult | null {
-  const recipe = LOCAL_RECIPES.find(r => r.id === id);
-  return recipe ? localToResult(recipe) : null;
+export function searchRecipes(query: string, limit = 5): RecipeSearchResult[] {
+  const queryNorm = normalize(query);
+  const queryWords = queryNorm.split(/\s+/).filter(w => w.length > 2);
+
+  const scored = LOCAL_RECIPES.map(recipe => {
+    let score = 0;
+    let reason = '';
+
+    // Title match
+    const titleNorm = normalize(recipe.title);
+    if (titleNorm.includes(queryNorm)) { score += 10; reason = 'Titre correspondant'; }
+    
+    // Tag match
+    const matchingTags = recipe.tags.filter(tag => 
+      normalize(tag).includes(queryNorm) || 
+      queryWords.some(w => normalize(tag).includes(w))
+    );
+    if (matchingTags.length > 0) { score += matchingTags.length * 5; reason = reason || `Tags: ${matchingTags.join(', ')}`; }
+
+    // Ingredient match
+    const matchingIngredients = recipe.ingredients.filter(ing =>
+      queryWords.some(w => normalize(ing).includes(w))
+    );
+    if (matchingIngredients.length > 0) { score += matchingIngredients.length * 3; reason = reason || `Ingrédients: ${matchingIngredients.slice(0, 2).join(', ')}`; }
+
+    // Description match
+    const descNorm = normalize(recipe.description);
+    if (descNorm.includes(queryNorm)) { score += 4; reason = reason || 'Description correspondante'; }
+
+    // Difficulty match
+    if (queryNorm.includes('facile') && recipe.difficulty === 'Facile') { score += 3; reason = 'Recette facile'; }
+    if (queryNorm.includes('rapide') && (recipe.prepTimeMin + recipe.cookTimeMin) <= 30) { score += 5; reason = 'Recette rapide'; }
+
+    return { recipe, score, matchReason: reason };
+  });
+
+  return scored
+    .filter(r => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(r => ({ recipe: r.recipe, matchReason: r.matchReason }));
 }
 
-/**
- * Get a specific step for vocal "next step" mode.
- * Returns formatted text suitable for TTS.
- */
-export function getRecipeStep(recipeId: string, stepIndex: number): { text: string; isLast: boolean } | null {
-  const recipe = LOCAL_RECIPES.find(r => r.id === recipeId);
-  if (!recipe) return null;
+export function getRandomRecipe(): LocalRecipe {
+  return LOCAL_RECIPES[Math.floor(Math.random() * LOCAL_RECIPES.length)];
+}
 
-  if (stepIndex >= recipe.steps.length || stepIndex < 0) return null;
+export function getRecipeByTag(tag: string): LocalRecipe[] {
+  return LOCAL_RECIPES.filter(r => 
+    r.tags.some(t => normalize(t).includes(normalize(tag)))
+  );
+}
 
-  const isLast = stepIndex === recipe.steps.length - 1;
-  const stepNum = stepIndex + 1;
-  const totalSteps = recipe.steps.length;
+export function getQuickRecipes(maxTotalMin = 30): LocalRecipe[] {
+  return LOCAL_RECIPES.filter(r => (r.prepTimeMin + r.cookTimeMin) <= maxTotalMin);
+}
 
+/* ═══════════════════════════════════════════════════════
+   STEP-BY-STEP MODE
+   ═══════════════════════════════════════════════════════ */
+
+export function createStepByStep(recipe: LocalRecipe): StepByStepRecipe {
   return {
-    text: `Étape ${stepNum} sur ${totalSteps}. ${recipe.steps[stepIndex]}`,
-    isLast,
+    recipe,
+    currentStep: 0,
+    totalSteps: recipe.steps.length,
+    currentInstruction: recipe.steps[0],
+    isComplete: false,
   };
 }
 
-/**
- * Get ingredient list formatted for TTS.
- */
-export function getIngredientsForTTS(recipeId: string): string | null {
-  const recipe = LOCAL_RECIPES.find(r => r.id === recipeId);
-  if (!recipe) return null;
-
-  const intro = `Pour ${recipe.title}, il vous faut : `;
-  const list = recipe.ingredients.slice(0, 10).join(', ');
-  const more = recipe.ingredients.length > 10 ? ` et ${recipe.ingredients.length - 10} autres ingrédients.` : '.';
-  return intro + list + more;
-}
-
-/**
- * Try to fetch from TheMealDB API if enabled.
- * Returns null if disabled or on error.
- */
-export async function fetchExternalRecipe(query?: string): Promise<RecipeResult | null> {
-  try {
-    const endpoint = query
-      ? `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`
-      : 'https://www.themealdb.com/api/json/v1/1/random.php';
-
-    const res = await fetch(endpoint, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    const meal = data.meals?.[0];
-    if (!meal) return null;
-
-    const ingredients: string[] = [];
-    for (let i = 1; i <= 20; i++) {
-      const ing = meal[`strIngredient${i}`];
-      const meas = meal[`strMeasure${i}`];
-      if (ing && ing.trim()) {
-        ingredients.push(`${meas ? meas.trim() + ' de ' : ''}${ing.trim()}`);
-      }
-    }
-
-    const steps = (meal.strInstructions || '')
-      .split(/\r?\n/)
-      .map(s => s.replace(/^\d+\.\s*/, '').trim())
-      .filter(s => s.length > 0)
-      .map(s => s.length > 60 ? s.slice(0, 57) + '...' : s)
-      .slice(0, 8);
-
-    return {
-      title: meal.strMeal || 'Recette inconnue',
-      description: meal.strCategory || '',
-      prepTimeMin: 0,
-      cookTimeMin: 0,
-      servings: 4,
-      difficulty: 'moyen',
-      tags: [meal.strCategory || 'international'].filter(Boolean),
-      ingredients,
-      steps,
-      source: 'api',
-    };
-  } catch {
-    return null;
+export function advanceStep(state: StepByStepRecipe): StepByStepRecipe {
+  const nextStep = state.currentStep + 1;
+  if (nextStep >= state.totalSteps) {
+    return { ...state, currentStep: state.totalSteps, currentInstruction: '', isComplete: true };
   }
-}
-
-/**
- * Smart recipe search: local first, API fallback if enabled.
- */
-export async function smartRecipeSearch(
-  query: string,
-  useApi: boolean = false
-): Promise<RecipeResult[]> {
-  const local = searchLocalRecipes(query);
-  if (local.length > 0 || !useApi) return local;
-
-  const api = await fetchExternalRecipe(query);
-  return api ? [api] : local;
-}
-
-function localToResult(r: LocalRecipe): RecipeResult {
   return {
-    ...r,
-    source: 'local' as const,
-    cookTimeMin: r.cookTimeMin ?? 0,
+    ...state,
+    currentStep: nextStep,
+    currentInstruction: state.recipe.steps[nextStep],
   };
+}
+
+/* ═══════════════════════════════════════════════════════
+   VOICE FORMATTING
+   ═══════════════════════════════════════════════════════ */
+
+export function formatRecipeForVoice(recipe: LocalRecipe, detailed = false): string {
+  const totalTime = recipe.prepTimeMin + recipe.cookTimeMin;
+  let text = `${recipe.title}. ${recipe.description}. `;
+  text += `Temps de préparation : ${recipe.prepTimeMin} minutes. Temps de cuisson : ${recipe.cookTimeMin} minutes. Temps total : ${totalTime} minutes. `;
+  text += `Pour ${recipe.servings} personnes. Difficulté ${recipe.difficulty}.`;
+
+  if (detailed) {
+    text += ' Ingrédients : ';
+    text += recipe.ingredients.map((ing, i) => `${i + 1}. ${ing}`).join('. ');
+    text += '. Étapes : ';
+    text += recipe.steps.map((step, i) => `Étape ${i + 1}. ${step}`).join('. ');
+  }
+
+  return text;
+}
+
+export function formatStepForVoice(stepState: StepByStepRecipe): string {
+  if (stepState.isComplete) {
+    return `Félicitations ! Vous avez terminé la recette de ${stepState.recipe.title}. Bon appétit !`;
+  }
+  return `Étape ${stepState.currentStep + 1} sur ${stepState.totalSteps}. ${stepState.currentInstruction}`;
 }

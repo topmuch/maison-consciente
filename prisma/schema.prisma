@@ -75,6 +75,7 @@ model Household {
   voiceLogs           VoiceLog[]
   appointments        Appointment[]
   reminders           Reminder[]
+  knowledgeBase       KnowledgeBaseItem[]
   whatsappNumber      String?
   /* ═══ MEMORY & PREFERENCES (Maellis) ═══ */
   userPreferences     Json?     // { "musicGenre":"jazz", "zodiacSign":null, "dietaryRestrictions":[], "learningMode":true, "knownInterests":[] }
@@ -529,4 +530,22 @@ model Reminder {
   household       Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
   @@index([householdId, triggerAt(sort: Asc)])
+}
+
+/* ═══ BASE DE CONNAISSANCE (FAQ Assistant) ═══ */
+model KnowledgeBaseItem {
+  id          String   @id @default(uuid())
+  householdId String
+  question    String
+  answer      String
+  category    String                    // "TV", "WiFi", "Clim", "Cuisine", "Check-in", "Sécurité", "Machine à laver", etc.
+  room        String?                   // "Salon", "Chambre 1", "Cuisine", "SDB", etc.
+  keywords    String   @default("[]")   // JSON array: ["télé", "tv", "allumer", "marche pas"]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, category])
+  @@index([isActive])
 }

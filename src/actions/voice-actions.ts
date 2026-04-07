@@ -28,10 +28,9 @@ import {
 } from '@/lib/recipe-engine';
 import {
   getPreferences,
-  processPreferenceFromSpeech,
   suggestLearning,
-  setPreference,
-  recordAction,
+  recordQuery,
+  addInterest,
 } from '@/lib/memory-engine';
 import {
   getHoroscope,
@@ -102,7 +101,7 @@ export async function processVoiceCommand(
   }
 
   const command = parseVoiceCommand(processedText);
-  recordAction(command.intent, JSON.stringify(command.entities));
+  await recordQuery(householdId, `${command.intent} ${JSON.stringify(command.entities)}`);
 
   let prefs: Awaited<ReturnType<typeof getPreferences>>;
   try {
@@ -116,10 +115,13 @@ export async function processVoiceCommand(
   // Check for preference declarations first (like/dislike)
   if (command.intent === 'preference_like' || command.intent === 'preference_dislike') {
     try {
-      const result = await processPreferenceFromSpeech(householdId, processedText);
-      if (result.detected) {
-        return { message: result.message!, actionType: 'preference_updated' };
-      }
+      await addInterest(householdId, processedText);
+      return {
+        message: command.intent === 'preference_like'
+          ? 'Merci, je mémorise vos préférences !'
+          : 'Compris, je note que ça ne vous plaît pas.',
+        actionType: 'preference_updated',
+      };
     } catch {
       // Fall through to unknown handler
     }
@@ -891,10 +893,10 @@ async function handleUnknownWithLearning(
   text: string,
 ): Promise<VoiceActionResponse> {
   try {
-    const suggestion = await suggestLearning(householdId);
-    if (suggestion) {
+    const result = await suggestLearning(householdId, text);
+    if (result.suggestion) {
       return {
-        message: `Je ne comprends pas encore "${text}". ${suggestion}`,
+        message: `Je ne comprends pas encore "${text}". ${result.suggestion}`,
         actionType: 'learning_suggestion',
       };
     }

@@ -501,7 +501,7 @@ export default function TabletDisplayPage() {
             <div className="space-y-4 text-center">
               <h3 className="font-serif text-xl text-amber-200">Blague du jour</h3>
               <div className="text-5xl py-4">😂</div>
-              <p className="text-sm text-slate-200 leading-relaxed">{joke}</p>
+              <p className="text-sm text-slate-200 leading-relaxed">{joke.setup} ... {joke.punchline}</p>
             </div>
           );
           setActiveModal("joke");
