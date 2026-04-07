@@ -283,3 +283,21 @@ Work Log:
 Stage Summary:
 - Prisma schema updated with medication support
 - Health server actions ready for use
+
+---
+Task ID: airhome-landing-page
+Agent: main
+Task: Create the AirHome / Maellis immersive landing page on the homepage
+
+Work Log:
+- Created src/components/landing/airhome-page.tsx (~1150 lines) with 7 sections
+- Updated src/app/page.tsx to use AirHomePage instead of old LandingPage
+- Fixed lint errors: converted useMagneticButton hook to MagneticButton component
+- Fixed lint errors: converted useCountUp hook to StatCounter component
+- All lint errors in project source resolved (remaining 5 are in maison-consciente-ref/)
+- Dev server verified running, page compiles with 200 status
+
+Stage Summary:
+- AirHome landing page created with: Navbar, Hero (parallax+tablet mockup), Problem/Solution (interactive Before/After), Features Bento Grid (6 cards), Testimonials carousel + animated counters, Pricing (3 tiers), Footer CTA + scroll-to-top button
+- Design: Dark Luxe Futuriste with glassmorphism, amber/violet accents, Framer Motion animations
+- Fully responsive (mobile-first), no external images required

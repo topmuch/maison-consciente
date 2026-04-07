@@ -6,6 +6,7 @@ import { useAppStore } from '@/store/app-store';
 import { AppShell } from '@/components/layout/app-shell';
 import { AuthPage } from '@/components/auth/auth-page';
 import { LandingPage } from '@/components/landing/landing-page';
+import { AirHomePage } from '@/components/landing/airhome-page';
 import { Dashboard } from '@/components/dashboard/dashboard';
 import { ZoneManager } from '@/components/zones/zone-manager';
 import { ZoneDetail } from '@/components/zones/zone-detail';
@@ -251,7 +252,7 @@ export default function Home() {
   if (!isAuthenticated) {
     if (!showAuth) {
       return (
-        <LandingPage
+        <AirHomePage
           onShowAuth={() => setShowAuth(true)}
           onShowAuthType={(type) => {
             setPrefillType(type);
