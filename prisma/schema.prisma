@@ -68,6 +68,9 @@ model Household {
   voiceLogs           VoiceLog[]
   appointments        Appointment[]
   reminders           Reminder[]
+  whatsappNumber      String?
+  /* ═══ MEMORY & PREFERENCES (Maellis) ═══ */
+  userPreferences     Json?     // { "musicGenre":"jazz", "zodiacSign":null, "dietaryRestrictions":[], "learningMode":true, "knownInterests":[] }
   /* ═══ HOSPITALITY EXTENDED ═══ */
   googlePlaceId       String?
   googleRating        Float?

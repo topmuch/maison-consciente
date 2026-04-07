@@ -32,6 +32,10 @@ import { DisplaySettingsPanel } from '@/components/display/display-settings-pane
 import { VoiceSettingsPanel } from '@/components/voice/VoiceSettingsPanel';
 import { HospitalitySettingsPanel } from '@/components/hospitality/HospitalitySettingsPanel';
 import { NotificationSettingsPanel } from '@/components/notifications/NotificationSettingsPanel';
+import { VoiceSettingsPanel as ExtendedVoicePanel } from '@/components/settings/voice-settings-panel';
+import { NewsSettingsPanel } from '@/components/settings/news-settings-panel';
+import { PreferencesPanel } from '@/components/settings/preferences-panel';
+import { HospitalityExtendedPanel } from '@/components/settings/hospitality-extended-panel';
 import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -575,13 +579,63 @@ export function SettingsPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════
-         ACCENT COLOR SECTION
+         VOICE SETTINGS EXTENDED (Name, Wake Word, TTS, Language)
          ═══════════════════════════════════════════════════════════ */}
       <motion.div
         variants={fadeUp}
         initial="hidden"
         animate="visible"
         custom={7}
+      >
+        <ExtendedVoicePanel />
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════
+         NEWS SETTINGS (RSS Sources, Refresh Interval)
+         ═══════════════════════════════════════════════════════════ */}
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        custom={8}
+      >
+        <NewsSettingsPanel />
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════
+         MEMORY & PREFERENCES (Learned prefs, Manual overrides)
+         ═══════════════════════════════════════════════════════════ */}
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        custom={9}
+      >
+        <PreferencesPanel />
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════
+         HOSPITALITY EXTENDED (WhatsApp, Modules, Alerts, Calendar)
+         ═══════════════════════════════════════════════════════════ */}
+      {user?.role === 'admin' && (
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          custom={10}
+        >
+          <HospitalityExtendedPanel />
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════
+         ACCENT COLOR SECTION
+         ═══════════════════════════════════════════════════════════ */}
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        custom={11}
       >
         <Card className="glass rounded-2xl inner-glow border-white/[0.06] overflow-hidden">
           <CardContent className="p-6">
@@ -664,7 +718,7 @@ export function SettingsPage() {
         variants={fadeUp}
         initial="hidden"
         animate="visible"
-        custom={8}
+        custom={12}
       >
         <Card className="glass rounded-2xl inner-glow border-white/[0.06] overflow-hidden">
           <CardContent className="p-6">
@@ -725,7 +779,7 @@ export function SettingsPage() {
         variants={fadeUp}
         initial="hidden"
         animate="visible"
-        custom={9}
+        custom={13}
       >
         <Card className="glass rounded-2xl inner-glow border-white/[0.06] overflow-hidden">
           <CardContent className="p-6">
@@ -851,7 +905,7 @@ export function SettingsPage() {
         variants={fadeUp}
         initial="hidden"
         animate="visible"
-        custom={10}
+        custom={14}
       >
         <Card className="glass rounded-2xl inner-glow border-white/[0.06] overflow-hidden">
           <CardContent className="p-6">

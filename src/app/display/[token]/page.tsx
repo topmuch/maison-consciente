@@ -1,263 +1,241 @@
 "use client";
 
 /* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE — Tablet Display "Wahoo"
-   
-   Premium tablet interface with monumental clock,
-   phase-aware ambience, glassmorphism cards, and
-   oversized touch targets for 1m-distance interaction.
+   MAISON CONSCIENTE — Tablet Display Page (v2.0)
+
+   Luxury smart home interface for physical tablets.
+   Token-based auth, single column, dark luxe theme.
+
+   Sections:
+   1. Header — Clock, date, weather, Maellis branding
+   2. Notification Banner — Dismissible alerts
+   3. Quick Actions Grid — 2×3 buttons (Actualités, Recette, etc.)
+   4. News Ticker — Horizontal scrollable headlines
+   5. Voice Control — HybridVoiceControl component
+   6. Quick Access — WhatsApp, Rappels, POI
+   7. Footer — Maison Consciente · v2.0
    ═══════════════════════════════════════════════════════ */
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTimePhase } from "@/hooks/useTimePhase";
-import { useSeason } from "@/hooks/useSeason";
-import { useSeasonalAudio } from "@/hooks/useSeasonalAudio";
+import HybridVoiceControl from "@/components/voice/HybridVoiceControl";
+import { GlassCard } from "@/components/shared/glass-card";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { useVoiceCommand } from "@/hooks/useVoiceCommand";
-import { useTabletNotifications } from "@/hooks/useTabletNotifications";
-import { getDisplayData, toggleGroceryDisplay } from "@/actions/display";
-import { SleepProvider } from "@/components/tablet/SleepProvider";
-import DynamicBackground from "@/components/tablet/DynamicBackground";
-import SeasonalWrapper from "@/components/tablet/SeasonalWrapper";
-import EventOverlay from "@/components/tablet/EventOverlay";
-import { triggerHaptic } from "@/lib/haptic";
+import { useTimePhase } from "@/hooks/useTimePhase";
+import { LOCAL_RECIPES, FUN_FACTS, JOKES, QUOTES } from "@/lib/constants";
 import {
   Sun,
+  Cloud,
   CloudRain,
-  ShoppingCart,
-  MessageSquare,
+  CloudSnow,
+  CloudLightning,
+  Loader2,
+  Newspaper,
+  ChefHat,
+  CloudSun,
+  Sparkles,
+  Laugh,
+  Lightbulb,
   Phone,
-  Star,
+  Bell,
+  MapPin,
+  X,
+  RefreshCw,
   Wifi,
   WifiOff,
-  Loader2,
-  RefreshCw,
-  Send,
   Clock,
-  Cloud,
-  Snowflake,
-  CloudLightning,
-  CloudDrizzle,
-  CloudFog,
-  CloudSun,
-  Wind,
-  Volume2,
-  VolumeX,
-  Bell,
 } from "lucide-react";
-import LuxuryCard from "@/components/tablet/LuxuryCard";
-import LargeButton from "@/components/tablet/LargeButton";
-import CommandOrb from "@/components/voice/CommandOrb";
-import VoiceCommandToast from "@/components/voice/VoiceCommandToast";
 
 /* ═══════════════════════════════════════════════════════
    TYPES
    ═══════════════════════════════════════════════════════ */
 
-interface WeatherInfo {
-  temp: number;
-  condition: string;
-  icon: string;
-}
-
-interface MessageData {
-  id: string;
-  content: string;
-  createdAt: string;
-  sender: { name: string; email: string } | null;
-}
-
-interface GroceryData {
-  id: string;
-  name: string;
-  isBought: boolean;
-}
-
-interface DisplayState {
+interface HouseholdData {
   success: boolean;
   householdName: string;
-  weather: WeatherInfo | null;
-  groceries: GroceryData[];
-  messages: MessageData[];
-  presenceCount: number | null;
-  featuredRecipe: {
-    id: string;
-    title: string;
-    description: string;
-    prepTimeMin: number;
-    tags: string[];
-    imageUrl: string | null;
+  weather: {
+    current_weather: {
+      temperature: number;
+      weathercode: number;
+      windspeed: number;
+    };
   } | null;
+  config: {
+    widgets?: Record<string, boolean>;
+    guestMode?: {
+      maskPresence?: boolean;
+      maskMessages?: boolean;
+    };
+  };
+  whatsappNumber?: string;
+}
+
+interface NewsItem {
+  title: string;
+  source: string;
+  link?: string;
 }
 
 /* ═══════════════════════════════════════════════════════
-   WEATHER ICON MAPPER
+   CONSTANTS
    ═══════════════════════════════════════════════════════ */
 
-function getWeatherIcon(iconKey: string, className: string) {
-  const map: Record<string, React.ReactNode> = {
-    sun: <Sun className={className} />,
-    cloud: <Cloud className={className} />,
-    "cloud-sun": <CloudSun className={className} />,
-    "cloud-fog": <CloudFog className={className} />,
-    "cloud-drizzle": <CloudDrizzle className={className} />,
-    "cloud-rain": <CloudRain className={className} />,
-    "cloud-rain-wind": <CloudRain className={className} />,
-    snowflake: <Snowflake className={className} />,
-    "cloud-lightning": <CloudLightning className={className} />,
-  };
-  return map[iconKey] ?? <Cloud className={className} />;
+const QUICK_ACTIONS = [
+  { id: "news", icon: Newspaper, label: "Actualités", emoji: "📰", color: "text-cyan-400" },
+  { id: "recipe", icon: ChefHat, label: "Recette du jour", emoji: "🍽️", color: "text-amber-400" },
+  { id: "weather", icon: CloudSun, label: "Météo", emoji: "⛅", color: "text-sky-400" },
+  { id: "horoscope", icon: Sparkles, label: "Horoscope", emoji: "♈", color: "text-violet-400" },
+  { id: "joke", icon: Laugh, label: "Blague", emoji: "😂", color: "text-emerald-400" },
+  { id: "fact", icon: Lightbulb, label: "Le saviez-vous", emoji: "💡", color: "text-yellow-400" },
+] as const;
+
+const ZODIAC_SIGNS = [
+  "Bélier", "Taureau", "Gémeaux", "Cancer",
+  "Lion", "Vierge", "Balance", "Scorpion",
+  "Sagittaire", "Capricorne", "Verseau", "Poissons",
+];
+
+const HOROSCOPE_MESSAGES = [
+  "Les étoiles vous sourient aujourd'hui. Une journée propice aux nouvelles rencontres.",
+  "Vos projets avancent doucement mais sûrement. La patience est votre alliée.",
+  "Une énergie créative vous envahit. C'est le moment idéal pour exprimer vos talents.",
+  "La chance vous accompagne dans vos entreprises. Osez prendre des initiatives.",
+  "Un moment de calme s'annonce. Prenez soin de vous et de vos proches.",
+  "Les communications sont favorisées. C'est le bon jour pour clarifier les choses.",
+  "Votre intuition est particulièrement aiguisée. Écoutez votre voix intérieure.",
+];
+
+/* ═══════════════════════════════════════════════════════
+   WEATHER HELPERS
+   ═══════════════════════════════════════════════════════ */
+
+function weatherCodeToEmoji(code: number): string {
+  if (code <= 1) return "☀️";
+  if (code <= 3) return "⛅";
+  if (code <= 48) return "🌫️";
+  if (code <= 57) return "🌧️";
+  if (code <= 67) return "🌧️";
+  if (code <= 77) return "🌨️";
+  if (code <= 82) return "🌧️";
+  if (code >= 95) return "⛈️";
+  return "⛅";
+}
+
+function weatherCodeToDesc(code: number): string {
+  if (code <= 1) return "Ciel dégagé";
+  if (code <= 3) return code === 2 ? "Quelques nuages" : "Couvert";
+  if (code <= 48) return "Brouillard";
+  if (code <= 57) return "Bruine";
+  if (code <= 67) return code <= 61 ? "Pluie légère" : "Pluie";
+  if (code <= 77) return "Neige";
+  if (code <= 82) return "Averses";
+  if (code >= 95) return "Orage";
+  return "Conditions variables";
 }
 
 /* ═══════════════════════════════════════════════════════
    ANIMATION VARIANTS
    ═══════════════════════════════════════════════════════ */
 
-const fadeSlideIn = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  },
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.92 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  },
 };
 
 /* ═══════════════════════════════════════════════════════
-   MAIN DISPLAY PAGE
+   MAIN PAGE
    ═══════════════════════════════════════════════════════ */
 
-export default function DisplayPage() {
+// Inline weather icon rendering to avoid creating components during render
+function renderWeatherIcon(code: number, className: string) {
+  if (code <= 1) return <Sun className={className} />;
+  if (code <= 3) return <Cloud className={className} />;
+  if (code <= 57) return <CloudRain className={className} />;
+  if (code <= 77) return <CloudSnow className={className} />;
+  if (code >= 95) return <CloudLightning className={className} />;
+  return <CloudSun className={className} />;
+}
+
+export default function TabletDisplayPage() {
   const params = useParams();
   const token = params.token as string;
 
   /* ─── State ─── */
-  const [data, setData] = useState<DisplayState | null>(null);
+  const [household, setHousehold] = useState<HouseholdData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [clock, setClock] = useState<Date | null>(null);
-  const [online, setOnline] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [messageInput, setMessageInput] = useState("");
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastType, setToastType] = useState<'listening' | 'success' | 'error' | 'info'>('info');
-  const [toastMessage, setToastMessage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [weather, setWeather] = useState<{
+    temp: number;
+    code: number;
+    desc: string;
+    emoji: string;
+  } | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+  const [notifications, setNotifications] = useState<
+    { id: string; message: string }[]
+  >([]);
+  const [online, setOnline] = useState(() => navigator.onLine);
+  const [tickerOffset, setTickerOffset] = useState(0);
 
-  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tickerRef = useRef<HTMLDivElement>(null);
+  const fetchTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* ─── Hooks ─── */
   const { phase } = useTimePhase();
-  const { season } = useSeason();
-  const { isPlaying, trackLabel, toggle: toggleAudio, setVolume: setAudioVolume } = useSeasonalAudio(season, true);
 
-  /* ─── Proactive Notifications Hook ─── */
-  const { hasPending: notifHasPending, lastMessage: notifMessage } = useTabletNotifications(token);
-
-  /* ─── Voice Command Hook (enhanced) ─── */
-  // Stable ref for voice result handler (avoids re-creating hook on every render)
-  const voiceResultRef = useRef<(result: { success: boolean; message: string; data?: Record<string, unknown> }) => void>();
-  voiceResultRef.current = (result) => {
-    const intent = (result.data?.intent as string) ?? '';
-
-    // system_stop: already handled by hook (TTS stopped internally), just dismiss toast
-    if (intent === 'system_stop') {
-      setToastVisible(false);
-      return;
-    }
-
-    // now_playing: report current audio state
-    if (intent === 'now_playing') {
-      const msg = isPlaying
-        ? `En écoute : ${trackLabel || 'Ambiance sonore'}`
-        : 'Aucune musique en cours de lecture';
-      voice.speak(msg);
-      setToastVisible(true);
-      setToastType('info');
-      setToastMessage(msg);
-      return;
-    }
-
-    // volume_control: adjust ambient volume
-    if (intent === 'volume_control') {
-      const direction = (result.data?.payload as Record<string, string>)?.direction ?? 'up';
-      const currentVol = 0.3;
-      const newVol = direction === 'up'
-        ? Math.min(currentVol + 0.1, 1.0)
-        : Math.max(currentVol - 0.1, 0.0);
-      setAudioVolume(newVol);
-      const msg = direction === 'up' ? 'Volume augmenté' : 'Volume baissé';
-      voice.speak(msg);
-      setToastVisible(true);
-      setToastType('success');
-      setToastMessage(msg);
-      return;
-    }
-
-    // playback_control: play or stop ambient audio
-    if (intent === 'playback_control') {
-      const action = (result.data?.payload as Record<string, string>)?.action ?? 'toggle';
-      if (action === 'stop') {
-        if (isPlaying) toggleAudio();
-        voice.speak('Musique arrêtée');
-        setToastVisible(true);
-        setToastType('info');
-        setToastMessage('Ambiance sonore coupée');
-      } else {
-        if (!isPlaying) toggleAudio();
-        voice.speak('Musique lancée');
-        setToastVisible(true);
-        setToastType('success');
-        setToastMessage('Ambiance sonore activée');
-      }
-      return;
-    }
-
-    // Standard result: speak message, show toast
-    if (result.success && result.message) {
-      voice.speak(result.message);
-    }
-    setToastVisible(true);
-    setToastType(result.success ? 'success' : 'error');
-    setToastMessage(result.message);
-
-    // Refresh data for server-side mutations (grocery, reminder, mode changes)
-    if (['add_grocery', 'add_reminder', 'mode_night', 'mode_morning', 'mode_day', 'open_guide'].includes(intent)) {
-      fetchDisplayData();
-    }
-  };
-
+  /* ─── Voice Hook ─── */
   const voice = useVoiceCommand({
-    enabled: online,
+    enabled: online && !!token,
     displayToken: token,
-    onCommandResult: (result) => voiceResultRef.current?.(result),
+    onCommandResult: (result) => {
+      if (result.success && result.message) {
+        voice.speak(result.message);
+      }
+    },
   });
 
-  // Show listening toast when wake word detected
+  /* ─── Clock (1s tick) ─── */
   useEffect(() => {
-    if (voice.state === 'waiting_command') {
-      setToastVisible(true);
-      setToastType('listening');
-      setToastMessage('Je vous écoute…');
-    } else if (voice.state === 'idle' || voice.state === 'listening') {
-      if (toastType === 'listening') {
-        setToastVisible(false);
-      }
-    }
-  }, [voice.state, toastType]);
-
-  /* ─── Clock (1s) — deferred to client to avoid hydration mismatch ─── */
-  useEffect(() => {
-    setClock(new Date());
-    const timer = setInterval(() => setClock(new Date()), 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   /* ─── Online / Offline ─── */
   useEffect(() => {
-    setOnline(navigator.onLine);
     const goOnline = () => setOnline(true);
-    const goOffline = () => {
-      setOnline(false);
-      eventSourceRef.current?.close();
-    };
+    const goOffline = () => setOnline(false);
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
     return () => {
@@ -266,497 +244,737 @@ export default function DisplayPage() {
     };
   }, []);
 
-  /* ─── Wake Lock ─── */
-  const requestWakeLock = useCallback(async () => {
-    if (!("wakeLock" in navigator)) return;
+  /* ─── Fetch household data ─── */
+  const fetchHouseholdData = useCallback(async () => {
     try {
-      if (wakeLockRef.current?.released) wakeLockRef.current = null;
-      if (!wakeLockRef.current) {
-        wakeLockRef.current = await navigator.wakeLock.request("screen");
-        wakeLockRef.current.addEventListener("release", () => {
-          wakeLockRef.current = null;
+      const res = await fetch(`/api/display/${token}`);
+      if (!res.ok) {
+        setError("Affichage désactivé ou token invalide");
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.error || "Token invalide");
+        setLoading(false);
+        return;
+      }
+      setHousehold(data);
+
+      // Parse weather
+      if (data.weather?.current_weather) {
+        const cw = data.weather.current_weather;
+        setWeather({
+          temp: Math.round(cw.temperature),
+          code: cw.weathercode,
+          desc: weatherCodeToDesc(cw.weathercode),
+          emoji: weatherCodeToEmoji(cw.weathercode),
         });
       }
-    } catch {
-      /* Silently fail */
-    }
-  }, []);
 
-  useEffect(() => {
-    requestWakeLock();
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") requestWakeLock();
-    };
-    const handleInteraction = () => {
-      requestWakeLock();
-      document.removeEventListener("click", handleInteraction);
-      document.removeEventListener("touchstart", handleInteraction);
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-    document.addEventListener("click", handleInteraction);
-    document.addEventListener("touchstart", handleInteraction);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-      document.removeEventListener("click", handleInteraction);
-      document.removeEventListener("touchstart", handleInteraction);
-      wakeLockRef.current?.release();
-    };
-  }, [requestWakeLock]);
-
-  /* ─── Fetch Data (Server Action) ─── */
-  const fetchDisplayData = useCallback(async () => {
-    try {
-      setRefreshing(true);
-      const result = await getDisplayData(token);
-      if (result.success) {
-        setData(result as DisplayState);
-      }
-    } catch {
-      /* Silent fallback */
-    } finally {
       setLoading(false);
-      setRefreshing(false);
+    } catch {
+      setError("Erreur de connexion au serveur");
+      setLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
-    fetchDisplayData();
-  }, [fetchDisplayData]);
-
-  /* ─── SSE Real-time ─── */
-  useEffect(() => {
-    if (!token || !online) return;
-
-    const connect = () => {
-      const es = new EventSource(`/api/display/${token}/stream`);
-      eventSourceRef.current = es;
-
-      es.addEventListener("connected", () => {
-        /* SSE connected */
-      });
-      es.addEventListener("messages", () => fetchDisplayData());
-      es.addEventListener("groceries", () => fetchDisplayData());
-      es.addEventListener("ping", () => {
-        /* Heartbeat */
-      });
-
-      es.onerror = () => {
-        es.close();
-        reconnectTimerRef.current = setTimeout(() => {
-          reconnectTimerRef.current = null;
-          if (navigator.onLine) connect();
-        }, 3000);
-      };
-    };
-
-    connect();
+    // Defer first fetch to avoid setState-in-effect
+    const timeout = setTimeout(fetchHouseholdData, 0);
+    // Refresh every 5 minutes
+    fetchTimerRef.current = setInterval(fetchHouseholdData, 300_000);
     return () => {
-      eventSourceRef.current?.close();
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
+      clearTimeout(timeout);
+      if (fetchTimerRef.current) clearInterval(fetchTimerRef.current);
     };
-  }, [token, online, fetchDisplayData]);
+  }, [fetchHouseholdData]);
 
-  /* ─── Toggle Grocery ─── */
-  const handleToggleGrocery = async (itemId: string) => {
+  /* ─── Fetch news (RSS proxy) ─── */
+  const fetchNews = useCallback(async () => {
     try {
-      await toggleGroceryDisplay(token, itemId);
-      fetchDisplayData();
+      const res = await fetch("/api/enrichment?XTransformPort=3000");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.news?.items) {
+        setNews(
+          data.news.items.slice(0, 5).map((item: { title: string; source?: string; link?: string }) => ({
+            title: item.title,
+            source: item.source || "Actualités",
+            link: item.link,
+          }))
+        );
+      }
     } catch {
-      /* Offline fallback — optimistic UI update */
-      setData((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          groceries: prev.groceries.map((g) =>
-            g.id === itemId ? { ...g, isBought: !g.isBought } : g,
-          ),
-        };
-      });
+      // Silently fail — news is optional
     }
-  };
+  }, []);
 
-  /* ─── Derived values ─── */
-  const groceriesCount = data?.groceries?.filter((g) => !g.isBought).length ?? 0;
-  const messagesCount = data?.messages?.length ?? 0;
+  useEffect(() => {
+    // Defer first fetch to avoid setState-in-effect
+    const timeout = setTimeout(fetchNews, 0);
+    const timer = setInterval(fetchNews, 600_000); // refresh every 10 min
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(timer);
+    };
+  }, [fetchNews]);
+
+  /* ─── Wake Lock ─── */
+  useEffect(() => {
+    let wakeLock: WakeLockSentinel | null = null;
+    const request = async () => {
+      if (!("wakeLock" in navigator)) return;
+      try {
+        wakeLock = await navigator.wakeLock.request("screen");
+      } catch { /* silent */ }
+    };
+    request();
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") request();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      wakeLock?.release();
+    };
+  }, []);
+
+  /* ─── News ticker auto-scroll ─── */
+  useEffect(() => {
+    if (news.length === 0) return;
+    const interval = setInterval(() => {
+      setTickerOffset((prev) => {
+        if (prev >= news.length) return 0;
+        return prev + 1;
+      });
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [news.length]);
+
+  /* ═══════════════════════════════════════════════════════
+     QUICK ACTION HANDLERS
+     ═══════════════════════════════════════════════════════ */
+
+  const handleQuickAction = useCallback(
+    (actionId: string) => {
+      switch (actionId) {
+        case "news": {
+          if (news.length === 0) {
+            setModalContent(
+              <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                <Newspaper className="w-10 h-10 mb-3 opacity-40" />
+                <p className="text-sm">Aucune actualité disponible</p>
+              </div>
+            );
+          } else {
+            setModalContent(
+              <div className="space-y-4">
+                <h3 className="font-serif text-xl text-amber-200">Dernières actualités</h3>
+                <div className="space-y-3">
+                  {news.map((item, i) => (
+                    <div key={i} className="glass rounded-xl p-4 border border-white/5">
+                      <p className="text-sm text-slate-200 leading-relaxed">{item.title}</p>
+                      <p className="text-xs text-slate-500 mt-2">{item.source}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+          setActiveModal("news");
+          break;
+        }
+
+        case "recipe": {
+          const recipe = LOCAL_RECIPES[Math.floor(Math.random() * LOCAL_RECIPES.length)];
+          setModalContent(
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-serif text-xl text-amber-200">{recipe.title}</h3>
+                <span className="text-xs px-2 py-1 rounded-full glass text-amber-400/80">
+                  {recipe.difficulty}
+                </span>
+              </div>
+              <p className="text-sm text-slate-300">{recipe.description}</p>
+              <div className="flex gap-4 text-xs text-slate-400">
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {recipe.prepTimeMin + recipe.cookTimeMin} min
+                </span>
+                <span>👥 {recipe.servings} pers.</span>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-amber-400/70 uppercase tracking-wider mb-2">
+                  Ingrédients
+                </h4>
+                <ul className="space-y-1">
+                  {recipe.ingredients.slice(0, 8).map((ing, i) => (
+                    <li key={i} className="text-sm text-slate-300 flex items-start gap-2">
+                      <span className="text-amber-400/50 mt-1">•</span>
+                      {ing}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-amber-400/70 uppercase tracking-wider mb-2">
+                  Préparation
+                </h4>
+                <ol className="space-y-1.5">
+                  {recipe.steps.map((step, i) => (
+                    <li key={i} className="text-sm text-slate-300 flex gap-2">
+                      <span className="text-amber-400/60 font-mono text-xs shrink-0 mt-0.5">
+                        {i + 1}.
+                      </span>
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-2">
+                {recipe.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400/70"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+          setActiveModal("recipe");
+          break;
+        }
+
+        case "weather": {
+          setModalContent(
+            <div className="space-y-4">
+              <h3 className="font-serif text-xl text-amber-200">Météo</h3>
+              {weather ? (
+                <div className="flex flex-col items-center gap-4 py-4">
+                  <span className="text-6xl">{weather.emoji}</span>
+                  <div className="text-center">
+                    <p className="text-4xl font-serif text-amber-200">{weather.temp}°C</p>
+                    <p className="text-sm text-slate-400 mt-1">{weather.desc}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center py-8 text-slate-400">
+                  <CloudSun className="w-10 h-10 mb-3 opacity-40" />
+                  <p className="text-sm">Données météo non disponibles</p>
+                </div>
+              )}
+              <div className="text-xs text-slate-500 text-center">
+                Données fournies par Open-Meteo
+              </div>
+            </div>
+          );
+          setActiveModal("weather");
+          break;
+        }
+
+        case "horoscope": {
+          const sign = ZODIAC_SIGNS[Math.floor(Math.random() * ZODIAC_SIGNS.length)];
+          const message = HOROSCOPE_MESSAGES[Math.floor(Math.random() * HOROSCOPE_MESSAGES.length)];
+          setModalContent(
+            <div className="space-y-4 text-center">
+              <h3 className="font-serif text-xl text-amber-200">Horoscope</h3>
+              <div className="text-5xl py-4">♈</div>
+              <p className="text-lg font-serif text-amber-300">{sign}</p>
+              <p className="text-sm text-slate-300 leading-relaxed mt-2">{message}</p>
+              <p className="text-xs text-slate-500 mt-4">
+                Message inspiré — pour le divertissement uniquement
+              </p>
+            </div>
+          );
+          setActiveModal("horoscope");
+          break;
+        }
+
+        case "joke": {
+          const joke = JOKES[Math.floor(Math.random() * JOKES.length)];
+          setModalContent(
+            <div className="space-y-4 text-center">
+              <h3 className="font-serif text-xl text-amber-200">Blague du jour</h3>
+              <div className="text-5xl py-4">😂</div>
+              <p className="text-sm text-slate-200 leading-relaxed">{joke}</p>
+            </div>
+          );
+          setActiveModal("joke");
+          break;
+        }
+
+        case "fact": {
+          const fact = FUN_FACTS[Math.floor(Math.random() * FUN_FACTS.length)];
+          setModalContent(
+            <div className="space-y-4 text-center">
+              <h3 className="font-serif text-xl text-amber-200">Le saviez-vous ?</h3>
+              <div className="text-5xl py-4">💡</div>
+              <p className="text-sm text-slate-200 leading-relaxed">{fact}</p>
+            </div>
+          );
+          setActiveModal("fact");
+          break;
+        }
+      }
+    },
+    [news, weather]
+  );
 
   /* ═══════════════════════════════════════════════════════
      RENDER — LOADING
      ═══════════════════════════════════════════════════════ */
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-amber-400">
-        <Loader2 className="animate-spin w-12 h-12 mb-4" />
-        <p className="text-xl font-light">Connexion à la maison…</p>
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center text-amber-400 gap-4">
+        <Loader2 className="animate-spin w-12 h-12" />
+        <p className="text-xl font-serif font-light">Connexion à la maison…</p>
       </div>
     );
   }
 
-  const weatherCondition = data?.weather?.condition ?? "";
-  const isRainy =
-    weatherCondition.includes("pluie") ||
-    weatherCondition.includes("Bruine") ||
-    weatherCondition.includes("Averse");
-  const isCloudy =
-    weatherCondition.includes("nuage") ||
-    weatherCondition.includes("Couvert") ||
-    weatherCondition.includes("Brouillard");
-  const isSnowy = weatherCondition.includes("Neige") || weatherCondition.includes("Grésil");
-  const isStormy = weatherCondition.includes("Orage");
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center text-red-400 gap-4 px-6">
+        <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <X className="w-8 h-8" />
+        </div>
+        <p className="text-xl font-serif">{error}</p>
+        <p className="text-sm text-slate-500">
+          Vérifiez le lien d&apos;affichage ou contactez l&apos;administrateur
+        </p>
+        <button
+          onClick={fetchHouseholdData}
+          className="mt-4 px-6 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm hover:bg-red-500/20 transition-colors min-h-[48px]"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
+  /* ─── Derived ─── */
+  const timeStr = currentTime.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const dateStr = currentTime.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  // Render weather icon (use code directly to avoid creating component during render)
+  const weatherIconCode = weather?.code ?? 2;
+
+  /* ═══════════════════════════════════════════════════════
+     RENDER — MAIN
+     ═══════════════════════════════════════════════════════ */
 
   return (
-    <SleepProvider timeoutMs={120_000}>
-      <SeasonalWrapper manualSeason={season}>
-      <div className="relative min-h-screen w-screen overflow-hidden bg-slate-950 text-white select-none touch-manipulation">
-        {/* ═══ Event Overlay ═══ */}
-        <EventOverlay token={token} />
-        {/* ═══ Dynamic Background ═══ */}
-        <DynamicBackground
-          weatherCondition={weatherCondition}
-          phase={phase.phase}
-        />
+    <div className="min-h-screen bg-[#020617] text-white relative overflow-hidden">
+      {/* Ambient glow orbs */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-amber-500/[0.04] rounded-full blur-[140px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-violet-500/[0.03] rounded-full blur-[120px]" />
+      </div>
 
-        {/* ═══ Ambient Halos ═══ */}
-        <div className="absolute inset-0 pointer-events-none z-[1]">
-          <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-amber-500/5 rounded-full blur-[140px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-indigo-500/5 rounded-full blur-[120px]" />
-        </div>
-
-        <div className="relative z-10 p-6 md:p-10 h-screen flex flex-col">
-        {/* ═══ MONUMENTAL HEADER ═══ */}
+      <div className="relative z-10 max-w-2xl mx-auto px-4 md:px-6 pb-8">
+        {/* ═══════════════════════════════════════════
+            1. HEADER
+            ═══════════════════════════════════════════ */}
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/10 pb-6"
+          className="pt-8 pb-6 border-b border-white/[0.06]"
         >
-          {/* Left: Clock + Greeting */}
-          <div>
-            <h1 className="text-7xl md:text-9xl font-serif font-light text-amber-100 tracking-tight leading-none tabular-nums">
-              {clock?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </h1>
-            <p className="text-2xl md:text-3xl text-slate-300 mt-2 font-light">
-              {phase.greeting} •{" "}
-              {clock?.toLocaleDateString("fr-FR", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
-            </p>
+          {/* Top row: Clock + Status */}
+          <div className="flex items-start justify-between">
+            {/* Clock + Greeting */}
+            <div>
+              <h1 className="text-7xl md:text-8xl font-serif font-light text-amber-100 tracking-tight leading-none tabular-nums">
+                {timeStr}
+              </h1>
+              <p className="text-base md:text-lg text-slate-400 mt-2 font-light">
+                {phase.greeting} &middot;{" "}
+                <span className="capitalize">{dateStr}</span>
+              </p>
+            </div>
+
+            {/* Status indicators */}
+            <div className="flex items-center gap-2 mt-1">
+              {/* Online indicator */}
+              <motion.div
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${
+                  online
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                    : "bg-red-500/10 text-red-400 border-red-500/20"
+                }`}
+              >
+                {online ? (
+                  <Wifi className="w-3 h-3" />
+                ) : (
+                  <WifiOff className="w-3 h-3" />
+                )}
+              </motion.div>
+
+              {/* Refresh */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={fetchHouseholdData}
+                className="p-2.5 rounded-full bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="Rafraîchir"
+              >
+                <RefreshCw className="w-4 h-4 text-slate-400" />
+              </motion.button>
+            </div>
           </div>
 
-          {/* Right: Weather + Network */}
-          <div className="flex items-center gap-6 mt-4 md:mt-0">
+          {/* Weather + Branding row */}
+          <div className="flex items-center justify-between mt-5">
             {/* Weather */}
-            {data?.weather && (
-              <div className="text-right">
-                <div className="flex items-center gap-3 justify-end">
-                  {isRainy || isStormy ? (
-                    <CloudRain className="text-indigo-300 w-8 h-8" />
-                  ) : isSnowy ? (
-                    <Snowflake className="text-blue-200 w-8 h-8" />
-                  ) : isCloudy ? (
-                    <Cloud className="text-slate-400 w-8 h-8" />
-                  ) : (
-                    <Sun className="text-amber-300 w-8 h-8" />
-                  )}
-                  <span className="text-4xl font-light text-amber-400">
-                    {data.weather.temp}°C
-                  </span>
+            {weather && (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                  {renderWeatherIcon(weatherIconCode, "w-5 h-5 text-amber-400")}
                 </div>
-                <p className="text-sm text-slate-400 mt-1">
-                  {data.weather.condition}
-                </p>
+                <div>
+                  <p className="text-xl font-serif text-amber-200">{weather.temp}°C</p>
+                  <p className="text-xs text-slate-500">{weather.desc}</p>
+                </div>
               </div>
             )}
 
-            {/* Notification Indicator */}
-            <AnimatePresence>
-              {notifHasPending && notifMessage && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border bg-amber-500/10 text-amber-400 border-amber-500/30 flex items-center gap-1.5"
-                >
-                  <Bell className="w-3 h-3" />
-                  <span className="hidden sm:inline">Notification</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Network Status */}
-            <div
-              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border ${
-                online
-                  ? "bg-green-500/10 text-green-400 border-green-500/30"
-                  : "bg-red-500/10 text-red-400 border-red-500/30"
-              }`}
+            {/* Maellis branding */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="flex items-center gap-2"
             >
-              {online ? (
-                <Wifi className="inline w-3 h-3 mr-1" />
-              ) : (
-                <WifiOff className="inline w-3 h-3 mr-1" />
-              )}
-              {online ? "En ligne" : "Hors ligne"}
-            </div>
+              <motion.span
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                className="text-amber-400/40 text-sm"
+              >
+                ◆
+              </motion.span>
+              <span className="font-serif text-gradient-gold text-lg tracking-wider">
+                Maellis
+              </span>
+              <motion.span
+                animate={{ rotate: [360, 0] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                className="text-amber-400/40 text-sm"
+              >
+                ◆
+              </motion.span>
+            </motion.div>
 
-            {/* Refresh */}
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                triggerHaptic("light");
-                fetchDisplayData();
-              }}
-              className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-              title="Rafraîchir"
-            >
-              <RefreshCw
-                className={`w-4 h-4 text-slate-400 ${refreshing ? "animate-spin" : ""}`}
-              />
-            </motion.button>
+            {/* Household name */}
+            {household?.householdName && (
+              <p className="text-xs text-slate-600 font-serif">
+                {household.householdName}
+              </p>
+            )}
           </div>
         </motion.header>
 
-        {/* ═══ MAIN GRID ═══ */}
-        <main className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 pb-8">
-          {/* ─── 1. COURSES CARD ─── */}
-          <LuxuryCard
-            title="🛒 Courses"
-            subtitle={`${groceriesCount} article${groceriesCount !== 1 ? "s" : ""} à prendre`}
-            accent="amber"
-          >
-            <div className="flex-1 space-y-3 overflow-y-auto pr-2 custom-scrollbar max-h-64">
-              {data?.groceries && data.groceries.length > 0 ? (
-                data.groceries.slice(0, 6).map((g) => (
-                  <motion.button
-                    key={g.id}
-                    whileTap={{ scale: 0.98 }}
-                          onClick={() => {
-                      triggerHaptic("light");
-                      handleToggleGrocery(g.id);
-                    }}
-                    className={`w-full p-4 rounded-2xl border flex items-center justify-between transition-all ${
-                      g.isBought
-                        ? "bg-white/5 border-white/10 opacity-50"
-                        : "bg-black/20 border-white/10 hover:border-amber-500/40 active:bg-white/10"
-                    }`}
-                  >
-                    <span
-                      className={`text-xl text-left ${g.isBought ? "line-through text-slate-500" : "text-amber-100"}`}
-                    >
-                      {g.name}
-                    </span>
-                    <div
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                        g.isBought
-                          ? "bg-green-500/20 border-green-500 text-green-400"
-                          : "border-white/30"
-                      }`}
-                    >
-                      {g.isBought && <span className="text-lg">✓</span>}
-                    </div>
-                  </motion.button>
-                ))
-              ) : (
-                <p className="text-slate-500 text-lg italic text-center py-4">
-                  Liste de courses vide
-                </p>
-              )}
-            </div>
-            {data?.groceries && data.groceries.length > 6 && (
-              <p className="text-slate-400 text-sm mt-2 text-center">
-                + {data.groceries.length - 6} autres
-              </p>
-            )}
-          </LuxuryCard>
-
-          {/* ─── 2. MESSAGES CARD ─── */}
-          <LuxuryCard
-            title="💬 Messages"
-            subtitle={`${messagesCount} nouveau${messagesCount !== 1 ? "x" : ""}`}
-            accent="indigo"
-          >
-            <div className="flex-1 space-y-3 overflow-y-auto pr-2 custom-scrollbar max-h-52">
-              <AnimatePresence mode="popLayout">
-                {data?.messages && data.messages.length > 0 ? (
-                  data.messages.slice(0, 4).map((m) => (
-                    <motion.div
-                      key={m.id}
-                      variants={fadeSlideIn}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      layout
-                      className="p-4 bg-black/20 rounded-2xl border border-white/10"
-                    >
-                      <p className="text-xl text-slate-200 leading-relaxed">
-                        &ldquo;{m.content}&rdquo;
-                      </p>
-                      <p className="text-xs text-slate-500 mt-2">
-                        {m.sender?.name || m.sender?.email || "Inconnu"} •{" "}
-                        {new Date(m.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </motion.div>
-                  ))
-                ) : (
-                  <p className="text-slate-500 text-lg italic text-center py-4">
-                    Aucun message pour le moment
-                  </p>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Message Input */}
-            <div className="flex gap-2 mt-3">
-              <input
-                type="text"
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && messageInput.trim()) {
-                    triggerHaptic("success");
-                    fetch(
-                      `/api/display/${token}/action?XTransformPort=3000`,
-                      {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          action: "add-message",
-                          content: messageInput.trim(),
-                        }),
-                      },
-                    ).then(() => {
-                      setMessageInput("");
-                      fetchDisplayData();
-                    });
-                  }
-                }}
-                placeholder="Écrire un message…"
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-base
-                           text-amber-100 placeholder:text-slate-500 outline-none
-                           focus:border-amber-400/30 transition-all"
-              />
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  if (!messageInput.trim()) return;
-                  triggerHaptic("success");
-                  fetch(
-                    `/api/display/${token}/action?XTransformPort=3000`,
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        action: "add-message",
-                        content: messageInput.trim(),
-                      }),
-                    },
-                  ).then(() => {
-                    setMessageInput("");
-                    fetchDisplayData();
-                  });
-                }}
-                disabled={!messageInput.trim()}
-                className="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/20
-                           flex items-center justify-center transition-all
-                           hover:bg-amber-400/20 disabled:opacity-30 disabled:pointer-events-none"
-              >
-                <Send className="w-4 h-4 text-amber-400" />
-              </motion.button>
-            </div>
-          </LuxuryCard>
-
-          {/* ─── 3. ACTION BUTTONS + PHASE INFO ─── */}
-          <div className="space-y-6">
-            <LargeButton
-              icon={<Phone className="w-10 h-10" />}
-              label="Contacter l&apos;hôte"
-              sublabel="Urgence, ménage, question"
-              gradient="from-rose-900/40 to-rose-800/20"
-              onClick={() => {
-                triggerHaptic("medium");
-                voice.speak("Ouverture du formulaire de contact");
-              }}
-            />
-
-            <LargeButton
-              icon={<Star className="w-10 h-10" />}
-              label="Laisser un avis"
-              sublabel="Feedback & checkout"
-              gradient="from-amber-900/40 to-amber-800/20"
-              onClick={() => {
-                triggerHaptic("medium");
-                voice.speak("Merci pour votre feedback");
-              }}
-            />
-
-            {/* Phase Info Card */}
+        {/* ═══════════════════════════════════════════
+            2. NOTIFICATION BANNER
+            ═══════════════════════════════════════════ */}
+        <AnimatePresence>
+          {notifications.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 text-center"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
             >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-slate-400" />
-                <p className="text-lg text-slate-400">Mode {phase.label}</p>
+              <div className="py-3">
+                {notifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    className="glass-gold rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-amber-400 shrink-0" />
+                      <p className="text-sm text-amber-100">{notif.message}</p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setNotifications((prev) =>
+                          prev.filter((n) => n.id !== notif.id)
+                        )
+                      }
+                      className="p-1 rounded-lg hover:bg-white/10 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      aria-label="Fermer"
+                    >
+                      <X className="w-3.5 h-3.5 text-slate-400" />
+                    </button>
+                  </div>
+                ))}
               </div>
-              <p className="text-sm text-slate-500">{phase.message}</p>
-              {data?.householdName && (
-                <p className="text-xs text-slate-600 mt-3 font-serif">
-                  {data.householdName}
-                </p>
-              )}
             </motion.div>
-          </div>
-        </main>
-        </div>
-
-        {/* ═══ COMMAND ORB (Floating) ═══ */}
-        <div className="fixed bottom-8 right-8 z-[100]">
-          <CommandOrb
-            state={voice.state}
-            onClick={voice.startListening}
-            transcript={voice.transcript}
-            size="lg"
-          />
-        </div>
-        {/* ═══ VOICE COMMAND TOAST ═══ */}
-        <VoiceCommandToast
-          visible={toastVisible}
-          type={toastType as 'listening' | 'success' | 'error' | 'info'}
-          message={toastMessage}
-          onClose={() => setToastVisible(false)}
-        />
-        {/* ═══ SEASONAL AUDIO TOGGLE ═══ */}
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => {
-            triggerHaptic("light");
-            toggleAudio();
-          }}
-          className="fixed bottom-8 left-8 z-[100] flex items-center gap-3 px-5 py-3
-                     bg-white/5 backdrop-blur-xl rounded-full border border-white/10
-                     hover:bg-white/10 transition-all text-sm"
-          aria-label={isPlaying ? "Couper l'ambiance sonore" : "Activer l'ambiance sonore"}
-        >
-          {isPlaying ? (
-            <Volume2 className="w-4 h-4 text-amber-400" />
-          ) : (
-            <VolumeX className="w-4 h-4 text-slate-400" />
           )}
-          <span className={`max-w-[180px] truncate ${isPlaying ? "text-amber-200" : "text-slate-400"}`}>
-            {isPlaying && trackLabel ? trackLabel : "Ambiance"}
-          </span>
-        </motion.button>
+        </AnimatePresence>
+
+        {/* ═══════════════════════════════════════════
+            3. QUICK ACTIONS GRID (2×3)
+            ═══════════════════════════════════════════ */}
+        <motion.section
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="py-8"
+        >
+          <motion.h2
+            variants={fadeUp}
+            className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-5"
+          >
+            Accès rapide
+          </motion.h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {QUICK_ACTIONS.map((action) => (
+              <motion.button
+                key={action.id}
+                variants={scaleIn}
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03, transition: { duration: 0.15 } }}
+                onClick={() => handleQuickAction(action.id)}
+                className="group flex flex-col items-center justify-center gap-3 p-5 md:p-6 rounded-2xl glass hover:bg-white/[0.06] transition-all cursor-pointer min-h-[120px]"
+              >
+                <span className="text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-200">
+                  {action.emoji}
+                </span>
+                <span className="text-xs md:text-sm font-medium text-slate-300 group-hover:text-amber-200 transition-colors text-center">
+                  {action.label}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ═══════════════════════════════════════════
+            4. NEWS TICKER
+            ═══════════════════════════════════════════ */}
+        {news.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+            className="pb-6"
+          >
+            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">
+              Actualités
+            </h2>
+            <div className="relative overflow-hidden rounded-2xl glass py-3 px-4">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={tickerOffset}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-3"
+                >
+                  <span className="text-xs font-bold text-amber-400/70 shrink-0">
+                    {String(tickerOffset + 1).padStart(2, "0")}
+                  </span>
+                  <p className="text-sm text-slate-300 leading-relaxed line-clamp-1">
+                    {news[tickerOffset]?.title}
+                  </p>
+                  <span className="text-xs text-slate-600 shrink-0 ml-auto">
+                    {news[tickerOffset]?.source}
+                  </span>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Ticker dots */}
+              <div className="flex items-center justify-center gap-1.5 mt-3">
+                {news.slice(0, 5).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setTickerOffset(i)}
+                    className={`h-1 rounded-full transition-all duration-300 min-w-[24px] min-h-[12px] ${
+                      i === tickerOffset
+                        ? "bg-amber-400 w-6"
+                        : "bg-white/10 w-2 hover:bg-white/20"
+                    }`}
+                    aria-label={`Actualité ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            5. VOICE CONTROL SECTION
+            ═══════════════════════════════════════════ */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="py-8"
+        >
+          <div className="divider-gold mb-8" />
+          <HybridVoiceControl
+            state={voice.isSpeaking ? "speaking" : voice.state}
+            transcript={voice.transcript}
+            lastResponse={voice.lastResponse}
+            isSpeaking={voice.isSpeaking}
+            isMuted={voice.isMuted}
+            onStartListening={voice.startListening}
+            onToggleMute={voice.toggleMute}
+            error={voice.error}
+            isSupported={voice.isSupported}
+          />
+        </motion.section>
+
+        {/* ═══════════════════════════════════════════
+            6. QUICK ACCESS ROW
+            ═══════════════════════════════════════════ */}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.4 }}
+          className="py-6"
+        >
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-4">
+            Liens rapides
+          </h2>
+          <div className="flex gap-3">
+            {/* WhatsApp */}
+            <a
+              href={`https://wa.me/${household?.whatsappNumber || ""}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
+            >
+              <span className="text-2xl">📱</span>
+              <span className="text-xs text-slate-400 text-center">WhatsApp</span>
+            </a>
+
+            {/* Rappels */}
+            <button
+              onClick={() => {
+                setModalContent(
+                  <div className="space-y-4">
+                    <h3 className="font-serif text-xl text-amber-200">Rappels</h3>
+                    <div className="flex flex-col items-center py-8 text-slate-400">
+                      <Bell className="w-10 h-10 mb-3 opacity-40" />
+                      <p className="text-sm">Aucun rappel actif</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Utilisez la commande vocale &ldquo;Maison, rappelle-moi de…&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                );
+                setActiveModal("reminders");
+              }}
+              className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
+            >
+              <span className="text-2xl">🔔</span>
+              <span className="text-xs text-slate-400 text-center">Rappels</span>
+            </button>
+
+            {/* POI */}
+            <button
+              onClick={() => {
+                setModalContent(
+                  <div className="space-y-4">
+                    <h3 className="font-serif text-xl text-amber-200">
+                      Points d&apos;intérêt
+                    </h3>
+                    <div className="flex flex-col items-center py-8 text-slate-400">
+                      <MapPin className="w-10 h-10 mb-3 opacity-40" />
+                      <p className="text-sm">Aucun point d&apos;intérêt configuré</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Les POI apparaîtront ici une fois configurés par l&apos;administrateur
+                      </p>
+                    </div>
+                  </div>
+                );
+                setActiveModal("poi");
+              }}
+              className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
+            >
+              <span className="text-2xl">📍</span>
+              <span className="text-xs text-slate-400 text-center">
+                Points d&apos;intérêt
+              </span>
+            </button>
+          </div>
+        </motion.section>
+
+        {/* ═══════════════════════════════════════════
+            7. FOOTER
+            ═══════════════════════════════════════════ */}
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="pt-8 pb-4"
+        >
+          <div className="divider-gold mb-6" />
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2">
+              <motion.span
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+                className="text-amber-400/20 text-xs"
+              >
+                ◆
+              </motion.span>
+              <span className="font-serif text-sm text-gradient-gold tracking-wider">
+                Maison Consciente
+              </span>
+              <motion.span
+                animate={{ rotate: [360, 0] }}
+                transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+                className="text-amber-400/20 text-xs"
+              >
+                ◆
+              </motion.span>
+            </div>
+            <p className="text-xs text-slate-600">v2.0</p>
+          </div>
+        </motion.footer>
       </div>
-      </SeasonalWrapper>
-    </SleepProvider>
+
+      {/* ═══════════════════════════════════════════
+          MODAL SHEET
+          ═══════════════════════════════════════════ */}
+      <Sheet
+        open={activeModal !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveModal(null);
+            setModalContent(null);
+          }
+        }}
+      >
+        <SheetContent
+          side="bottom"
+          className="bg-[#0a0f1e] border-t border-white/[0.06] rounded-t-3xl max-h-[85vh] overflow-y-auto scrollbar-luxe"
+        >
+          <SheetHeader className="pb-0">
+            <SheetTitle className="sr-only">
+              {activeModal || "Détails"}
+            </SheetTitle>
+            <SheetDescription className="sr-only">
+              Contenu détaillé
+            </SheetDescription>
+          </SheetHeader>
+          <div className="px-6 pb-8 pt-2">{modalContent}</div>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }

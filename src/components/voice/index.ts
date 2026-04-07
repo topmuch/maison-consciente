@@ -7,9 +7,13 @@
    for convenient single-point import.
 
    Usage:
-     import { VoiceOrb, VoiceSettingsPanel, VoiceTranscriptToast, useVoiceAssistant } from '@/components/voice';
+     import {
+       VoiceOrb, VoiceSettingsPanel, VoiceTranscriptToast,
+       HybridVoiceControl, useVoiceResponse
+     } from '@/components/voice';
    ═══════════════════════════════════════════════════════ */
 
 export { VoiceOrb } from './VoiceOrb';
 export { VoiceSettingsPanel } from './VoiceSettingsPanel';
 export { VoiceTranscriptToast } from './VoiceTranscriptToast';
+export { HybridVoiceControl } from './HybridVoiceControl';
