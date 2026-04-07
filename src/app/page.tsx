@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/app-store';
 import { AppShell } from '@/components/layout/app-shell';
@@ -26,6 +26,7 @@ import { trackEvent, identifyUser, resetAnalytics } from '@/lib/analytics';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { QuickOnboarding } from '@/components/onboarding/quick-onboarding';
 
 const HospitalityDashboard = dynamic(() => import('@/components/hospitality/hospitality-dashboard'), { 
   loading: () => <div className="space-y-4"><Skeleton className="h-40 w-full rounded-xl bg-white/[0.04]" /><Skeleton className="h-60 w-full rounded-xl bg-white/[0.04]" /></div>,
@@ -49,6 +50,11 @@ const PricingView = dynamic(() => import('@/components/billing/pricing-view').th
 
 const BillingPage = dynamic(() => import('@/components/billing/billing-page').then(m => ({ default: m.BillingPage })), { 
   loading: () => <div className="max-w-4xl mx-auto space-y-4"><Skeleton className="h-40 w-full rounded-xl bg-white/[0.04]" /><Skeleton className="h-60 w-full rounded-xl bg-white/[0.04]" /></div>,
+  ssr: false 
+});
+
+const AnalyticsPanel = dynamic(() => import('@/components/dashboard/analytics-panel').then(m => ({ default: m.AnalyticsPanel })), { 
+  loading: () => <div className="max-w-6xl mx-auto space-y-4"><Skeleton className="h-10 w-10 rounded-xl bg-white/[0.04]" /><Skeleton className="h-6 w-64 bg-white/[0.04]" /><Skeleton className="h-40 w-full rounded-xl bg-white/[0.04]" /></div>,
   ssr: false 
 });
 
@@ -79,6 +85,8 @@ function ViewRouter() {
         return <BillingPage />;
       case 'hospitality-settings':
         return <SettingsPage />;
+      case 'analytics':
+        return <AnalyticsPanel />;
       default:
         return <HospitalityDashboard />;
     }
@@ -111,6 +119,8 @@ function ViewRouter() {
     case 'settings':
     case 'members':
       return <SettingsPage />;
+    case 'analytics':
+      return <AnalyticsPanel />;
     default:
       return <Dashboard />;
   }
@@ -152,10 +162,11 @@ async function applyHouseholdSEO() {
 }
 
 export default function Home() {
-  const { isAuthenticated, isLoading, setAuth, setLoading, clearAuth, setHouseholdType } = useAuthStore();
+  const { isAuthenticated, isLoading, setAuth, setLoading, clearAuth, setHouseholdType, user, householdName } = useAuthStore();
   const { isIdle, resetTimer } = useInactivity({ timeout: 120000, enabled: isAuthenticated });
   const [showStandby, setShowStandby] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [prefillType, setPrefillType] = useState<'home' | 'hospitality' | null>(null);
 
   useEffect(() => {
@@ -245,6 +256,16 @@ export default function Home() {
     localStorage.setItem('mc-last-scan-time', Date.now().toString());
   };
 
+  const handleRegisterSuccess = useCallback((regHouseholdType: string) => {
+    if (regHouseholdType === 'hospitality') {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingComplete = useCallback(() => {
+    setShowOnboarding(false);
+  }, []);
+
   if (isLoading) {
     return <SignatureLoading />;
   }
@@ -261,7 +282,11 @@ export default function Home() {
         />
       );
     }
-    return <AuthPage onBack={() => { setShowAuth(false); setPrefillType(null); }} prefillType={prefillType} />;
+    return <AuthPage onBack={() => { setShowAuth(false); setPrefillType(null); }} prefillType={prefillType} onRegisterSuccess={handleRegisterSuccess} />;
+  }
+
+  if (showOnboarding && user?.householdId) {
+    return <QuickOnboarding onComplete={handleOnboardingComplete} householdId={user.householdId} currentHouseholdName={householdName || undefined} />;
   }
 
   return (

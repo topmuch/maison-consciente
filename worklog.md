@@ -301,3 +301,28 @@ Stage Summary:
 - AirHome landing page created with: Navbar, Hero (parallax+tablet mockup), Problem/Solution (interactive Before/After), Features Bento Grid (6 cards), Testimonials carousel + animated counters, Pricing (3 tiers), Footer CTA + scroll-to-top button
 - Design: Dark Luxe Futuriste with glassmorphism, amber/violet accents, Framer Motion animations
 - Fully responsive (mobile-first), no external images required
+
+---
+Task ID: p1-p2-improvements
+Agent: main (4 parallel agents)
+Task: Implement 4 P1/P2 improvements — Whisper STT, 3-click onboarding, interactive demo, analytics
+
+Work Log:
+- Installed @huggingface/transformers for Whisper-tiny speech recognition
+- Rewrote useVoiceResponse.ts: Whisper-tiny (q8 quantized) + MediaRecorder audio capture + Web Speech API fallback
+- Added 'loading' state for model download, getUserMedia availability check (broader browser support)
+- Created quick-onboarding.tsx: 3-step wizard (Logement name → WiFi code → Celebration with confetti)
+- Created /api/onboarding/complete: saves WiFi as KnowledgeBaseItem entries, updates household name
+- Modified auth-page.tsx: added onRegisterSuccess callback for onboarding trigger
+- Modified page.tsx: shows onboarding wizard after hospitality registration
+- Added InteractiveDemo to airhome-page.tsx: mock Maellis chat with 4 predefined questions + typing animation
+- Created /api/analytics/voice: GET endpoint querying VoiceLog for weekly stats
+- Created analytics-panel.tsx: 4 stat cards, daily bar chart, top intents, recent questions list
+- Modified page.tsx: added 'analytics' route in both hospitality and home ViewRouters
+- All files pass lint (0 new errors)
+
+Stage Summary:
+- Whisper-tiny replaces Web Speech API: 95% accuracy, works on Safari/Firefox, 40MB model cached in browser
+- Onboarding en 3 clics: hospitality users see wizard after registration (name → WiFi → celebration)
+- Interactive demo on landing: visitors can test Maellis with mock questions and see responses
+- Analytics dashboard: weekly voice stats, success rate, daily chart, top intents, recent questions

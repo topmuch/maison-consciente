@@ -84,7 +84,7 @@ function GoldSpinner() {
 }
 
 /* ─── Main Auth Page ─── */
-export function AuthPage({ onBack, prefillType }: { onBack?: () => void; prefillType?: 'home' | 'hospitality' | null } = {}) {
+export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: () => void; prefillType?: 'home' | 'hospitality' | null; onRegisterSuccess?: (householdType: string) => void } = {}) {
   const [activeTab, setActiveTab] = useState<'login' | 'register' | null>(preffillType ? 'register' : null);
   const [direction, setDirection] = useState(0);
 
@@ -231,9 +231,11 @@ export function AuthPage({ onBack, prefillType }: { onBack?: () => void; prefill
         role: data.user.role,
         name: data.user.name,
         householdName: data.householdName,
+        householdType: regHouseholdType,
       });
       setView('dashboard');
       toast.success('Compte créé avec succès !');
+      onRegisterSuccess?.(regHouseholdType);
     } catch {
       toast.error('Erreur de connexion au serveur');
     } finally {

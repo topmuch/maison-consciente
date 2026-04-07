@@ -36,6 +36,7 @@ import {
   Menu,
   X,
   Play,
+  User,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════
@@ -873,6 +874,229 @@ function FeaturesBentoGrid() {
 }
 
 /* ═══════════════════════════════════════════════════════
+   INTERACTIVE DEMO SECTION
+   ═══════════════════════════════════════════════════════ */
+const demoResponses: Record<string, { text: string; followUp: string[] }> = {
+  'Code WiFi ?': {
+    text: "Le réseau WiFi est 'MaisonConsciente_5G', le mot de passe est 'Bienvenue2025'. Vous êtes connecté !",
+    followUp: ['Comment connecter la TV ?', 'Mot de passe du coffre ?'],
+  },
+  'Comment allumer la clim ?': {
+    text: "La climatisation se trouve dans le couloir. Utilisez la télécommande blanche sur la table basse. Bouton 'ON' puis +/- pour la température. Je recommande 23°C pour un confort optimal.",
+    followUp: ['Chauffer aussi possible ?', 'Où sont les radiateurs ?'],
+  },
+  'Heure de check-out ?': {
+    text: "Le check-out est à 11h00. Pensez à déposer les clés dans la boîte aux lettres noire à l'entrée. Un rappel vous sera envoyé à 9h00 le jour du départ.",
+    followUp: ['Taxi pour l\'aéroport ?', 'Prolonger le séjour ?'],
+  },
+  'Bon restaurant nearby ?': {
+    text: "Je recommande 'La Petite Maison' à 3 min à pied (★★★★ 4.7/5 sur Google). Cuisine méditerranéenne, terrasse agréable. Réservation conseillée : +33 4 93 XX XX XX.",
+    followUp: ['Autre restaurant ?', 'Boulangerie autour ?'],
+  },
+};
+
+const defaultSuggestions = ['Code WiFi ?', 'Comment allumer la clim ?', 'Heure de check-out ?', 'Bon restaurant nearby ?'];
+
+const defaultResponse = {
+  text: "Je ne suis pas sûr de comprendre votre question. Essayez l'une des suggestions ci-dessous, ou reformulez votre demande. Je suis là pour vous aider !",
+  followUp: defaultSuggestions,
+};
+
+function InteractiveDemo() {
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'maellis'; text: string }>>([
+    { role: 'maellis', text: 'Bonjour ! Je suis Maellis, votre assistant. Comment puis-je vous aider ?' },
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>(defaultSuggestions);
+  const [inputValue, setInputValue] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping, scrollToBottom]);
+
+  const handleSend = useCallback((text: string) => {
+    if (!text.trim() || isTyping) return;
+    const userMessage = text.trim();
+    setInputValue('');
+    setMessages((prev) => [...prev, { role: 'user', text: userMessage }]);
+    setIsTyping(true);
+    setSuggestions([]);
+
+    const matchedKey = Object.keys(demoResponses).find(
+      (key) => userMessage.toLowerCase().includes(key.toLowerCase().replace(' ?', '').replace(' ?', ''))
+    );
+    const response = matchedKey ? demoResponses[matchedKey] : defaultResponse;
+
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, { role: 'maellis', text: response.text }]);
+      setSuggestions(response.followUp);
+    }, 1200);
+  }, [isTyping]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(inputValue);
+    }
+  };
+
+  return (
+    <section className="relative py-20 sm:py-28">
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-amber-500/[0.05] blur-[130px] pointer-events-none" />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Section header */}
+        <motion.div {...fadeUp} className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">Démo interactive</span>
+          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-slate-50 mb-4 tracking-tight">
+            Essayez Maellis{' '}
+            <span className="text-gradient-gold">— en direct</span>
+          </h2>
+          <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
+            Posez une question ou cliquez sur une suggestion pour voir Maellis en action.
+          </p>
+        </motion.div>
+
+        {/* Chat container */}
+        <motion.div {...fadeScale} className="flex justify-center">
+          <div className="relative w-full max-w-lg">
+            {/* Demo badge */}
+            <div className="absolute -top-3 -right-3 z-20 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 backdrop-blur-sm">
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Démo</span>
+            </div>
+
+            {/* Tablet frame */}
+            <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-white/[0.08] shadow-[0_8px_60px_rgba(0,0,0,0.4)] overflow-hidden">
+              {/* Chat header */}
+              <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/20 flex items-center justify-center border border-amber-500/30">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-slate-100">Maellis</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-[10px] text-slate-500">En ligne</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat messages area */}
+              <div className="h-[340px] sm:h-[380px] overflow-y-auto px-4 py-4 space-y-3 scroll-smooth" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
+                <AnimatePresence initial={false}>
+                  {messages.map((msg, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, ease: easeOut }}
+                      className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {/* Maellis avatar */}
+                      {msg.role === 'maellis' && (
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/20 flex items-center justify-center border border-amber-500/30 shrink-0">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        </div>
+                      )}
+
+                      {/* Bubble */}
+                      <div
+                        className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                          msg.role === 'user'
+                            ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 rounded-br-md'
+                            : 'bg-white/[0.05] text-slate-200 border border-white/[0.08] rounded-bl-md'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+
+                      {/* User avatar */}
+                      {msg.role === 'user' && (
+                        <div className="w-7 h-7 rounded-full bg-slate-700/60 flex items-center justify-center border border-slate-600/40 shrink-0">
+                          <User className="w-3.5 h-3.5 text-slate-300" />
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {/* Typing indicator */}
+                {isTyping && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="flex items-end gap-2"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/20 flex items-center justify-center border border-amber-500/30 shrink-0">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    </div>
+                    <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-bounce [animation-delay:0ms]" />
+                      <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-bounce [animation-delay:150ms]" />
+                      <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-bounce [animation-delay:300ms]" />
+                    </div>
+                  </motion.div>
+                )}
+
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Suggestions */}
+              {suggestions.length > 0 && !isTyping && (
+                <div className="px-4 py-2 flex flex-wrap gap-2 border-t border-white/[0.04]">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => handleSend(suggestion)}
+                      className="px-3 py-1.5 rounded-full text-xs font-medium border border-amber-500/30 text-amber-300/90 bg-amber-500/[0.06] hover:bg-amber-500/[0.15] hover:border-amber-500/50 transition-all duration-200"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Input */}
+              <div className="px-4 py-3 border-t border-white/[0.06] bg-white/[0.01]">
+                <div className="flex items-center gap-2 bg-white/[0.04] rounded-xl border border-white/[0.08] px-3 py-2 focus-within:border-amber-500/30 transition-colors">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Posez votre question..."
+                    disabled={isTyping}
+                    className="flex-1 bg-transparent text-sm text-slate-200 placeholder-slate-500 outline-none disabled:opacity-50"
+                  />
+                  <button
+                    onClick={() => handleSend(inputValue)}
+                    disabled={!inputValue.trim() || isTyping}
+                    className="w-8 h-8 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 flex items-center justify-center text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.15)] hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all duration-200 disabled:opacity-30 disabled:shadow-none disabled:cursor-not-allowed"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
    TESTIMONIALS SECTION
    ═══════════════════════════════════════════════════════ */
 function TestimonialsSection() {
@@ -1237,6 +1461,7 @@ export function AirHomePage({ onShowAuth, onShowAuthType }: AirHomePageProps) {
         <HeroSection onShowAuth={onShowAuth} />
         <ProblemSolutionSection />
         <FeaturesBentoGrid />
+        <InteractiveDemo />
         <TestimonialsSection />
         <PricingSection onShowAuth={onShowAuth} />
         <FooterCTA onShowAuth={onShowAuth} />
