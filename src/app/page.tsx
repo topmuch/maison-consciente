@@ -3,62 +3,64 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/app-store';
-import { AppShell } from '@/components/layout/app-shell';
-import { AuthPage } from '@/components/auth/auth-page';
-import { LandingPage } from '@/components/landing/landing-page';
-import { AirHomePage } from '@/components/landing/airhome-page';
-import { Dashboard } from '@/components/dashboard/dashboard';
-import { ZoneManager } from '@/components/zones/zone-manager';
-import { ZoneDetail } from '@/components/zones/zone-detail';
-import { ScanPage } from '@/components/scan/scan-page';
-import { InteractionHistory } from '@/components/interactions/interaction-history';
-import { MessageCenter } from '@/components/messages/message-center';
-import { RecipeList } from '@/components/recipes/recipe-list';
-import { AdminDashboard } from '@/components/admin/admin-dashboard';
-import { SettingsPage } from '@/components/settings/settings-page';
-import { SignatureLoading } from '@/components/shared/signature-loading';
-import { StandbyOverlay } from '@/components/shared/standby-overlay';
-import { LuxuryAudioPlayer } from '@/components/audio/luxury-audio-player';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import { applyAccentTheme, getPersistedAccentColor, getAccentTheme } from '@/lib/accent-colors';
 import { initAudioOnInteraction } from '@/lib/ambient-sounds';
 import { useInactivity } from '@/hooks/use-inactivity';
 import { trackEvent, identifyUser, resetAnalytics } from '@/lib/analytics';
-import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { QuickOnboarding } from '@/components/onboarding/quick-onboarding';
-import { DemoSelection } from '@/components/demo/DemoSelection';
-import { DemoParticulier } from '@/components/demo/DemoParticulier';
-import { DemoAirbnb } from '@/components/demo/DemoAirbnb';
 
-const HospitalityDashboard = dynamic(() => import('@/components/hospitality/hospitality-dashboard'), { 
+/* ── Heavy components loaded dynamically ── */
+const AppShell = dynamic(() => import('@/components/layout/app-shell').then(m => ({ default: m.AppShell })), { ssr: false });
+const AuthPage = dynamic(() => import('@/components/auth/auth-page').then(m => ({ default: m.AuthPage })), { ssr: false });
+const AirHomePage = dynamic(() => import('@/components/landing/airhome-page').then(m => ({ default: m.AirHomePage })), { ssr: false });
+const Dashboard = dynamic(() => import('@/components/dashboard/dashboard').then(m => ({ default: m.Dashboard })), { ssr: false });
+const ZoneManager = dynamic(() => import('@/components/zones/zone-manager').then(m => ({ default: m.ZoneManager })), { ssr: false });
+const ZoneDetail = dynamic(() => import('@/components/zones/zone-detail').then(m => ({ default: m.ZoneDetail })), { ssr: false });
+const ScanPage = dynamic(() => import('@/components/scan/scan-page').then(m => ({ default: m.ScanPage })), { ssr: false });
+const InteractionHistory = dynamic(() => import('@/components/interactions/interaction-history').then(m => ({ default: m.InteractionHistory })), { ssr: false });
+const MessageCenter = dynamic(() => import('@/components/messages/message-center').then(m => ({ default: m.MessageCenter })), { ssr: false });
+const RecipeList = dynamic(() => import('@/components/recipes/recipe-list').then(m => ({ default: m.RecipeList })), { ssr: false });
+const AdminDashboard = dynamic(() => import('@/components/admin/admin-dashboard').then(m => ({ default: m.AdminDashboard })), { ssr: false });
+const SettingsPage = dynamic(() => import('@/components/settings/settings-page').then(m => ({ default: m.SettingsPage })), { ssr: false });
+const SignatureLoading = dynamic(() => import('@/components/shared/signature-loading').then(m => ({ default: m.SignatureLoading })), { ssr: false });
+const StandbyOverlay = dynamic(() => import('@/components/shared/standby-overlay').then(m => ({ default: m.StandbyOverlay })), { ssr: false });
+const LuxuryAudioPlayer = dynamic(() => import('@/components/audio/luxury-audio-player').then(m => ({ default: m.LuxuryAudioPlayer })), { ssr: false });
+const QuickOnboarding = dynamic(() => import('@/components/onboarding/quick-onboarding').then(m => ({ default: m.QuickOnboarding })), { ssr: false });
+
+const DemoSelection = dynamic(() => import('@/components/demo/DemoSelection'), { ssr: false });
+const DemoParticulier = dynamic(() => import('@/components/demo/DemoParticulier'), { ssr: false });
+const DemoAirbnb = dynamic(() => import('@/components/demo/DemoAirbnb'), { ssr: false });
+
+const HospitalityDashboard = dynamic(() => import('@/components/hospitality/hospitality-dashboard'), {
   loading: () => <div className="space-y-4"><Skeleton className="h-40 w-full rounded-xl bg-white/[0.04]" /><Skeleton className="h-60 w-full rounded-xl bg-white/[0.04]" /></div>,
-  ssr: false 
+  ssr: false
 });
 
-const LocalGuide = dynamic(() => import('@/components/hospitality/local-guide'), { 
+const LocalGuide = dynamic(() => import('@/components/hospitality/local-guide'), {
   loading: () => <div className="space-y-4"><Skeleton className="h-11 w-48 rounded-xl bg-white/[0.04]" /><Skeleton className="h-7 w-24 rounded-full bg-white/[0.04]" /><Skeleton className="h-20 w-full rounded-xl bg-white/[0.04]" /><Skeleton className="h-20 w-full rounded-xl bg-white/[0.04]" /></div>,
-  ssr: false 
+  ssr: false
 });
 
-const GuestCheckIn = dynamic(() => import('@/components/hospitality/guest-check-in'), { 
+const GuestCheckIn = dynamic(() => import('@/components/hospitality/guest-check-in'), {
   loading: () => <div className="space-y-4"><Skeleton className="h-32 w-full rounded-xl bg-white/[0.04]" /><Skeleton className="h-48 w-full rounded-xl bg-white/[0.04]" /></div>,
-  ssr: false 
+  ssr: false
 });
 
-const PricingView = dynamic(() => import('@/components/billing/pricing-view').then(m => ({ default: m.PricingView })), { 
+const PricingView = dynamic(() => import('@/components/billing/pricing-view').then(m => ({ default: m.PricingView })), {
   loading: () => <div className="max-w-6xl mx-auto"><div className="space-y-8"><div className="text-center space-y-3"><div className="h-8 w-64 mx-auto rounded-lg bg-white/[0.04] animate-pulse" /><div className="h-5 w-96 mx-auto rounded-lg bg-white/[0.04] animate-pulse" /></div></div></div>,
-  ssr: false 
+  ssr: false
 });
 
-const BillingPage = dynamic(() => import('@/components/billing/billing-page').then(m => ({ default: m.BillingPage })), { 
+const BillingPage = dynamic(() => import('@/components/billing/billing-page').then(m => ({ default: m.BillingPage })), {
   loading: () => <div className="max-w-4xl mx-auto space-y-4"><Skeleton className="h-40 w-full rounded-xl bg-white/[0.04]" /><Skeleton className="h-60 w-full rounded-xl bg-white/[0.04]" /></div>,
-  ssr: false 
+  ssr: false
 });
 
-const AnalyticsPanel = dynamic(() => import('@/components/dashboard/analytics-panel').then(m => ({ default: m.AnalyticsPanel })), { 
+const AnalyticsPanel = dynamic(() => import('@/components/dashboard/analytics-panel').then(m => ({ default: m.AnalyticsPanel })), {
   loading: () => <div className="max-w-6xl mx-auto space-y-4"><Skeleton className="h-10 w-10 rounded-xl bg-white/[0.04]" /><Skeleton className="h-6 w-64 bg-white/[0.04]" /><Skeleton className="h-40 w-full rounded-xl bg-white/[0.04]" /></div>,
-  ssr: false 
+  ssr: false
 });
 
 function ViewRouter() {

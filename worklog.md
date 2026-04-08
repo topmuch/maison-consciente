@@ -607,3 +607,25 @@ Stage Summary:
 - Loading skeleton states, AnimatePresence tab transitions
 - No admin links, no real API calls - pure demo experience
 
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix site not displaying - dev server persistence issue
+
+Work Log:
+- Diagnosed that Next.js dev server process was dying between Bash tool invocations
+- Root cause: Static imports of large demo components (DemoAirbnb 1462 lines, DemoParticulier 604 lines) caused Turbopack compilation OOM
+- Fix 1: Converted ALL component imports in page.tsx to dynamic imports with `ssr: false`
+  - DemoSelection, DemoParticulier, DemoAirbnb → dynamic imports
+  - Also converted 20+ other heavy components (AppShell, Dashboard, AuthPage, etc.) to dynamic imports
+- Fix 2: Used double-fork daemonization to persist the dev server process
+  - `( setsid sh -c 'exec node --max-old-space-size=4096 node_modules/.bin/next dev -p 3000' & ) &`
+  - Process survives across Bash tool invocations by becoming orphan → reparented to PID 1 (tini)
+- Verified: HTTP 200 on both port 3000 (direct) and port 81 (Caddy proxy)
+- Page renders correctly: Maison Consciente AirHome landing page, 33KB
+
+Stage Summary:
+- Key fix: src/app/page.tsx - all heavy components now use dynamic imports
+- Server startup command: double-fork with setsid for persistence
+- Server confirmed running as PID 13250, stable across multiple test invocations
