@@ -512,3 +512,31 @@ Stage Summary:
 - Root cause of button errors: password validation mismatch causing confusing error toasts when users entered 6-7 char passwords
 - Also fixed React warning about unrecognized `originX` prop on DOM elements
 - Both fixes improve user experience on auth flow
+---
+Task ID: 1
+Agent: Main Agent
+Task: Create interactive demo pages for Maellis (Famille Martin & Villa Azur Airbnb)
+
+Work Log:
+- Created `src/lib/mock-data-real.ts` with all provided real data: news (France Info/Le Monde), 12 zodiac horoscopes, Famille Martin config (reminders, recipes, FAQ, shopping), Villa Azur Airbnb config (WiFi, activities, services, emergency contacts)
+- Created 7 reusable demo components in `src/components/demo/`:
+  - `DemoSelection.tsx` - Immersive card selection with Framer Motion hover animations (Famille vs Airbnb)
+  - `DemoLayout.tsx` - Common wrapper with status bar "MODE DÉMO - DONNÉES SIMULÉES" and sticky back button
+  - `NewsWidget.tsx` - Expandable news feed with source badges (FI/LM), live indicator, categories
+  - `HoroscopeWidget.tsx` - 12-sign selector dropdown, detailed sections (Amour/Travail/Argent/Conseil)
+  - `ActivityCard.tsx` - Interactive cards with category colors, distance/duration, WhatsApp booking links
+  - `VoiceOrb.tsx` - Animated voice orb with Web Speech API (real) + simulation fallback, 4 states (idle/listening/processing/speaking)
+  - `DemoParticulier.tsx` - Full Famille Martin tablet simulation: weather bar, reminders with checkboxes, shopping list, recipes, FAQ maison, voice assistant, news tab, horoscope tab
+  - `DemoAirbnb.tsx` - Full Villa Azur tablet simulation: check-in/out info, welcome message, house rules, emergency contacts, SOS button, WhatsApp host, WiFi QR code (SVG generated), activities with booking, premium services
+- Modified `src/components/landing/airhome-page.tsx` to add "Démo" button in navbar
+- Modified `src/app/page.tsx` to integrate demo views via client-side state routing (demoView state)
+- All components use Dark Luxe design: bg-[#020617], amber/gold accents, glassmorphism, Framer Motion animations
+- Skeleton loading states for both demo experiences (1.2-1.4s simulated loading)
+- Zero lint errors on all new files
+- Pushed to GitHub: commit c95e97b
+
+Stage Summary:
+- 11 files changed, 2037 insertions
+- 9 new files created (7 components + mock data + page modifications)
+- Demo accessible via "Démo" button in landing page navbar
+- Two complete demo experiences: Famille Martin (particulier) and Villa Azur (Airbnb)
