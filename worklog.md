@@ -561,3 +561,49 @@ Stage Summary:
 - Dev server compiles and serves page correctly
 - Voice interactions on every clickable element (weather, news, horoscope, recipes, FAQ, shopping, activities, services, rules, contacts)
 
+
+---
+Task ID: airbnb-demo-15-rubriques
+Agent: main
+Task: Complete rebuild of DemoAirbnb.tsx with all 15 rubriques
+
+Work Log:
+- Rewrote src/components/demo/DemoAirbnb.tsx (1462 lines) as a single-file component with all 15 rubriques
+- Organized into 4 tabs: Accueil, Découvrir, Communiquer, Mon Séjour
+- Tab 1 "Accueil": (1) Onboarding Voyageur with animated checklist + progress bar + confetti celebration, (2) Dashboard Séjour with 4 info cards + Nice weather, (4) Check-in/Check-out stepper with numbered circles + interactive validation, (15) QR Code Viral with pulsing glow animation + large SVG QR pattern
+- Tab 2 "Découvrir": (3) Guide Local POI with 5 POIs + category badges + star ratings, (7) Activités Partenaires with partner gold badges + WhatsApp booking, (10) Journal de Voyage with visual timeline + mood selector + add entry form, (11) Smart Review IA with activity checkboxes + generated review + edit + publish
+- Tab 3 "Communiquer": (6) Contact Hôte with 3-message chat bubbles + WhatsApp button, (8) Tickets Support with existing tickets + create form (subject dropdown + textarea), (12) Notifications with filter tabs (Toutes/Messages/Rappels/Promos) + unread badges, (9) Feedback Post-Séjour with star rating + 4 dimension sliders + comment + photo upload
+- Tab 4 "Mon Séjour": (5) Jetons d'Accès with WiFi/Portail/Coffre + copy buttons with "Copié !", (13) Paramètres Séjour with toggles (Mode nuit, Heures silencieuses) + dropdowns (Langue, Unités) + volume slider, (14) Facturation Séjour with invoice card + payment method + download button, Maellis voice assistant orb
+- All interactive elements call speak() from useMaellisVoice
+- Loading skeleton state with 1.4s timeout using shadcn Skeleton
+- Dark Luxe design: bg-[#020617], bg-white/[0.03] cards, amber/violet accents, Framer Motion animations
+- ESLint: 0 errors in DemoAirbnb.tsx
+
+Stage Summary:
+- Complete DemoAirbnb with all 15 rubriques in a single 1462-line file
+- 4 tab layout with rich interactive features on every rubrique
+- QR Code Viral section is prominent hero element with pulsing glow
+- Confetti celebration when onboarding checklist is fully completed
+- Smart Review generates contextual AI reviews based on checked activities
+- All widgets voice-enabled with French TTS
+---
+Task ID: 2
+Agent: Main Agent
+Task: Complete rebuild of both demo pages with ALL 30 rubriques
+
+Work Log:
+- Updated DemoLayout.tsx to Dark Luxe (bg-[#020617], glassmorphism, gradient titles)
+- Updated DemoSelection.tsx to Dark Luxe (gradient backgrounds, glass cards)
+- Rebuilt DemoParticulier.tsx with ALL 15 rubriques in 4 tabs (Accueil/Bien-Être/Outils/Paramètres)
+- Subagent rebuilt DemoAirbnb.tsx with ALL 15 rubriques in 4 tabs (Accueil/Découvrir/Communiquer/Mon Séjour)
+- Fixed QRGrid lint error (component during render → pre-computed data array)
+- Zero lint errors in demo code (6 remaining are all in maison-consciente-ref/)
+- Dev server compiles and serves page correctly (HTTP 200)
+
+Stage Summary:
+- 30 rubriques total across both demos
+- All widgets interactive with useMaellisVoice speak()
+- Dark Luxe design with glassmorphism, Framer Motion animations
+- Loading skeleton states, AnimatePresence tab transitions
+- No admin links, no real API calls - pure demo experience
+
