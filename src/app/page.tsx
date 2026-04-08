@@ -27,6 +27,9 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { QuickOnboarding } from '@/components/onboarding/quick-onboarding';
+import { DemoSelection } from '@/components/demo/DemoSelection';
+import { DemoParticulier } from '@/components/demo/DemoParticulier';
+import { DemoAirbnb } from '@/components/demo/DemoAirbnb';
 
 const HospitalityDashboard = dynamic(() => import('@/components/hospitality/hospitality-dashboard'), { 
   loading: () => <div className="space-y-4"><Skeleton className="h-40 w-full rounded-xl bg-white/[0.04]" /><Skeleton className="h-60 w-full rounded-xl bg-white/[0.04]" /></div>,
@@ -168,6 +171,7 @@ export default function Home() {
   const [showAuth, setShowAuth] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [prefillType, setPrefillType] = useState<'home' | 'hospitality' | null>(null);
+  const [demoView, setDemoView] = useState<'landing' | 'select' | 'particulier' | 'airbnb'>('landing');
 
   useEffect(() => {
     // Apply accent color from localStorage on mount
@@ -270,6 +274,22 @@ export default function Home() {
     return <SignatureLoading />;
   }
 
+  // Demo views (accessible without authentication)
+  if (demoView === 'select') {
+    return (
+      <DemoSelection
+        onSelectParticulier={() => setDemoView('particulier')}
+        onSelectAirbnb={() => setDemoView('airbnb')}
+      />
+    );
+  }
+  if (demoView === 'particulier') {
+    return <DemoParticulier onBack={() => setDemoView('select')} />;
+  }
+  if (demoView === 'airbnb') {
+    return <DemoAirbnb onBack={() => setDemoView('select')} />;
+  }
+
   if (!isAuthenticated) {
     if (!showAuth) {
       return (
@@ -279,6 +299,7 @@ export default function Home() {
             setPrefillType(type);
             setShowAuth(true);
           }}
+          onShowDemo={() => setDemoView('select')}
         />
       );
     }

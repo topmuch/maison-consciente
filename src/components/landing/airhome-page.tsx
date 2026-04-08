@@ -47,6 +47,7 @@ import {
 interface AirHomePageProps {
   onShowAuth: () => void;
   onShowAuthType?: (type: 'home' | 'hospitality') => void;
+  onShowDemo?: () => void;
 }
 
 /* ─── Animation Variants ─── */
@@ -395,6 +396,13 @@ function Navbar({
 
         {/* Right */}
         <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => onShowDemo?.()}
+            className="px-3 py-2 text-sm font-medium text-amber-400/70 hover:text-amber-300 transition-colors duration-200 hidden sm:flex items-center gap-1.5"
+          >
+            <Play className="w-3 h-3" />
+            Démo
+          </button>
           <button
             onClick={onShowAuth}
             className="px-3 py-2 text-sm font-medium text-slate-400 hover:text-slate-100 transition-colors duration-200 hidden sm:block"
@@ -1444,7 +1452,7 @@ function Footer({ onScrollToTop }: { onScrollToTop: () => void }) {
 /* ═══════════════════════════════════════════════════════
    MAIN PAGE COMPONENT
    ═══════════════════════════════════════════════════════ */
-export function AirHomePage({ onShowAuth, onShowAuthType }: AirHomePageProps) {
+export function AirHomePage({ onShowAuth, onShowAuthType, onShowDemo }: AirHomePageProps) {
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
