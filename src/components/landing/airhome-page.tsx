@@ -339,10 +339,12 @@ function Navbar({
   onShowAuth,
   onShowAuthType,
   onScrollToTop,
+  onShowDemo,
 }: {
   onShowAuth: () => void;
   onShowAuthType?: (type: 'home' | 'hospitality') => void;
   onScrollToTop: () => void;
+  onShowDemo?: () => void;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -1463,6 +1465,7 @@ export function AirHomePage({ onShowAuth, onShowAuthType, onShowDemo }: AirHomeP
         onShowAuth={onShowAuth}
         onShowAuthType={onShowAuthType}
         onScrollToTop={scrollToTop}
+        onShowDemo={onShowDemo}
       />
 
       <main className="flex-1">
