@@ -387,3 +387,145 @@ export const currentDemoTime = {
   sunrise: '06h42',
   sunset: '20h58',
 };
+
+/* ─── EXTENDED MOCK: FAMILY WALL ─── */
+export const familyWallMessages = [
+  { id: 'w1', author: 'Maman', avatar: '👩', text: 'J\'ai acheté du pain complet et des croissants pour le petit-déjeuner 🥐', time: '08h15', type: 'info' as const },
+  { id: 'w2', author: 'Papa', avatar: '👨', text: 'Je rentre tard ce soir, réunion prolongée. Ne m\'attendez pas pour le dîner.', time: '16h30', type: 'alert' as const },
+  { id: 'w3', author: 'Paul', avatar: '👦', text: 'Cours de piano terminé ! Prochain cours mercredi à 16h30 🎹', time: '17h00', type: 'reminder' as const },
+  { id: 'w4', author: 'Maman', avatar: '👩', text: 'Rappel : RDV dentiste Paul jeudi à 10h. Ne pas oublier la carte vitale.', time: '19h00', type: 'reminder' as const },
+];
+
+/* ─── EXTENDED MOCK: HEALTH ─── */
+export const healthData = {
+  reminders: [
+    { id: 'h1', name: 'Doliprane 1000mg', dose: '1 comprimé', time: '08h00', frequency: '3x/jour', done: false },
+    { id: 'h2', name: 'Oméga 3', dose: '2 gélules', time: '12h00', frequency: '1x/jour', done: true },
+    { id: 'h3', name: 'Vitamine D', dose: '1 goutte', time: '20h00', frequency: '1x/jour', done: false },
+  ],
+  vitals: [
+    { label: 'Tension', value: '12/8', unit: 'mmHg', status: 'normal' as const, icon: '❤️' },
+    { label: 'Poids', value: '72', unit: 'kg', status: 'normal' as const, icon: '⚖️' },
+    { label: 'Sommeil', value: '7h30', unit: '', status: 'good' as const, icon: '😴' },
+    { label: 'Pas/Jour', value: '8432', unit: 'pas', status: 'warning' as const, icon: '🚶' },
+  ],
+  airQuality: { aqi: 42, level: 'Bon', pm25: 8.2, icon: '🌿' },
+};
+
+/* ─── EXTENDED MOCK: WELLNESS ─── */
+export const wellnessData = {
+  mood: 4,
+  moodHistory: [
+    { day: 'Lun', value: 3 }, { day: 'Mar', value: 4 }, { day: 'Mer', value: 5 },
+    { day: 'Jeu', value: 3 }, { day: 'Ven', value: 4 }, { day: 'Sam', value: 5 }, { day: 'Dim', value: 4 },
+  ],
+  rituals: [
+    { id: 'r1', name: 'Méditation matin', icon: '🧘', completed: true },
+    { id: 'r2', name: 'Journal de gratitude', icon: '📝', completed: false },
+    { id: 'r3', name: 'Lecture 20 min', icon: '📖', completed: true },
+    { id: 'r4', name: 'Promenade nature', icon: '🌳', completed: false },
+  ],
+  ambiances: [
+    { id: 'a1', name: 'Pluie sur les toits', icon: '🌧️', playing: false },
+    { id: 'a2', name: 'Forêt tropicale', icon: '🌴', playing: true },
+    { id: 'a3', name: 'Vagues océan', icon: '🌊', playing: false },
+    { id: 'a4', name: 'Feu de cheminée', icon: '🔥', playing: false },
+  ],
+  breathingExercise: { name: 'Cohérence cardiaque', duration: '5 min', inhale: 5, hold: 0, exhale: 5 },
+};
+
+/* ─── EXTENDED MOCK: RECIPES DETAILED ─── */
+export const recipesDetailed = [
+  {
+    id: 'rd1', name: 'Gratin Dauphinois', image: '🧀', time: '1h15', difficulty: 'Facile', servings: 4,
+    ingredients: ['1kg pommes de terre', '300ml crème fraîche', '150g gruyère râpé', '2 gousses d\'ail', '25g beurre', 'Muscade, sel, poivre'],
+    steps: ['Éplucher et couper les pommes de terre en rondelles fines.', 'Beurrer un plat à gratin.', 'Disposer les rondelles en couches chevauchantes.', 'Mélanger crème, ail écrasé, muscade, sel, poivre.', 'Verser sur les pommes de terre.', 'Parsemer de gruyère râpé.', 'Enfourner 1h à 180°C.'],
+  },
+  {
+    id: 'rd2', name: 'Salade César', image: '🥗', time: '20 min', difficulty: 'Très facile', servings: 2,
+    ingredients: ['2 poitrines de poulet', '1 laitue romaine', '50g parmesan', 'Croûtons', 'Sauce César', '1 citron'],
+    steps: ['Griller les poitrines de poulet assaisonnées.', 'Laver et essorer la laitue romaine.', 'Couper le poulet en tranches.', 'Disposer la salade, le poulet, les croûtons.', 'Parsemer de parmesan.', 'Napper de sauce César et citron.'],
+  },
+  {
+    id: 'rd3', name: 'Quiche Lorraine', image: '🥧', time: '45 min', difficulty: 'Moyen', servings: 6,
+    ingredients: ['1 pâte brisée', '200g lardons fumés', '3 œufs', '200ml crème', '100g gruyère', 'Sel, poivre'],
+    steps: ['Préchauffer le four à 180°C.', 'Étaler la pâte dans un moule.', 'Faire revenir les lardons.', 'Battre œufs, crème, sel, poivre.', 'Répartir lardons et gruyère sur la pâte.', 'Verser l\'appareil.', 'Enfourner 35 min.'],
+  },
+];
+
+/* ─── EXTENDED MOCK: NOTIFICATIONS ─── */
+export const notifications = [
+  { id: 'n1', type: 'weather' as const, title: 'Météo', message: 'Pluie prévue cet après-midi. Pensez à prendre un parapluie.', time: 'Il y a 30 min', read: false, icon: '🌦️' },
+  { id: 'n2', type: 'reminder' as const, title: 'Rappel', message: 'Appeler Mamie à 18h00.', time: 'Il y a 1h', read: false, icon: '🔔' },
+  { id: 'n3', type: 'message' as const, title: 'Mur familial', message: 'Papa : Je rentre tard ce soir.', time: 'Il y a 2h', read: true, icon: '💬' },
+  { id: 'n4', type: 'health' as const, title: 'Santé', message: 'Qualité de l\'air : Bon (AQI 42). Activités extérieures recommandées.', time: 'Il y a 3h', read: true, icon: '🌿' },
+  { id: 'n5', type: 'system' as const, title: 'Système', message: 'Nouvelle recette disponible : Gratin Dauphinois.', time: 'Hier', read: true, icon: '🍽️' },
+];
+
+/* ─── EXTENDED MOCK: ANALYTICS ─── */
+export const analyticsData = {
+  screenTime: { today: '2h15', week: '14h30', trend: '+8%' },
+  topActivities: [
+    { name: 'Météo', count: 24, icon: '☀️' },
+    { name: 'Recettes', count: 18, icon: '🍳' },
+    { name: 'Horoscope', count: 12, icon: '⭐' },
+    { name: 'Actualités', count: 9, icon: '📰' },
+  ],
+  energySaved: '12%',
+  interactionsWeek: [4, 7, 3, 8, 6, 2, 5],
+};
+
+/* ─── EXTENDED MOCK: BILLING ─── */
+export const billingData = {
+  plan: { name: 'Comfort', price: '19,99€/mois', status: 'Actif' },
+  modules: [
+    { name: 'Module Services', price: '+10€/mois', active: true },
+    { name: 'Module Restaurants', price: '+10€/mois', active: false },
+    { name: 'Analytics Avancés', price: '+5€/mois', active: true },
+  ],
+  nextInvoice: { date: '15 juin 2025', amount: '34,99€' },
+};
+
+/* ─── EXTENDED MOCK: AIRBNB EXTENDED ─── */
+export const airbnbExtended = {
+  staySummary: {
+    checkin: 'Sam. 7 juin 14h00',
+    checkout: 'Dim. 8 juin 11h00',
+    nights: 1,
+    guests: 2,
+    propertyType: 'Villa entière',
+    rating: 4.9,
+  },
+  localPOIs: [
+    { name: 'Plage Castel Plage', category: 'Plage', distance: '3 min', rating: 4.7, description: 'Plage de sable fin avec vue sur la baie des Anges' },
+    { name: 'Restaurant La Petite Maison', category: 'Restaurant', distance: '5 min', rating: 4.8, description: 'Cuisine méditerranéenne raffinée, terrasse ombragée' },
+    { name: 'Pharmacie du Marché', category: 'Pharmacie', distance: '8 min', rating: 4.5, description: 'Ouverte 7j/7, produits de parapharmacie' },
+    { name: 'Musée Matisse', category: 'Musée', distance: '15 min', rating: 4.6, description: 'Collection exceptionnelle dans un domaine classé' },
+    { name: 'Marché Cours Saleya', category: 'Marché', distance: '10 min', rating: 4.4, description: 'Marché de fleurs et produits locaux, matin' },
+  ],
+  accessTokens: [
+    { label: 'WiFi Invité', value: 'VillaAzur_Guest', icon: '📶' },
+    { label: 'Code Portail', value: '4827', icon: '🔐' },
+    { label: 'Code Coffre', value: '1593', icon: '🗄️' },
+  ],
+  supportTickets: [
+    { id: 'st1', subject: 'Climatisation', description: 'La climatisation du salon ne fonctionne plus.', status: 'open' as const, time: 'Il y a 2h' },
+    { id: 'st2', subject: 'Serviettes de bain', description: 'Manque 2 serviettes dans la salle de bain.', status: 'resolved' as const, time: 'Hier' },
+  ],
+  travelJournal: [
+    { id: 'j1', day: 'Jour 1', title: 'Arrivée & Installation', content: 'Arrivée à 14h, accueil chaleureux. Appartement conforme aux photos. Première balade sur la Promenade des Anglais.', mood: '😊' },
+    { id: 'j2', day: 'Jour 1 - Soir', title: 'Restaurant La Petite Maison', content: 'Excellente ratatouille niçoise et un glass de rosé face à la mer. Merci pour la recommandation !', mood: '😍' },
+  ],
+  stayNotifications: [
+    { id: 'sn1', title: 'Message d\'Isabelle', message: 'Bienvenue Sophie ! N\'hésitez pas à me contacter.', time: 'Il y a 1h', icon: '🏠' },
+    { id: 'sn2', title: 'Rappel Check-out', message: 'Depart demain 11h. Pensez à déposer les clés.', time: 'Il y a 3h', icon: '⏰' },
+    { id: 'sn3', title: 'Promo Partenaire', message: '-20% au restaurant La Petite Maison ce soir !', time: 'Il y a 4h', icon: '🎉' },
+  ],
+  staySettings: { language: 'Français', units: 'Métrique', nightMode: false, quietHours: '22h-08h' },
+  billingStay: {
+    total: '145€',
+    nights: '120€ (1 nuit)',
+    cleaning: '25€',
+    extras: '0€',
+  },
+};
