@@ -1,60 +1,106 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bell, CheckSquare, ShoppingCart, Utensils, Wifi, Tv,
-  Thermometer, Sun, Clock, ChevronRight, Heart,
-  Phone, AlertCircle,
+  Sun, CloudRain, Wind, Thermometer, Newspaper, Star,
+  Bell, ShoppingCart, Utensils, HelpCircle, Mic, MicOff,
+  CheckCircle2, Circle, Heart, MessageSquare, Home as HomeIcon,
 } from 'lucide-react';
 import { DemoLayout } from './DemoLayout';
-import { NewsWidget } from './NewsWidget';
-import { HoroscopeWidget } from './HoroscopeWidget';
-import { VoiceOrb } from './VoiceOrb';
-import { Skeleton } from '@/components/ui/skeleton';
-import { familleConfig, newsItems, currentDemoTime } from '@/lib/mock-data-real';
+import { useMaellisVoice } from '@/hooks/useMaellisVoice';
+import {
+  familleConfig,
+  newsItems,
+  horoscopeData,
+  currentDemoTime,
+} from '@/lib/mock-data-real';
+import type { Reminder } from '@/lib/mock-data-real';
 
 interface DemoParticulierProps {
   onBack: () => void;
 }
 
+type TabKey = 'home' | 'news' | 'horoscope';
+
 export function DemoParticulier({ onBack }: DemoParticulierProps) {
+  const { speak, isSpeaking } = useMaellisVoice();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'home' | 'news' | 'horoscope'>('home');
-  const [reminders, setReminders] = useState(familleConfig.reminders);
+  const [activeTab, setActiveTab] = useState<TabKey>('home');
+  const [reminders, setReminders] = useState<Reminder[]>([...familleConfig.reminders]);
+  const [selectedSign, setSelectedSign] = useState('taureau');
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
-  const toggleReminder = (id: string) => {
-    setReminders((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r))
+  // ── Voice Handlers ──
+  const handleWeatherClick = () => {
+    speak(
+      `Il fait actuellement ${familleConfig.weather.temp} et le temps est ${familleConfig.weather.condition.toLowerCase()} à ${familleConfig.weather.city}. Humidité ${familleConfig.weather.humidity}. Levé du soleil à ${currentDemoTime.sunrise}.`
     );
   };
 
+  const handleNewsClick = (title: string, source: string) => {
+    speak(`${source}. ${title}`);
+  };
+
+  const handleHoroscopeClick = () => {
+    const h = horoscopeData[selectedSign];
+    if (h) {
+      speak(
+        `Horoscope du ${h.signe}. Humeur : ${h.humeur}. Amour : ${h.amour}. Travail : ${h.travail}. Conseil : ${h.conseil}.`
+      );
+    }
+  };
+
+  const handleRecipeClick = (name: string) => {
+    speak(`Voici la recette du ${name}. Souhaitez-vous lancer le minuteur ?`);
+  };
+
+  const handleReminderToggle = (id: string, label: string) => {
+    setReminders((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r))
+    );
+    const reminder = reminders.find((r) => r.id === id);
+    if (reminder && !reminder.done) {
+      speak(`C'est noté, vous avez coché "${label}". Bravo !`);
+    }
+  };
+
+  const handleFaqClick = (question: string, answer: string) => {
+    speak(`${question} ${answer}`);
+  };
+
+  const handleShoppingClick = () => {
+    const items = familleConfig.shoppingList.join(', ');
+    speak(`Votre liste de courses : ${items}. Il y a ${familleConfig.shoppingList.length} articles.`);
+  };
+
+  const handleMicClick = () => {
+    if (isSpeaking) return;
+    speak('Bonjour Paul ! Je suis Maellis, votre assistant maison. Dites-moi ce dont vous avez besoin.');
+  };
+
+  // ── Loading Skeleton ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#020617]">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-          {/* Skeleton top bar */}
           <div className="flex items-center justify-between">
-            <Skeleton className="h-8 w-32 rounded-lg bg-white/[0.04]" />
-            <Skeleton className="h-6 w-40 rounded-full bg-white/[0.04]" />
+            <div className="h-8 w-32 rounded-xl bg-slate-200 animate-pulse" />
+            <div className="h-6 w-40 rounded-full bg-slate-200 animate-pulse" />
           </div>
-          {/* Skeleton hero */}
-          <Skeleton className="h-32 w-full rounded-2xl bg-white/[0.04]" />
-          {/* Skeleton tabs */}
-          <div className="flex gap-2">
+          <div className="h-36 w-full rounded-3xl bg-slate-200 animate-pulse" />
+          <div className="flex gap-3">
             {['Home', 'News', 'Horoscope'].map((t) => (
-              <Skeleton key={t} className="h-8 w-20 rounded-lg bg-white/[0.04]" />
+              <div key={t} className="h-10 w-24 rounded-xl bg-slate-200 animate-pulse" />
             ))}
           </div>
-          {/* Skeleton cards */}
           <div className="grid md:grid-cols-2 gap-6">
-            <Skeleton className="h-64 rounded-2xl bg-white/[0.04]" />
-            <Skeleton className="h-64 rounded-2xl bg-white/[0.04]" />
+            <div className="h-64 rounded-2xl bg-slate-200 animate-pulse" />
+            <div className="h-64 rounded-2xl bg-slate-200 animate-pulse" />
           </div>
         </div>
       </div>
@@ -62,111 +108,135 @@ export function DemoParticulier({ onBack }: DemoParticulierProps) {
   }
 
   const doneCount = reminders.filter((r) => r.done).length;
-  const pendingReminders = reminders.filter((r) => !r.done);
+
+  // ── Tab configs ──
+  const tabs: { key: TabKey; label: string; icon: typeof HomeIcon }[] = [
+    { key: 'home', label: 'Accueil', icon: HomeIcon },
+    { key: 'news', label: 'Actualités', icon: Newspaper },
+    { key: 'horoscope', label: 'Horoscope', icon: Star },
+  ];
 
   return (
     <DemoLayout
       title={`Bonjour Paul ! 👋`}
       subtitle={`${currentDemoTime.date} — Famille Martin`}
+      accentColor="blue"
       onBack={onBack}
     >
-      {/* Weather bar */}
+      {/* ─── Weather Card ─── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/[0.06] to-orange-500/[0.04] border border-amber-500/10"
+        onClick={handleWeatherClick}
+        className="cursor-pointer hover:scale-[1.01] transition-transform mb-6 sm:mb-8"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="text-3xl">{familleConfig.weather.icon}</div>
+        <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute -top-4 -right-4 opacity-10">
+            <Sun size={140} />
+          </div>
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <p className="text-2xl font-semibold text-white">{familleConfig.weather.temp}</p>
-              <p className="text-xs text-slate-400">{familleConfig.weather.condition} &bull; {familleConfig.weather.city}</p>
+              <div className="text-5xl sm:text-6xl font-bold">{familleConfig.weather.temp}</div>
+              <div className="text-blue-100 mt-2 text-base sm:text-lg font-medium">
+                {familleConfig.weather.condition} &bull; {familleConfig.weather.city}
+              </div>
+            </div>
+            <div className="text-right space-y-2 bg-white/10 p-3 rounded-xl backdrop-blur-sm hidden sm:block">
+              <div className="flex items-center gap-2 text-sm">
+                <CloudRain size={16} /> {familleConfig.weather.humidity} Humidité
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Wind size={16} /> {familleConfig.weather.wind} Vent
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Thermometer size={16} /> Ressenti {familleConfig.weather.temp}
+              </div>
             </div>
           </div>
-          <div className="text-right text-[10px] text-slate-500 space-y-0.5">
-            <p className="flex items-center gap-1 justify-end"><Thermometer className="w-3 h-3" /> {familleConfig.weather.humidity}</p>
-            <p className="flex items-center gap-1 justify-end"><Sun className="w-3 h-3" /> {currentDemoTime.sunrise}</p>
-            <p className="flex items-center gap-1 justify-end"><Clock className="w-3 h-3" /> {currentDemoTime.sunset}</p>
+          <div className="mt-3 text-xs text-blue-200 flex items-center gap-2">
+            🔊 Cliquez pour écouter la météo
           </div>
         </div>
       </motion.div>
 
-      {/* Navigation tabs */}
-      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
-        {[
-          { key: 'home' as const, label: 'Accueil', icon: Home },
-          { key: 'news' as const, label: 'Actualités', icon: Newspaper },
-          { key: 'horoscope' as const, label: 'Horoscope', icon: Star },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
-              activeTab === tab.key
-                ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
-                : 'bg-white/[0.03] text-slate-500 border border-white/[0.06] hover:bg-white/[0.05]'
-            }`}
-          >
-            <tab.icon className="w-3.5 h-3.5" />
-            {tab.label}
-          </button>
-        ))}
+      {/* ─── Navigation Tabs ─── */}
+      <div className="flex gap-2 sm:gap-3 mb-6 sm:mb-8 overflow-x-auto pb-1">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-1.5 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium whitespace-nowrap transition-all shadow-sm ${
+                isActive
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                  : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-blue-300'
+              }`}
+            >
+              <Icon size={16} />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* HOME TAB */}
-      {activeTab === 'home' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
-        >
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Left column */}
-            <div className="space-y-6">
-              {/* Quick reminders */}
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden">
-                <div className="p-4 pb-3 border-b border-white/[0.06] flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-blue-500/10">
-                      <Bell className="w-4 h-4 text-blue-400" />
+      {/* ─── TAB: HOME ─── */}
+      <AnimatePresence mode="wait">
+        {activeTab === 'home' && (
+          <motion.div
+            key="home"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6"
+          >
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* ── Reminders ── */}
+              <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                <div className="p-4 sm:p-6 border-b border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 bg-blue-100 rounded-xl">
+                        <Bell className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-bold text-slate-800">Rappels</h3>
+                        <p className="text-sm text-slate-500">{doneCount}/{reminders.length} terminés</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-white">Rappels</h3>
-                      <p className="text-[10px] text-slate-500">{doneCount}/{reminders.length} terminés</p>
+                    <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                      {reminders.length - doneCount}
                     </div>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-xs font-semibold text-slate-400">
-                    {pendingReminders.length}
                   </div>
                 </div>
-                <div className="divide-y divide-white/[0.04]">
+
+                <div className="divide-y divide-slate-100">
                   {reminders.map((reminder, i) => (
                     <motion.div
                       key={reminder.id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.08 }}
-                      className="flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors"
+                      transition={{ delay: i * 0.06 }}
+                      className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4 hover:bg-slate-50 transition cursor-pointer"
+                      onClick={() => handleReminderToggle(reminder.id, reminder.label)}
                     >
-                      <button
-                        onClick={() => toggleReminder(reminder.id)}
-                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                          reminder.done
-                            ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-slate-600 hover:border-amber-500/50'
-                        }`}
-                      >
-                        {reminder.done && <CheckSquare className="w-3 h-3 text-white" />}
-                      </button>
+                      {reminder.done ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-slate-300 flex-shrink-0" />
+                      )}
                       <span className="text-lg">{reminder.icon}</span>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${reminder.done ? 'text-slate-600 line-through' : 'text-slate-200'}`}>
+                        <div className={`font-medium ${reminder.done ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
                           {reminder.label}
-                        </p>
+                        </div>
+                        <div className="text-sm text-slate-500">Quotidien</div>
                       </div>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                        reminder.done ? 'bg-slate-800 text-slate-600' : 'bg-amber-500/10 text-amber-400'
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                        reminder.done
+                          ? 'bg-slate-100 text-slate-400'
+                          : 'bg-amber-100 text-amber-800'
                       }`}>
                         {reminder.time}
                       </span>
@@ -175,155 +245,291 @@ export function DemoParticulier({ onBack }: DemoParticulierProps) {
                 </div>
               </div>
 
-              {/* Shopping list */}
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden">
-                <div className="p-4 pb-3 border-b border-white/[0.06]">
+              {/* ── Recipes ── */}
+              <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                <div className="p-4 sm:p-6 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-emerald-500/10">
-                      <ShoppingCart className="w-4 h-4 text-emerald-400" />
+                    <div className="p-2 bg-orange-100 rounded-xl">
+                      <Utensils className="w-5 h-5 text-orange-600" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-white">Liste de courses</h3>
-                      <p className="text-[10px] text-slate-500">{familleConfig.shoppingList.length} articles</p>
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-800">🍳 Recettes</h3>
+                      <p className="text-sm text-slate-500">Suggestions du jour</p>
                     </div>
                   </div>
                 </div>
-                <div className="p-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    {familleConfig.shoppingList.map((item, i) => (
-                      <motion.span
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs text-slate-300 hover:bg-white/[0.06] transition-colors cursor-default"
-                      >
-                        {item}
-                      </motion.span>
-                    ))}
-                  </div>
-                </div>
-              </div>
 
-              {/* Voice assistant */}
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5">
-                <div className="flex items-center gap-2.5 mb-4">
-                  <div className="p-2 rounded-xl bg-violet-500/10">
-                    <Phone className="w-4 h-4 text-violet-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Assistant Maellis</h3>
-                    <p className="text-[10px] text-slate-500">Reconnaissance vocale intégrée</p>
-                  </div>
-                </div>
-                <VoiceOrb onTranscript={(t) => console.log('Transcript:', t)} />
-              </div>
-            </div>
-
-            {/* Right column */}
-            <div className="space-y-6">
-              {/* Recipes */}
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden">
-                <div className="p-4 pb-3 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-orange-500/10">
-                      <Utensils className="w-4 h-4 text-orange-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-white">Recettes</h3>
-                      <p className="text-[10px] text-slate-500">Suggestions du jour</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="divide-y divide-white/[0.04]">
+                <div className="divide-y divide-slate-100">
                   {familleConfig.recipes.map((recipe, i) => (
                     <motion.div
                       key={recipe.id}
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                      transition={{ delay: i * 0.08 }}
+                      onClick={() => handleRecipeClick(recipe.name)}
+                      className="p-3 sm:p-4 hover:bg-blue-50 transition cursor-pointer flex justify-between items-center group"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-xl">
-                        {recipe.image}
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{recipe.image}</span>
+                        <div>
+                          <div className="font-medium text-slate-800 group-hover:text-blue-700 transition">
+                            {recipe.name}
+                          </div>
+                          <div className="text-sm text-slate-500">{recipe.time} &bull; {recipe.difficulty}</div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-slate-200 font-medium">{recipe.name}</p>
-                        <p className="text-[10px] text-slate-500">
-                          {recipe.time} &bull; {recipe.difficulty}
-                        </p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                      <span className="text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
+                        🔊 Écouter
+                      </span>
                     </motion.div>
                   ))}
                 </div>
               </div>
 
-              {/* FAQ Maison */}
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden">
-                <div className="p-4 pb-3 border-b border-white/[0.06]">
+              {/* ── Shopping List ── */}
+              <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                <div className="p-4 sm:p-6 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-cyan-500/10">
-                      <AlertCircle className="w-4 h-4 text-cyan-400" />
+                    <div className="p-2 bg-emerald-100 rounded-xl">
+                      <ShoppingCart className="w-5 h-5 text-emerald-600" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-white">FAQ Maison</h3>
-                      <p className="text-[10px] text-slate-500">Questions fréquentes</p>
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-800">🛒 Liste de courses</h3>
+                      <p className="text-sm text-slate-500">{familleConfig.shoppingList.length} articles</p>
                     </div>
                   </div>
                 </div>
-                <div className="divide-y divide-white/[0.04]">
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-wrap gap-2">
+                    {familleConfig.shoppingList.map((item, i) => (
+                      <motion.span
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="px-3 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer"
+                      >
+                        {item}
+                      </motion.span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={handleShoppingClick}
+                    className="mt-3 text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                  >
+                    🔊 Lire la liste
+                  </button>
+                </div>
+              </div>
+
+              {/* ── FAQ Maison ── */}
+              <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                <div className="p-4 sm:p-6 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-cyan-100 rounded-xl">
+                      <HelpCircle className="w-5 h-5 text-cyan-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-800">❓ FAQ Maison</h3>
+                      <p className="text-sm text-slate-500">Questions fréquentes</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="divide-y divide-slate-100">
                   {familleConfig.faq.map((faq, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.08 }}
-                      className="p-3"
+                      transition={{ delay: i * 0.06 }}
+                      onClick={() => handleFaqClick(faq.question, faq.answer)}
+                      className="p-3 sm:p-4 hover:bg-blue-50 transition cursor-pointer group"
                     >
-                      <p className="text-xs font-medium text-slate-300 mb-1">{faq.question}</p>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">{faq.answer}</p>
+                      <div className="font-medium text-slate-800 mb-1">{faq.question}</div>
+                      <div className="text-sm text-slate-500 group-hover:text-slate-700 transition">{faq.answer}</div>
+                      <span className="text-[10px] text-blue-500 opacity-0 group-hover:opacity-100 transition mt-1 block">
+                        🔊 Écouter la réponse
+                      </span>
                     </motion.div>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      )}
 
-      {/* NEWS TAB */}
-      {activeTab === 'news' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl"
-        >
-          <NewsWidget news={newsItems} />
-        </motion.div>
-      )}
+            {/* ── Voice Assistant ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-6 sm:p-8 text-center border-2 border-blue-100"
+            >
+              <h3 className="text-2xl font-bold text-slate-800 mb-2">Assistant Maellis</h3>
+              <p className="text-slate-600 mb-6">
+                {isSpeaking ? 'Je parle...' : 'Appuyez pour me parler'}
+              </p>
 
-      {/* HOROSCOPE TAB */}
-      {activeTab === 'horoscope' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl"
-        >
-          <HoroscopeWidget defaultSign="taureau" />
-        </motion.div>
-      )}
+              <button
+                onClick={handleMicClick}
+                disabled={isSpeaking}
+                className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all transform ${
+                  isSpeaking
+                    ? 'bg-red-500 animate-pulse scale-110'
+                    : 'bg-gradient-to-br from-blue-500 to-purple-600 hover:scale-105'
+                }`}
+              >
+                {isSpeaking ? <MicOff className="w-10 h-10" /> : <Mic className="w-10 h-10" />}
+              </button>
+
+              <p className="text-sm text-slate-500 mt-4">
+                {isSpeaking ? '🔊 Maellis est en train de parler...' : '🎤 Appuyez pour parler'}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* ─── TAB: NEWS ─── */}
+        {activeTab === 'news' && (
+          <motion.div
+            key="news"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="max-w-3xl space-y-6"
+          >
+            <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50">
+                <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  📰 Actualités du jour
+                </h3>
+                <p className="text-sm text-slate-500 mt-1">Cliquez sur un titre pour écouter</p>
+              </div>
+
+              <div className="divide-y divide-slate-100">
+                {newsItems.map((news, i) => (
+                  <motion.div
+                    key={news.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    onClick={() => handleNewsClick(news.title, news.source)}
+                    className="p-4 sm:p-5 hover:bg-blue-50 transition cursor-pointer group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="min-w-[80px] sm:min-w-[90px] text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded text-center flex-shrink-0">
+                        {news.source}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-slate-800 group-hover:text-blue-700 transition leading-snug">
+                          {news.title}
+                        </div>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                            {news.category}
+                          </span>
+                          <span className="text-xs text-slate-400">{news.time}</span>
+                          <span className="text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition">
+                            🔊 Écouter
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─── TAB: HOROSCOPE ─── */}
+        {activeTab === 'horoscope' && (
+          <motion.div
+            key="horoscope"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="max-w-3xl space-y-6"
+          >
+            {/* Sign selector */}
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(horoscopeData).map(([key, h]) => (
+                <button
+                  key={key}
+                  onClick={() => setSelectedSign(key)}
+                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                    selectedSign === key
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                      : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-purple-300'
+                  }`}
+                >
+                  <span className="mr-1">{h.icon}</span>
+                  {h.signe}
+                </button>
+              ))}
+            </div>
+
+            {/* Horoscope detail */}
+            {(() => {
+              const h = horoscopeData[selectedSign];
+              if (!h) return null;
+              return (
+                <motion.div
+                  key={selectedSign}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={handleHoroscopeClick}
+                  className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-lg border border-indigo-100 overflow-hidden cursor-pointer hover:shadow-xl transition-all"
+                >
+                  <div className="p-4 sm:p-6 border-b border-indigo-100 bg-white/50">
+                    <h3 className="text-xl sm:text-2xl font-bold text-indigo-900 flex items-center gap-2">
+                      <span className="text-3xl">{h.icon}</span>
+                      {h.signe}
+                      <span className="text-sm font-normal text-indigo-500">{h.periode}</span>
+                    </h3>
+                  </div>
+                  <div className="p-4 sm:p-6 space-y-5">
+                    <div>
+                      <div className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <Heart size={14} /> Humeur
+                      </div>
+                      <p className="text-slate-700 italic">&ldquo;{h.humeur}&rdquo;</p>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-pink-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <MessageSquare size={14} /> Amour
+                      </div>
+                      <p className="text-slate-700">{h.amour}</p>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-blue-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <Star size={14} /> Travail
+                      </div>
+                      <p className="text-slate-700">{h.travail}</p>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-emerald-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        💰 Argent
+                      </div>
+                      <p className="text-slate-700">{h.argent}</p>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-amber-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        💡 Conseil
+                      </div>
+                      <p className="text-slate-700 font-medium">{h.conseil}</p>
+                    </div>
+                    <div className="pt-3 border-t border-indigo-100">
+                      <p className="text-sm text-slate-600 leading-relaxed">{h.texte}</p>
+                    </div>
+                    <div className="mt-3 text-xs text-indigo-400 flex items-center gap-2">
+                      🔊 Cliquez pour écouter votre horoscope complet
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DemoLayout>
   );
-}
-
-// Re-export icons used in the component
-function Home(props: React.SVGProps<SVGSVGElement>) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>;
-}
-function Newspaper(props: React.SVGProps<SVGSVGElement>) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>;
-}
-function Star(props: React.SVGProps<SVGSVGElement>) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
 }

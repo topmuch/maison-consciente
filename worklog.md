@@ -540,3 +540,24 @@ Stage Summary:
 - 9 new files created (7 components + mock data + page modifications)
 - Demo accessible via "Démo" button in landing page navbar
 - Two complete demo experiences: Famille Martin (particulier) and Villa Azur (Airbnb)
+---
+Task ID: 1
+Agent: Main Agent
+Task: Complete redesign of demo pages with "Lumière & Chaleur" theme + voice interactions
+
+Work Log:
+- Created src/lib/theme.ts with "Lumière & Chaleur" color palette (orange/amber primary, blue/purple secondary)
+- Created src/hooks/useMaellisVoice.ts — Web Speech API hook with French voice, rate 1.05, pitch 1.0
+- Rewrote src/components/demo/DemoLayout.tsx — Light bg, white/80 topbar, gradient titles, clean footer
+- Rewrote src/components/demo/DemoSelection.tsx — Two cards (Famille/Hôte) with hover effects, gradient backgrounds, feature lists
+- Rewrote src/components/demo/DemoParticulier.tsx — Complete with: Weather card (click→speak), 3 tabs (Accueil/Actualités/Horoscope), Reminders with checkboxes, Recipes (click→speak), Shopping list (click→speak all), FAQ Maison (click→speak), 5 news articles from France Info/Le Monde, 12 horoscope signs with full details, Voice assistant orb
+- Rewrote src/components/demo/DemoAirbnb.tsx — Complete with: 4 info cards (weather/checkin/checkout/duration), 4 tabs (Bienvenue/WiFi/Activités/Services), Welcome message (click→speak), House rules, Emergency contacts with SOS button, WhatsApp host contact, QR Code WiFi with copy buttons, 5 activities with partner badges, 4 premium services, Voice assistant orb
+- Updated src/components/demo/NewsWidget.tsx, HoroscopeWidget.tsx, ActivityCard.tsx, VoiceOrb.tsx to match new design
+- Fixed Navbar onShowDemo prop passthrough bug from previous session
+
+Stage Summary:
+- All 8 files created/updated successfully
+- Zero lint errors in project code
+- Dev server compiles and serves page correctly
+- Voice interactions on every clickable element (weather, news, horoscope, recipes, FAQ, shopping, activities, services, rules, contacts)
+

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { MapPin, Clock, MessageCircle, ExternalLink } from 'lucide-react';
+import { MapPin, Clock, MessageCircle } from 'lucide-react';
 import type { Activity } from '@/lib/mock-data-real';
 
 interface ActivityCardProps {
@@ -10,82 +10,49 @@ interface ActivityCardProps {
 }
 
 export function ActivityCard({ activity, index = 0 }: ActivityCardProps) {
-  const categoryColors: Record<string, string> = {
-    'Bord de mer': 'from-cyan-500/20 to-blue-500/20 border-cyan-500/20',
-    'Gastronomie': 'from-orange-500/20 to-red-500/20 border-orange-500/20',
-    'Nature': 'from-emerald-500/20 to-green-500/20 border-emerald-500/20',
-    'Découverte': 'from-purple-500/20 to-violet-500/20 border-purple-500/20',
-    'Culture': 'from-rose-500/20 to-pink-500/20 border-rose-500/20',
-  };
-
-  const categoryIcons: Record<string, string> = {
-    'Bord de mer': '🌊',
-    'Gastronomie': '🍽️',
-    'Nature': '🌿',
-    'Découverte': '🔍',
-    'Culture': '🎨',
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.4 }}
-      whileHover={{ scale: 1.02, y: -2 }}
-      className={`bg-gradient-to-br ${categoryColors[activity.category] || 'from-white/[0.03] to-white/[0.01] border-white/[0.08]'} border rounded-2xl p-4 transition-all duration-300 group`}
+      transition={{ delay: index * 0.08 }}
+      className="bg-white rounded-2xl shadow-md border border-slate-100 p-4 sm:p-5 hover:shadow-lg hover:border-amber-200 transition-all cursor-pointer group"
     >
-      <div className="flex items-start gap-3">
-        {/* Activity icon */}
-        <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center text-2xl flex-shrink-0">
-          {categoryIcons[activity.category] || '📍'}
-        </div>
-
-        {/* Content */}
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white truncate">{activity.name}</h4>
+            <h4 className="text-base sm:text-lg font-bold text-slate-800 group-hover:text-amber-700 transition">
+              {activity.name}
+            </h4>
             {activity.isPartner && (
-              <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20">
-                PARTENAIRE
+              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase">
+                Partenaire
               </span>
             )}
           </div>
-
-          <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2 mb-2">
-            {activity.description}
-          </p>
-
-          <div className="flex items-center gap-3 text-[10px] text-slate-500">
+          <p className="text-sm text-slate-500 mb-2">{activity.description}</p>
+          <div className="flex items-center gap-3 text-xs text-slate-400">
             <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {activity.distance}
+              <MapPin size={12} /> {activity.distance}
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {activity.duration}
+              <Clock size={12} /> {activity.duration}
             </span>
+            <span className="px-2 py-0.5 bg-slate-100 rounded text-slate-500">{activity.category}</span>
           </div>
         </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/[0.06]">
-        {activity.whatsappLink ? (
-          <a
-            href={activity.whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 transition-all"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Réserver via WhatsApp
-          </a>
-        ) : (
-          <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-400 text-xs font-medium hover:bg-white/[0.06] transition-all">
-            <ExternalLink className="w-3.5 h-3.5" />
-            Plus d&apos;infos
-          </button>
-        )}
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          {activity.whatsappLink && (
+            <a
+              href={activity.whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium hover:bg-emerald-200 transition"
+            >
+              <MessageCircle size={12} /> Réserver
+            </a>
+          )}
+        </div>
       </div>
     </motion.div>
   );
