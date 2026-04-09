@@ -38,6 +38,26 @@ const PUBLIC_API_PATHS = [
 // Static assets
 const STATIC_EXTENSIONS = [".js", ".css", ".png", ".jpg", ".svg", ".ico", ".webp", ".woff", ".woff2", ".json"];
 
+/* ── Security headers helper ──────────────────────────────── */
+
+function securityHeaders(): Record<string, string> {
+  return {
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(self), geolocation=(self)",
+    "X-XSS-Protection": "1; mode=block",
+  };
+}
+
+function withSecurityHeaders(response: NextResponse): NextResponse {
+  const headers = securityHeaders();
+  for (const [key, value] of Object.entries(headers)) {
+    response.headers.set(key, value);
+  }
+  return response;
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -48,12 +68,12 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/logo") ||
     STATIC_EXTENSIONS.some((ext) => pathname.endsWith(ext))
   ) {
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next());
   }
 
   // Skip manifest.json
   if (pathname === "/manifest.json") {
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next());
   }
 
   // Check if this is a protected path
@@ -67,7 +87,7 @@ export function middleware(request: NextRequest) {
     !PUBLIC_API_PATHS.some((path) => pathname === path || pathname.startsWith(path + "/"));
 
   if (!isProtectedRoute && !isProtectedApi) {
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next());
   }
 
   // Check for session cookie
@@ -76,19 +96,20 @@ export function middleware(request: NextRequest) {
   if (!sessionCookie?.value) {
     // For API routes, return 401
     if (isProtectedApi) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { success: false, error: "Authentication required" },
         { status: 401 }
       );
+      return withSecurityHeaders(response);
     }
     // For page routes, redirect to home
     const url = request.nextUrl.clone();
     url.pathname = "/";
     url.searchParams.set("auth", "required");
-    return NextResponse.redirect(url);
+    return withSecurityHeaders(NextResponse.redirect(url));
   }
 
-  return NextResponse.next();
+  return withSecurityHeaders(NextResponse.next());
 }
 
 export const config = {

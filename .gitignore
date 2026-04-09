@@ -50,5 +50,9 @@ test
 prompt
 
 server.log
+
+# Reference project (excluded from builds and indexing)
+/maison-consciente-ref/
+
 # Skills directory
 /skills/

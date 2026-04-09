@@ -601,3 +601,69 @@ Stage Summary:
 - ignoreBuildErrors: Already removed from next.config.ts (clean)
 - tsconfig.json: Excluded maison-consciente-ref, examples, skills
 - eslint.config.mjs: Added maison-consciente-ref/** to ignores
+
+---
+Task ID: phase1-security
+Agent: Main
+Task: Phase 1 — Security & Stability (Days 1-3)
+
+Work Log:
+- Generated VAULT_AES_KEY (64-char hex) and CRON_SECRET, added to .env
+- Created `scripts/migrate-vault-encryption.ts` — one-shot script to encrypt SecretVault.password + ApiConfig.apiKey
+- Created `scripts/migrate-rgpd-fields.ts` — one-shot script to encrypt Household.contactPhone + EmergencyContact.phone
+- Ran both migration scripts (0 existing records to encrypt — clean DB)
+- Cleaned up duplicate Prisma migration: removed `20250708000000_init`, resolved `20250710183100_init`
+- Hardened `next.config.ts`: Added CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, X-XSS-Protection headers; Added 7 image remotePatterns (TMDb, Google, Unsplash, OSM, etc.)
+- Hardened `src/middleware.ts`: Added `securityHeaders()` helper + `withSecurityHeaders()` wrapper applied to ALL responses
+- Created `.env.example` with all 13 required environment variables documented
+- Updated `.env` with all required vars (VAULT_AES_KEY, CRON_SECRET, Stripe, Retell AI, DeepL, Foursquare, Google, OpenWeather, News, GNews)
+- Removed `next-auth` dependency (dead weight — 0 imports in src/, Lucia is sole auth)
+
+Stage Summary:
+- Security headers: ✅ CSP + HSTS + X-Frame-Options + X-Content-Type-Options in next.config + middleware
+- Image domains: ✅ 7 remote patterns configured
+- Vault encryption: ✅ VAULT_AES_KEY active, migration scripts ready
+- Prisma migrations: ✅ Single clean baseline migration resolved
+- Auth cleanup: ✅ next-auth removed (1 package)
+- ESLint: 0 errors, TypeScript: 0 errors
+
+---
+Task ID: phase2-config
+Agent: Main
+Task: Phase 2 — Configuration & Integrations
+
+Work Log:
+- Created comprehensive `.env.example` with all 13 required vars + documentation
+- Activated vault encryption by adding VAULT_AES_KEY to `.env`
+- Added CRON_SECRET for cron job authentication
+- Added Stripe, Retell AI, DeepL, Foursquare, Google Places, OpenWeather, News API, GNews placeholders
+- Confirmed next-auth removal (0 imports anywhere in src/)
+
+Stage Summary:
+- .env: 13 variables configured (2 real keys + 11 placeholders)
+- .env.example: Complete template for team onboarding
+- Auth conflict: Eliminated (Lucia sole provider)
+
+---
+Task ID: phase3-ux-cleanup
+Agent: Main
+Task: Phase 3 — UX Mobile & Finalization
+
+Work Log:
+- Verified `src/hooks/use-mobile.ts` already exists with clean matchMedia-based implementation
+- Identified and removed 34 orphaned/dead files:
+  - Hospitality (8): hospitality-dashboard, guest-check-in, travel-journal, feedback-form, ReviewFlow, ContactModal, CheckoutScreen, POIImporter
+  - Dead UI (11): landing-page, airhome-page, DemoLayout, HoroscopeWidget, NewsWidget, scan-page, interaction-history, standby-overlay, signature-loading, LargeButton, LuxuryCard
+  - Dead Voice (5): VoiceOrb, VoiceTranscriptToast, VoiceCommandToast, CommandOrb, index barrel
+  - Dead Hooks (5): useFaceRecognition, useRecipeTranslation, useTabletNotifications, useSeasonalAudio, use-inactivity
+  - Dead Lib (4): offline-queue, notification-scheduler, rgpd-encryption, env-validate
+  - Dead Core (1): use-household-features
+- Added `/maison-consciente-ref/` to `.gitignore`
+- Verified: TypeScript 0 errors, ESLint 0 errors after cleanup
+- Console.log audit: No harmful abuse found, 17 informational instances (all acceptable)
+
+Stage Summary:
+- Dead code removed: 34 files
+- .gitignore: Fixed (maison-consciente-ref excluded)
+- useMobile hook: Already exists, no changes needed
+- Build verification: ✅ tsc --noEmit clean, eslint clean
