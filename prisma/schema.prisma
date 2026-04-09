@@ -24,6 +24,7 @@ model Household {
   id                  String    @id @default(uuid())
   name                String
   type                String    @default("home")      // "home" | "hospitality"
+  templateSlug        String    @default("nexus-modern")
   settings            String    @default("{}")        // { "lang":"fr", "accent":"gold", "quietHours":[23,7] }
   stripeCustomerId    String?   @unique
   subscriptionPlan    String    @default("free")      // "free" | "comfort" | "prestige" | "starter" | "pro"

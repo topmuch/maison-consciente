@@ -19,6 +19,10 @@ import {
   Loader2,
   ChevronDown,
   Check,
+  BellRing,
+  BellOff,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,6 +45,7 @@ import {
   NOTIFICATION_CATEGORIES,
   DEFAULT_NOTIFICATION_PREFS,
 } from '@/lib/notification-config';
+import { useOneSignal } from '@/hooks/useOneSignal';
 
 /* ═══════════════════════════════════════════════════════════════
    TYPES
@@ -219,6 +224,10 @@ export function NotificationSettingsPanel() {
   const [showTestDialog, setShowTestDialog] = useState(false);
   const [testType, setTestType] = useState<string>('');
   const [testing, setTesting] = useState(false);
+
+  /* ── OneSignal Push ── */
+  const push = useOneSignal();
+  const [pushSubscribing, setPushSubscribing] = useState(false);
 
   /* ── Fetch prefs ── */
   const fetchPrefs = useCallback(async () => {
@@ -432,6 +441,87 @@ export function NotificationSettingsPanel() {
           Configurez quelles notifications vocales sont activées par catégorie.
           Les notifications sont diffusées automatiquement selon vos préférences.
         </p>
+
+        {/* ── Push Notifications (OneSignal) ── */}
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          custom={0.5}
+          className="rounded-xl border border-white/[0.06] p-4 mb-5 bg-gradient-to-r from-[var(--accent-primary, #d4a853)]/5 to-transparent"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${push.isSubscribed ? 'bg-emerald-500/15' : 'bg-white/[0.06]'}`}>
+                {push.isSubscribed
+                  ? <BellRing className="w-4 h-4 text-emerald-400" />
+                  : <BellOff className="w-4 h-4 text-[#64748b]" />
+                }
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-[#e2e8f0]">Notifications Push</p>
+                  {push.isSubscribed && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium bg-emerald-500/15 text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Actif
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-[#475569]">
+                  {push.isSubscribed
+                    ? 'Recevez des notifications même hors de l\'application'
+                    : 'Activez pour recevoir des alertes sur votre appareil'
+                  }
+                </p>
+              </div>
+            </div>
+            {push.isInitialized && !push.isSubscribed && (
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    setPushSubscribing(true);
+                    const ok = await push.subscribe();
+                    setPushSubscribing(false);
+                    if (ok) toast.success('Notifications push activées !');
+                    else toast.error('Impossible d\'activer les notifications');
+                  }}
+                  disabled={pushSubscribing}
+                  className="bg-gradient-to-r from-[var(--accent-primary, #d4a853)] to-[var(--accent-primary, #d4a853)]/80 text-[#0a0a12] font-semibold text-xs shadow-[0_0_12px_rgba(212,168,83,0.2)] hover:shadow-[0_0_20px_rgba(212,168,83,0.3)] transition-all duration-300 disabled:opacity-50"
+                >
+                  {pushSubscribing
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                    : <Bell className="w-3.5 h-3.5 mr-1.5" />
+                  }
+                  Activer
+                </Button>
+              </motion.div>
+            )}
+            {push.isSubscribed && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  setPushSubscribing(true);
+                  await push.unsubscribe();
+                  setPushSubscribing(false);
+                  toast.info('Notifications push désactivées');
+                }}
+                disabled={pushSubscribing}
+                className="text-[#64748b] hover:text-[#e2e8f0] hover:bg-white/[0.04] text-xs transition-all duration-300"
+              >
+                Désactiver
+              </Button>
+            )}
+            {!push.isInitialized && (
+              <div className="flex items-center gap-1.5 text-[10px] text-[#64748b]">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Initialisation...
+              </div>
+            )}
+          </div>
+        </motion.div>
 
         <div className="divider-gold mb-5" />
 

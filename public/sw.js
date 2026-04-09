@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   MAISON CONsciente — Service Worker v2
+   MAELLIS — Maison Consciente — Service Worker v3
    
    Stratégie: Stale-While-Revalidate pour les assets,
    Network-First pour les API, Cache-First pour le reste.
@@ -10,7 +10,7 @@
    • Cache Images: Cache-first (30 days)
    ═══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = "maison-consciente-v2";
+const CACHE_VERSION = "maellis-v3";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
@@ -19,6 +19,8 @@ const PRECACHE_URLS = [
   "/",
   "/manifest.json",
   "/logo.svg",
+  "/icon-192.png",
+  "/icon-512.png",
 ];
 
 // ─── Install ───
@@ -108,8 +110,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/logo.svg",
-      badge: "/logo.svg",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
       vibrate: [100, 50, 100],
       data: data.url || "/",
     })

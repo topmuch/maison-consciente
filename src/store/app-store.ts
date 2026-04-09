@@ -9,15 +9,14 @@ export type AppView =
   | 'messages'
   | 'recipes'
   | 'settings'
+  | 'appearance'
   | 'members'
   | 'admin'
   | 'display'
-  | 'hospitality-dashboard'
-  | 'local-guide'
+  | 'hospitality'
   | 'guest-checkin'
   | 'pricing'
-  | 'billing'
-  | 'hospitality-settings';
+  | 'billing';
 
 interface AppState {
   currentView: AppView;

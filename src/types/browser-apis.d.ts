@@ -80,3 +80,30 @@ interface Window {
   SpeechRecognition: typeof SpeechRecognition;
   webkitSpeechRecognition: typeof SpeechRecognition;
 }
+
+/* ─── OneSignal Web SDK ─── */
+
+interface OneSignal {
+  push(fn: () => void): void;
+  init(options: {
+    appId: string;
+    notifyButton?: { enable: boolean };
+    serviceWorkerParam?: { scope: string };
+    serviceWorkerPath?: string;
+    allowLocalhostAsSecureOrigin?: boolean;
+  }): void;
+  isPushNotificationsEnabled(): Promise<boolean>;
+  getNotificationPermission(): Promise<NotificationPermission>;
+  registerForPushNotifications(): Promise<void>;
+  getUserId(): Promise<string | null>;
+  setExternalId(id: string): Promise<void>;
+  deleteExternalId(): Promise<void>;
+  setSubscription(enabled: boolean): Promise<void>;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+}
+
+declare global {
+  interface Window {
+    OneSignal?: OneSignal[] | OneSignal;
+  }
+}

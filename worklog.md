@@ -728,3 +728,47 @@ Stage Summary:
 - Centre de Commande Maellis prominently displayed in all views with triple-pulse rings
 - Palette: White/Cream base, Amber/Gold primary (Airbnb), Indigo/Purple primary (Famille)
 - Framer Motion animations throughout: mesh gradients, floating orbs, sparkle dots, staggered entrances, 3D hovers
+
+---
+Task ID: pwa-icons-manifest-sw
+Agent: main
+Task: PWA Icons, Manifest, Service Worker, and usePWA Hook
+
+Work Log:
+- Created scripts/generate-pwa-icons.js: sharp-based script that reads /public/logo.svg and generates 4 PNG icons
+  - icon-192.png (192x192, standard) — 3.3 KB
+  - icon-192-maskable.png (192x192, 40% padding) — 2.3 KB
+  - icon-512.png (512x512, standard) — 14.9 KB
+  - icon-512-maskable.png (512x512, 40% padding) — 13.9 KB
+- Updated public/manifest.json:
+  - name → "Maellis — Maison Consciente"
+  - short_name → "Maellis"
+  - background_color → "#0f0f14" (dark luxury)
+  - theme_color → "#d4a853" (gold)
+  - icons array: 4 PNG entries (192 any/maskable + 512 any/maskable) + SVG fallback
+  - Kept start_url, scope, display, shortcuts, categories, lang
+- Updated src/app/layout.tsx:
+  - Added apple icon: "/icon-192.png"
+  - themeColor → "#d4a853" (gold)
+- Updated public/sw.js to v3:
+  - Cache version → "maellis-v3"
+  - Added icon-192.png and icon-512.png to precache list
+  - Updated notification icon/badge to use PNG icons
+- Created src/hooks/usePWA.ts:
+  - Service worker registration with 60-second update interval
+  - beforeinstallprompt / appinstalled event listeners
+  - Online/offline detection
+  - display-mode standalone check via useState initializer (avoids lint set-state-in-effect)
+  - display-mode change listener via MediaQueryList
+  - promptInstall() callback using useRef for deferred prompt
+- Updated src/components/providers.tsx:
+  - Added PWARegistrar inner component that calls usePWA()
+  - Placed PWARegistrar outside AudioProvider/I18nProvider tree (no theme/i18n dependency)
+
+Stage Summary:
+- 4 PNG PWA icons generated (standard + maskable at 192 and 512)
+- Manifest rebranded to Maellis with gold theme and dark luxury background
+- Service worker v3 with updated cache version and precache list
+- usePWA hook provides install prompt, installed state, and online/offline tracking
+- All new files pass ESLint with zero errors
+- Dev server verified: HTTP 200 on /

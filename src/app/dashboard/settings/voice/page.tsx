@@ -1,17 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Volume2, Mic, CheckCircle2, RefreshCw } from "lucide-react";
-import { ASSISTANT_CONFIG, isValidAssistantName, type AssistantName } from "@/lib/config";
+import { ASSISTANT_CONFIG, type AssistantName } from "@/lib/config";
+import { toast } from "sonner";
+
+/* ═══════════════════════════════════════════════════════
+   VOICE SETTINGS PAGE — Real DB Persistence
+
+   Saves assistant name and wake word preference to
+   Household.voiceSettings via the /api/household/settings endpoint.
+   ═══════════════════════════════════════════════════════ */
+
+interface VoiceSettings {
+  enabled: boolean;
+  rate: number;
+  volume: number;
+  language: string;
+  conversationWindow: number;
+  assistantName: string;
+  wakeWordEnabled: boolean;
+}
 
 export default function VoiceSettingsPage() {
   const [selectedName, setSelectedName] = useState<string>(ASSISTANT_CONFIG.defaultName);
   const [wakeWordEnabled, setWakeWordEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
   const names = ASSISTANT_CONFIG.availableNames as readonly string[];
 
+  // Clear success notification after 3 seconds
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => setSuccess(null), 3000);
@@ -19,13 +39,78 @@ export default function VoiceSettingsPage() {
     }
   }, [success]);
 
-  const handleSave = async () => {
+  // Load existing settings from DB on mount
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/household/settings");
+        if (res.ok) {
+          const data = await res.json();
+          const voiceSettings: Partial<VoiceSettings> = data.voiceSettings || {};
+          if (voiceSettings.assistantName) {
+            setSelectedName(voiceSettings.assistantName);
+          }
+          if (typeof voiceSettings.wakeWordEnabled === "boolean") {
+            setWakeWordEnabled(voiceSettings.wakeWordEnabled);
+          }
+        }
+      } catch (err) {
+        console.warn("[VoiceSettings] Could not load settings:", err);
+      } finally {
+        setIsInitialized(true);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const handleSave = useCallback(async () => {
     setLoading(true);
-    // Simulate save — in production would call server action
-    await new Promise(r => setTimeout(r, 500));
-    setSuccess(`Assistant renommé en "${selectedName}"`);
-    setLoading(false);
-  };
+    try {
+      // Get current household settings
+      const res = await fetch("/api/household/settings");
+      if (!res.ok) throw new Error("Failed to fetch settings");
+      const data = await res.json();
+
+      // Merge voice settings
+      const currentVoiceSettings: Partial<VoiceSettings> = data.voiceSettings || {};
+      const updatedVoiceSettings: VoiceSettings = {
+        enabled: currentVoiceSettings.enabled ?? true,
+        rate: currentVoiceSettings.rate ?? 1.05,
+        volume: currentVoiceSettings.volume ?? 0.8,
+        language: currentVoiceSettings.language ?? "fr-FR",
+        conversationWindow: currentVoiceSettings.conversationWindow ?? 10,
+        assistantName: selectedName,
+        wakeWordEnabled: wakeWordEnabled,
+      };
+
+      // Save to DB via PATCH
+      const patchRes = await fetch("/api/household/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          voiceSettings: updatedVoiceSettings,
+        }),
+      });
+
+      if (!patchRes.ok) throw new Error("Failed to save settings");
+
+      setSuccess(`Assistant renommé en "${selectedName}"`);
+      toast.success(`Paramètres vocaux sauvegardés`);
+    } catch (err) {
+      console.error("[VoiceSettings] Save error:", err);
+      toast.error("Erreur lors de la sauvegarde");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedName, wakeWordEnabled]);
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 text-amber-400 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#020617] text-white p-4 md:p-8">
@@ -67,7 +152,7 @@ export default function VoiceSettingsPage() {
           <button
             onClick={handleSave}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl py-3 font-medium flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl py-3 font-medium flex items-center justify-center gap-2 min-h-[48px] transition-all disabled:opacity-50"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
             {loading ? "Enregistrement..." : "Enregistrer"}
@@ -92,6 +177,8 @@ export default function VoiceSettingsPage() {
             <button
               onClick={() => setWakeWordEnabled(!wakeWordEnabled)}
               className={`w-14 h-7 rounded-full transition-colors relative ${wakeWordEnabled ? 'bg-amber-500' : 'bg-slate-700'}`}
+              role="switch"
+              aria-checked={wakeWordEnabled}
             >
               <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${wakeWordEnabled ? 'left-8' : 'left-1'}`} />
             </button>

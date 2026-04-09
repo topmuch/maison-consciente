@@ -20,12 +20,15 @@ export const metadata: Metadata = {
   description: "Transformez votre demeure en espace intelligent et sensoriel. QR codes, suivi de présence, suggestions contextuelles.",
   keywords: ["maison consciente", "smart home premium", "domotique luxe", "habitation intelligente"],
   authors: [{ name: "Maison Consciente" }],
-  icons: { icon: "/logo.svg" },
+  icons: {
+    icon: "/logo.svg",
+    apple: "/icon-192.png",
+  },
   manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#d4a853",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
