@@ -32,17 +32,21 @@ interface TemplateProviderProps {
   initialSlug?: string;
 }
 
-export function TemplateProvider({ children, initialSlug }: TemplateProviderProps) {
-  const [currentSlug, setCurrentSlug] = useState<string>(initialSlug || 'nexus-modern');
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
+/** Load saved template slug from localStorage (safe for SSR) */
+function getStoredSlug(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored && TEMPLATES_BY_SLUG[stored]) {
-      setCurrentSlug(stored);
-    }
-  }, []);
+    if (stored && TEMPLATES_BY_SLUG[stored]) return stored;
+  } catch { /* localStorage unavailable */ }
+  return null;
+}
+
+export function TemplateProvider({ children, initialSlug }: TemplateProviderProps) {
+  const [currentSlug, setCurrentSlug] = useState<string>(() => {
+    return getStoredSlug() || initialSlug || 'nexus-modern';
+  });
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const template = getTemplate(currentSlug);
 
@@ -83,7 +87,7 @@ export function TemplateProvider({ children, initialSlug }: TemplateProviderProp
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ templateSlug: slug }),
-    }).catch(() => {});
+    }).catch(() => { /* fire-and-forget */ });
 
     setTimeout(() => setIsTransitioning(false), 500);
   }, []);

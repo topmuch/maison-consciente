@@ -25,10 +25,55 @@ function getOneSignal(): OneSignal | undefined {
   return os;
 }
 
+function configureOneSignal(setState: React.Dispatch<React.SetStateAction<OneSignalState>>) {
+  const os = getOneSignal();
+  if (!os) return;
+
+  os.push(() => {
+    os.init({
+      appId: ONESIGNAL_APP_ID,
+      notifyButton: { enable: false },
+      serviceWorkerParam: { scope: '/' },
+      serviceWorkerPath: 'sw.js',
+      allowLocalhostAsSecureOrigin: true,
+    });
+
+    os.isPushNotificationsEnabled().then((enabled: boolean) => {
+      setState(prev => ({ ...prev, isSubscribed: enabled }));
+    });
+
+    os.getUserId().then((id: string | null) => {
+      setState(prev => ({ ...prev, playerId: id }));
+    });
+
+    os.getNotificationPermission().then((perm: NotificationPermission) => {
+      setState(prev => ({ ...prev, permission: perm, isInitialized: true }));
+    });
+
+    os.on('subscriptionChange', (isSubscribed: boolean) => {
+      setState(prev => ({ ...prev, isSubscribed }));
+      if (isSubscribed) {
+        os.getUserId().then((id: string | null) => {
+          if (id) {
+            setState(prev => ({ ...prev, playerId: id }));
+            fetch('/api/push/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ playerId: id }),
+            }).catch(() => { /* fire-and-forget */ });
+          }
+        });
+      }
+    });
+  });
+}
+
 export function useOneSignal() {
+  const isConfigured = typeof window !== 'undefined' && !!ONESIGNAL_APP_ID;
+
   const [state, setState] = useState<OneSignalState>({
     isSubscribed: false,
-    isInitialized: false,
+    isInitialized: !isConfigured, // Skip init phase if no app ID
     permission: 'default',
     playerId: null,
   });
@@ -36,13 +81,22 @@ export function useOneSignal() {
   // Initialize OneSignal SDK
   useEffect(() => {
     if (typeof window === 'undefined' || !ONESIGNAL_APP_ID) {
-      console.warn('[OneSignal] App ID not configured');
       return;
+    }
+
+    function tryInit() {
+      const os = getOneSignal();
+      if (os) {
+        configureOneSignal(setState);
+        return;
+      }
+      // SDK not ready yet, retry after a short delay
+      const timer = setTimeout(tryInit, 1000);
     }
 
     // Check if script already loaded
     if (document.querySelector('script[src*="OneSignalSDK"]')) {
-      initOneSignal();
+      tryInit();
       return;
     }
 
@@ -52,65 +106,12 @@ export function useOneSignal() {
     script.setAttribute('data-app-id', ONESIGNAL_APP_ID);
     document.head.appendChild(script);
 
-    script.onload = () => initOneSignal();
-    script.onerror = () => console.error('[OneSignal] Failed to load SDK');
+    script.onload = tryInit;
+    script.onerror = () => {
+      console.error('[OneSignal] Failed to load SDK');
+      setState(prev => ({ ...prev, isInitialized: true }));
+    };
   }, []);
-
-  function initOneSignal() {
-    const os = getOneSignal();
-    if (!os) {
-      // SDK not ready yet, retry
-      const timer = setTimeout(() => {
-        const retry = getOneSignal();
-        if (retry) configureOneSignal(retry);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-    configureOneSignal(os);
-  }
-
-  function configureOneSignal(os: OneSignal) {
-    os.push(() => {
-      os.init({
-        appId: ONESIGNAL_APP_ID,
-        notifyButton: { enable: false },
-        serviceWorkerParam: { scope: '/' },
-        serviceWorkerPath: 'sw.js',
-        allowLocalhostAsSecureOrigin: true,
-      });
-
-      // Check current state
-      os.isPushNotificationsEnabled().then((enabled: boolean) => {
-        setState(prev => ({ ...prev, isSubscribed: enabled }));
-      });
-
-      os.getUserId().then((id: string | null) => {
-        setState(prev => ({ ...prev, playerId: id }));
-      });
-
-      os.getNotificationPermission().then((perm: NotificationPermission) => {
-        setState(prev => ({ ...prev, permission: perm, isInitialized: true }));
-      });
-
-      // Listen for subscription changes
-      os.on('subscriptionChange', (isSubscribed: boolean) => {
-        setState(prev => ({ ...prev, isSubscribed }));
-        if (isSubscribed) {
-          os.getUserId().then((id: string | null) => {
-            if (id) {
-              setState(prev => ({ ...prev, playerId: id }));
-              // Sync with backend
-              fetch('/api/push/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playerId: id }),
-              }).catch(() => {});
-            }
-          });
-        }
-      });
-    });
-  }
 
   // Subscribe to push notifications
   const subscribe = useCallback(async (): Promise<boolean> => {
@@ -149,7 +150,7 @@ export function useOneSignal() {
       await os.setSubscription(false);
       setState(prev => ({ ...prev, isSubscribed: false, playerId: null }));
 
-      await fetch('/api/push/subscribe', { method: 'DELETE' }).catch(() => {});
+      await fetch('/api/push/subscribe', { method: 'DELETE' }).catch(() => { /* fire-and-forget */ });
       return true;
     } catch (err) {
       console.error('[OneSignal] Unsubscribe failed:', err);

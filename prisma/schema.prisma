@@ -78,6 +78,7 @@ model Household {
   reminders           Reminder[]
   knowledgeBase       KnowledgeBaseItem[]
   activities          Activity[]
+  safeArrivals        SafeArrival[]
   whatsappNumber      String?
   /* ═══ MEMORY & PREFERENCES (Maellis) ═══ */
   userPreferences     Json?     // { "musicGenre":"jazz", "zodiacSign":null, "dietaryRestrictions":[], "learningMode":true, "knownInterests":[] }
@@ -573,4 +574,25 @@ model Activity {
 
   @@index([householdId, category])
   @@index([isPartner])
+}
+
+/* ═══ SAFE ARRIVAL (Sécurité Familiale) ═══ */
+model SafeArrival {
+  id             String   @id @default(uuid())
+  householdId    String
+  memberId       String                      // User ID or custom member name
+  memberName     String                      // Display name
+  status         String   @default("pending") // "pending" | "arrived" | "late" | "emergency"
+  expectedBefore DateTime                     // Expected arrival time
+  arrivedAt      DateTime?                    // Actual arrival time
+  acknowledgedAt DateTime?                    // When the arrival was acknowledged
+  isLate         Boolean  @default(false)
+  lateMinutes    Int      @default(0)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  household      Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, status])
+  @@index([expectedBefore])
 }

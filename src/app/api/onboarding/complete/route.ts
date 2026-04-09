@@ -1,14 +1,18 @@
 /* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE V1 — Onboarding Complete API Route
-   
-   Completes the 3-click onboarding wizard:
-   - Updates household name
-   - Creates WiFi KnowledgeBaseItem entries
+   MAELLIS — Onboarding Complete API Route
+
+   Completes the advanced 6-step onboarding wizard:
+   - Updates household name, type, templateSlug
+   - Stores selected modules in modulesConfig
+   - Stores push preferences in notificationPrefs
+   - Stores assistant name in voiceSettings
+   - Returns success with household details
    ═══════════════════════════════════════════════════════ */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getOptionalAuthUser } from '@/lib/server-auth';
+import { DEFAULT_NOTIFICATION_PREFS } from '@/lib/notification-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,11 +26,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { householdId, householdName, wifiSsid, wifiPassword } = body as {
+    const {
+      householdId,
+      householdName,
+      householdType,
+      selectedModules,
+      pushEnabled,
+      quietHoursEnabled,
+      templateSlug,
+      assistantName,
+    } = body as {
       householdId?: string;
       householdName?: string;
-      wifiSsid?: string;
-      wifiPassword?: string;
+      householdType?: 'home' | 'hospitality';
+      selectedModules?: string[];
+      pushEnabled?: boolean;
+      quietHoursEnabled?: boolean;
+      templateSlug?: string;
+      assistantName?: string;
     };
 
     // Validate householdId matches the authenticated user
@@ -37,47 +54,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update household name if provided
-    if (householdName && householdName.trim()) {
-      await prisma.household.update({
-        where: { id: householdId },
-        data: { name: householdName.trim() },
-      });
+    // ── Build modulesConfig ──
+    const modulesConfig: Record<string, { active: boolean; status: string }> = {};
+    if (Array.isArray(selectedModules) && selectedModules.length > 0) {
+      for (const modId of selectedModules) {
+        modulesConfig[modId] = { active: true, status: 'active' };
+      }
     }
 
-    // Create WiFi KnowledgeBaseItem entries if SSID is provided
-    if (wifiSsid && wifiSsid.trim()) {
-      const ssid = wifiSsid.trim();
-      const password = wifiPassword || 'non configuré';
+    // ── Build notificationPrefs ──
+    const notificationPrefs = {
+      ...DEFAULT_NOTIFICATION_PREFS,
+      quietHours: {
+        ...DEFAULT_NOTIFICATION_PREFS.quietHours,
+        enabled: quietHoursEnabled ?? DEFAULT_NOTIFICATION_PREFS.quietHours.enabled,
+      },
+      pushEnabled: pushEnabled ?? false,
+    };
 
-      const wifiFaqs = [
-        {
-          question: 'Quel est le code WiFi ?',
-          answer: `Le réseau WiFi est '${ssid}', le mot de passe est '${password}'.`,
-          category: 'WiFi',
-          keywords: JSON.stringify(['wifi', 'wi-fi', 'wifi code', 'mot de passe wifi', 'internet', 'réseau', 'connexion']),
-        },
-        {
-          question: 'Comment me connecter au WiFi ?',
-          answer: `Allez dans les paramètres WiFi de votre appareil, sélectionnez '${ssid}' et entrez le mot de passe '${password}'.`,
-          category: 'WiFi',
-          keywords: JSON.stringify(['wifi', 'wi-fi', 'connecter', 'connexion', 'internet', 'réseau', 'paramètres']),
-        },
-      ];
+    // ── Build voiceSettings ──
+    const voiceSettings = {
+      enabled: true,
+      rate: 1.0,
+      volume: 0.8,
+      language: 'fr-FR',
+      conversationWindow: 10,
+      assistantName: assistantName || 'Maellis',
+    };
 
-      await prisma.knowledgeBaseItem.createMany({
-        data: wifiFaqs.map((faq) => ({
-          householdId,
-          question: faq.question,
-          answer: faq.answer,
-          category: faq.category,
-          keywords: faq.keywords,
-          isActive: true,
-        })),
-      });
-    }
+    // ── Update household ──
+    const updatedHousehold = await prisma.household.update({
+      where: { id: householdId },
+      data: {
+        ...(householdName?.trim() ? { name: householdName.trim() } : {}),
+        ...(householdType ? { type: householdType } : {}),
+        ...(templateSlug ? { templateSlug } : {}),
+        ...(Object.keys(modulesConfig).length > 0
+          ? { modulesConfig }
+          : {}),
+        notificationPrefs: notificationPrefs as unknown as Record<string, unknown>,
+        voiceSettings: voiceSettings as unknown as Record<string, unknown>,
+      },
+    });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      household: {
+        id: updatedHousehold.id,
+        name: updatedHousehold.name,
+        type: updatedHousehold.type,
+        templateSlug: updatedHousehold.templateSlug,
+      },
+    });
   } catch (error) {
     console.error('[ONBOARDING] Complete error:', error);
     return NextResponse.json(
