@@ -140,3 +140,94 @@ export function formatStepForVoice(stepState: StepByStepRecipe): string {
   }
   return `Étape ${stepState.currentStep + 1} sur ${stepState.totalSteps}. ${stepState.currentInstruction}`;
 }
+
+/* ═══════════════════════════════════════════════════════
+   VOICE ACTION COMPATIBILITY WRAPPERS
+   ═══════════════════════════════════════════════════════ */
+
+/** Voice-friendly recipe summary */
+export interface VoiceRecipeSummary {
+  title: string;
+  description: string;
+  ingredientCount: number;
+  stepCount: number;
+}
+
+/** Search recipes returning simplified voice-friendly results */
+export function searchLocalRecipes(householdId: string, query: string): VoiceRecipeSummary[] {
+  const results = searchRecipes(query);
+  return results.map(r => ({
+    title: r.recipe.title,
+    description: r.recipe.description,
+    ingredientCount: r.recipe.ingredients.length,
+    stepCount: r.recipe.steps.length,
+  }));
+}
+
+/** Smart search: returns a single best match with voice-ready summary */
+export function smartRecipeSearch(householdId: string, query: string): VoiceRecipeSummary | null {
+  const results = searchRecipes(query, 1);
+  if (results.length === 0) return null;
+  const r = results[0].recipe;
+  return {
+    title: r.title,
+    description: r.description,
+    ingredientCount: r.ingredients.length,
+    stepCount: r.steps.length,
+  };
+}
+
+/** Step-by-step session store (per householdId) */
+const recipeSessions = new Map<string, StepByStepRecipe>();
+
+/** Navigate recipe steps for voice (next/prev). Returns null if no session. */
+export function getRecipeStep(
+  householdId: string,
+  direction: 'next' | 'prev',
+): { step: string; stepNumber: number; totalSteps: number; finished?: boolean } | null {
+  const session = recipeSessions.get(householdId);
+  if (!session || session.isComplete) return null;
+
+  let updated: StepByStepRecipe;
+  if (direction === 'next') {
+    updated = advanceStep(session);
+  } else {
+    // Go back one step
+    const prev = Math.max(0, session.currentStep - 1);
+    updated = {
+      ...session,
+      currentStep: prev,
+      currentInstruction: session.recipe.steps[prev],
+      isComplete: false,
+    };
+  }
+
+  recipeSessions.set(householdId, updated);
+
+  if (updated.isComplete) {
+    return {
+      step: `Félicitations ! Vous avez terminé la recette de ${updated.recipe.title}. Bon appétit !`,
+      stepNumber: updated.totalSteps,
+      totalSteps: updated.totalSteps,
+      finished: true,
+    };
+  }
+
+  return {
+    step: updated.currentInstruction,
+    stepNumber: updated.currentStep + 1,
+    totalSteps: updated.totalSteps,
+  };
+}
+
+/** Get ingredients list formatted for TTS. Requires an active recipe session. */
+export async function getIngredientsForTTS(householdId: string): Promise<string> {
+  const session = recipeSessions.get(householdId);
+  if (!session) {
+    throw new Error('No active recipe session');
+  }
+  const ingredients = session.recipe.ingredients
+    .map((ing, i) => `${i + 1}. ${ing}`)
+    .join('. ');
+  return `Pour la recette de ${session.recipe.title}, il vous faut : ${ingredients}.`;
+}

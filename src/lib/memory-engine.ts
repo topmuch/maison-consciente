@@ -81,7 +81,7 @@ export async function setPreference(
 
     await db.household.update({
       where: { id: householdId },
-      data: { userPreferences: prefs },
+      data: { userPreferences: prefs as any },
     });
     return true;
   } catch {
@@ -177,7 +177,7 @@ export async function clearMemory(householdId: string): Promise<boolean> {
   try {
     await db.household.update({
       where: { id: householdId },
-      data: { userPreferences: DEFAULT_PREFERENCES },
+      data: { userPreferences: DEFAULT_PREFERENCES as any },
     });
     return true;
   } catch {

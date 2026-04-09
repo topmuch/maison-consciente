@@ -778,7 +778,7 @@ export function Dashboard() {
             >
               <ParallaxCard intensity={0.2}>
                 <motion.div
-                  variants={scaleHover}
+                  variants={scaleHover as any}
                   initial="rest"
                   whileHover="hover"
                   className={`group glass rounded-xl p-5 inner-glow transition-shadow duration-500 relative ${stat.glowClass}`}

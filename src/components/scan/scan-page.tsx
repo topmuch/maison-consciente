@@ -39,7 +39,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/store/app-store';
 import { playRandomChime } from '@/lib/ambient-sounds';
 import { trackEvent } from '@/lib/analytics';
-import type { ContextSuggestion, WeatherInfo } from '@/core/conscious-engine';
+import type { WeatherInfo } from '@/core/types';
+import type { ContextSuggestion } from '@/core/conscious-engine';
 
 /* ═══════════════════════════════════════════════════════════════
    CONFIG

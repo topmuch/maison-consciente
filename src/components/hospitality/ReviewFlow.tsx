@@ -390,7 +390,7 @@ export function ReviewFlow({ onComplete, onContactHost }: ReviewFlowProps) {
           {state === 'submitting' && (
             <motion.div
               key="submitting"
-              variants={scaleIn}
+              variants={scaleIn as any}
               initial="hidden"
               animate="visible"
               exit="exit"
@@ -409,7 +409,7 @@ export function ReviewFlow({ onComplete, onContactHost }: ReviewFlowProps) {
           {state === 'success-high' && (
             <motion.div
               key="success-high"
-              variants={scaleIn}
+              variants={scaleIn as any}
               initial="hidden"
               animate="visible"
               exit="exit"
@@ -459,7 +459,7 @@ export function ReviewFlow({ onComplete, onContactHost }: ReviewFlowProps) {
           {state === 'success-low' && (
             <motion.div
               key="success-low"
-              variants={scaleIn}
+              variants={scaleIn as any}
               initial="hidden"
               animate="visible"
               exit="exit"

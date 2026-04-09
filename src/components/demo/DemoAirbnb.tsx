@@ -286,7 +286,7 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
         {/* ─── CHECK-IN / CHECK-OUT / DURATION (Floating + Icon Badges) ─── */}
         <div className="grid grid-cols-3 gap-3">
           {/* Check-in */}
-          <motion.div {...floatAnimation} transition={{ ...floatAnimation.transition, delay: 0 }}>
+          <motion.div {...floatAnimation} transition={{ ...floatAnimation.transition, delay: 0 } as any}>
             <motion.button
               onClick={() =>
                 handleSpeak(
@@ -310,7 +310,7 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
           </motion.div>
 
           {/* Check-out */}
-          <motion.div {...floatAnimation} transition={{ ...floatAnimation.transition, delay: 0.5 }}>
+          <motion.div {...floatAnimation} transition={{ ...floatAnimation.transition, delay: 0.5 } as any}>
             <motion.button
               onClick={() =>
                 handleSpeak(
@@ -334,7 +334,7 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
           </motion.div>
 
           {/* Durée */}
-          <motion.div {...floatAnimation} transition={{ ...floatAnimation.transition, delay: 1 }}>
+          <motion.div {...floatAnimation} transition={{ ...floatAnimation.transition, delay: 1 } as any}>
             <motion.button
               onClick={() =>
                 handleSpeak(
@@ -489,7 +489,7 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
             ].map((item) => (
               <motion.button
                 key={item.label}
-                variants={itemBounceIn}
+                variants={itemBounceIn as any}
                 onClick={() => handleSpeak(item.speakText)}
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.95 }}
@@ -529,7 +529,7 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
         {/* ─── NEWS & HOROSCOPE (Fade + Slide from bottom entrance) ─── */}
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-          variants={fadeInSlideUp}
+          variants={fadeInSlideUp as any}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.2 }}

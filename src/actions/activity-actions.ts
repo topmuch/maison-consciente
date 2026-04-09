@@ -28,9 +28,7 @@ type ActivityCategory = (typeof ACTIVITY_CATEGORIES)[number];
 const createActivitySchema = z.object({
   householdId: z.string().uuid(),
   title: z.string().min(2, 'Le titre doit contenir au moins 2 caractères').max(100, 'Le titre ne peut pas dépasser 100 caractères'),
-  category: z.enum(ACTIVITY_CATEGORIES, {
-    errorMap: () => ({ message: 'Catégorie invalide' }),
-  }),
+  category: z.enum(ACTIVITY_CATEGORIES),
   description: z.string().max(2000, 'La description ne peut pas dépasser 2000 caractères').optional(),
   distance: z.string().max(100, 'La distance ne peut pas dépasser 100 caractères').optional(),
   link: z.string().url('URL invalide').optional().or(z.literal('')),
@@ -222,7 +220,7 @@ export async function createActivity(
     const parsed = createActivitySchema.safeParse(data);
 
     if (!parsed.success) {
-      const firstError = parsed.error.errors[0]?.message ?? 'Données invalides';
+      const firstError = parsed.error.issues[0]?.message ?? 'Données invalides';
       return { success: false, error: firstError };
     }
 
@@ -277,7 +275,7 @@ export async function updateActivity(
     const parsed = updateActivitySchema.safeParse(data);
 
     if (!parsed.success) {
-      const firstError = parsed.error.errors[0]?.message ?? 'Données invalides';
+      const firstError = parsed.error.issues[0]?.message ?? 'Données invalides';
       return { success: false, error: firstError };
     }
 

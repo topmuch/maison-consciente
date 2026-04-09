@@ -17,7 +17,7 @@ interface StandbyOverlayProps {
 
 // Pre-generate deterministic particle configs
 function generateParticles(count: number) {
-  const particles = [];
+  const particles: Array<{ id: number; x: number; size: number; duration: number; delay: number; opacity: number; drift: number }> = [];
   for (let i = 0; i < count; i++) {
     particles.push({
       id: i,

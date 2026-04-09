@@ -8,7 +8,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 
-interface BarcodeScanResult {
+export interface BarcodeScanResult {
   code: string;
   productName: string | null;
   brand: string | null;

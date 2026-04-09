@@ -144,7 +144,7 @@ export async function updateNotificationPrefs(
 
     await db.household.update({
       where: { id: household.id },
-      data: { notificationPrefs: merged },
+      data: { notificationPrefs: merged as any },
     });
 
     return { success: true };
@@ -208,7 +208,7 @@ export async function triggerProactiveNotification(
 
     await db.household.update({
       where: { id: household.id },
-      data: { notificationLog: trimmed },
+      data: { notificationLog: trimmed as any },
     });
 
     return { success: true, message };
@@ -258,7 +258,7 @@ export async function getPendingNotifications(
 
     await db.household.update({
       where: { id: household.id },
-      data: { notificationLog: updated },
+      data: { notificationLog: updated as any },
     });
 
     return sorted;

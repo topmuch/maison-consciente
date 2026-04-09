@@ -37,6 +37,9 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "maison-consciente-ref",
+    "examples",
+    "skills"
   ]
 }

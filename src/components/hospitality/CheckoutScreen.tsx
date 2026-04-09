@@ -201,7 +201,7 @@ export function CheckoutScreen({ onReset, guestName }: CheckoutScreenProps) {
 
             {/* ═══ QR Code ═══ */}
             <motion.div
-              variants={scaleSpring}
+              variants={scaleSpring as any}
               initial="hidden"
               animate="visible"
               className="flex justify-center"
@@ -240,7 +240,7 @@ export function CheckoutScreen({ onReset, guestName }: CheckoutScreenProps) {
                     variants={slideInLeft(0.4 + index * 0.1)}
                     initial="hidden"
                     animate="visible"
-                    onClick={toggleItem}
+                    onClick={(e: any) => { e.stopPropagation(); toggleItem(item.id); }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-300 min-h-[48px] cursor-pointer ${
                       item.checked
                         ? 'bg-emerald-500/5 border-emerald-500/20'

@@ -41,6 +41,8 @@ export interface UseVoiceResponseReturn {
   speak: (text: string) => void;
   /** Stop speaking */
   stopSpeaking: () => void;
+  /** Alias for stopSpeaking */
+  stop: () => void;
   /** The last recognized text */
   transcript: string;
   /** The last spoken response */
@@ -49,6 +51,14 @@ export interface UseVoiceResponseReturn {
   error: string | null;
   /** Whether speech recognition is available */
   isAvailable: boolean;
+  /** Whether TTS is currently speaking (alias: state === 'speaking') */
+  isSpeaking: boolean;
+  /** Whether audio output is muted */
+  isMuted: boolean;
+  /** Toggle mute state */
+  toggleMute: () => void;
+  /** Whether speech synthesis is supported */
+  isSupported: boolean;
   /** Set the TTS rate (0.5 - 2.0) */
   setRate: (rate: number) => void;
   /** Set the TTS volume (0 - 1) */
@@ -173,6 +183,7 @@ export function useVoiceResponse(): UseVoiceResponseReturn {
 
   const rateRef = useRef(1.0);
   const volumeRef = useRef(0.8);
+  const isMutedRef = useRef(false);
 
   // Whisper (primary) refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -618,6 +629,22 @@ export function useVoiceResponse(): UseVoiceResponseReturn {
     volumeRef.current = clamped;
   }, []);
 
+  /* ─── Derived state ─── */
+
+  const isSpeaking = state === 'speaking';
+  const isMuted = isMutedRef.current;
+  const isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+  const toggleMute = useCallback(() => {
+    isMutedRef.current = !isMutedRef.current;
+    if (isMutedRef.current) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setState('idle');
+    }
+  }, []);
+
   /* ─── Return ─── */
 
   return {
@@ -626,10 +653,15 @@ export function useVoiceResponse(): UseVoiceResponseReturn {
     stopListening,
     speak,
     stopSpeaking,
+    stop: stopSpeaking,
     transcript,
     lastResponse,
     error,
     isAvailable,
+    isSpeaking,
+    isMuted,
+    toggleMute,
+    isSupported,
     setRate,
     setVolume,
     householdId,

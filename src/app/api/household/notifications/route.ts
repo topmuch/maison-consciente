@@ -164,7 +164,7 @@ export async function PUT(request: NextRequest) {
 
     await db.household.update({
       where: { id: householdId },
-      data: { notificationPrefs: merged },
+      data: { notificationPrefs: merged as any },
     });
 
     return NextResponse.json({ success: true, prefs: merged });
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
 
     await db.household.update({
       where: { id: householdId },
-      data: { notificationLog: trimmed },
+      data: { notificationLog: trimmed as any },
     });
 
     return NextResponse.json({ success: true, message });

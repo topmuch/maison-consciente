@@ -64,7 +64,7 @@ export function evaluateTrigger(
 /* ── Helper: check if a type is toggled on in preferences ── */
 function isTypeEnabled(prefs: NotificationPrefs, type: NotificationType): boolean {
   const category = getNotificationCategory(type);
-  const categoryPrefs = prefs[category] as Record<string, boolean>;
+  const categoryPrefs = (prefs[category] as unknown) as Record<string, boolean>;
   return categoryPrefs[type] === true;
 }
 

@@ -5,9 +5,18 @@ import { useAuthStore } from '@/store/auth-store';
 import dynamic from 'next/dynamic';
 
 /* ── Dynamic components ── */
-const DemoSelection = dynamic(() => import('@/components/demo/DemoSelection'), { ssr: false });
-const DemoParticulier = dynamic(() => import('@/components/demo/DemoParticulier'), { ssr: false });
-const DemoAirbnb = dynamic(() => import('@/components/demo/DemoAirbnb'), { ssr: false });
+const DemoSelection = dynamic(
+  () => import('@/components/demo/DemoSelection').then(m => ({ default: m.DemoSelection })),
+  { ssr: false },
+) as any;
+const DemoParticulier = dynamic(
+  () => import('@/components/demo/DemoParticulier').then(m => ({ default: m.DemoParticulier })),
+  { ssr: false },
+) as any;
+const DemoAirbnb = dynamic(
+  () => import('@/components/demo/DemoAirbnb').then(m => ({ default: m.DemoAirbnb })),
+  { ssr: false },
+) as any;
 
 /* ═══════════════════════════════════════════════════════════════
    MAELLIS — LUXE LUMINEUX DEFAULT

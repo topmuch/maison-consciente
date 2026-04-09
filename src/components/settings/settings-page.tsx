@@ -359,7 +359,7 @@ export function SettingsPage() {
                 </p>
                 <Badge className="bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full mt-1">
                   <Shield className="w-3 h-3 mr-1" />
-                  {user?.role === 'admin' ? 'Administrateur' : 'Membre'}
+                  {(user?.role as string) === 'superadmin' ? 'Administrateur' : 'Membre'}
                 </Badge>
               </div>
             </div>
@@ -395,7 +395,7 @@ export function SettingsPage() {
                   </p>
                 </div>
               </div>
-              {user?.role === 'admin' && (
+              {(user?.role as string) === 'superadmin' && (
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button
                     variant="ghost"
@@ -567,7 +567,7 @@ export function SettingsPage() {
       {/* ═══════════════════════════════════════════════════════════
          HOSPITALITY SETTINGS (Review, Contact, POI)
          ═══════════════════════════════════════════════════════════ */}
-      {user?.role === 'admin' && household?.settings && (
+      {(user?.role as string) === 'superadmin' && household?.settings && (
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -617,7 +617,7 @@ export function SettingsPage() {
       {/* ═══════════════════════════════════════════════════════════
          HOSPITALITY EXTENDED (WhatsApp, Modules, Alerts, Calendar)
          ═══════════════════════════════════════════════════════════ */}
-      {user?.role === 'admin' && (
+      {(user?.role as string) === 'superadmin' && (
         <motion.div
           variants={fadeUp}
           initial="hidden"

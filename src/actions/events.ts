@@ -42,7 +42,7 @@ export async function addCalendarEvent(data: Record<string, unknown>) {
         title: parsed.data.title,
         date: parsed.data.date,
         type: parsed.data.type,
-        recurring: parsed.data.recurring ?? false,
+        isRecurring: parsed.data.recurring ?? false,
       },
     });
     revalidatePath('/dashboard');

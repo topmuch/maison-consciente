@@ -28,6 +28,52 @@ import { executeVoiceCommand, type VoiceActionResult } from '@/actions/voice-act
 import { useVoiceResponse } from '@/hooks/useVoiceResponse';
 import { triggerHaptic } from '@/lib/haptic';
 
+/* ── TTS Speak Wrapper with Callbacks ── */
+
+interface SpeakCallbacks {
+  onEnd?: () => void;
+  onError?: () => void;
+}
+
+/**
+ * Wraps useVoiceResponse.speak() (which takes only text) to support
+ * onEnd / onError callbacks via the SpeechSynthesis API.
+ */
+function ttsSpeakWithCallbacks(
+  text: string,
+  callbacks: SpeakCallbacks,
+  speakFn: (text: string) => void,
+): void {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    callbacks.onError?.();
+    return;
+  }
+
+  // Cancel any pending speech
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'fr-FR';
+
+  // Try to find a French voice
+  const voices = window.speechSynthesis.getVoices();
+  const frenchVoice = voices.find((v) => v.lang.startsWith('fr'));
+  if (frenchVoice) utterance.voice = frenchVoice;
+
+  utterance.onend = () => {
+    callbacks.onEnd?.();
+  };
+
+  utterance.onerror = () => {
+    callbacks.onError?.();
+  };
+
+  window.speechSynthesis.speak(utterance);
+
+  // Also call the hook's speak fn for state tracking (isSpeaking etc.)
+  speakFn(text);
+}
+
 /* ── Exported Types ── */
 
 export type VoiceCommandState =
@@ -348,7 +394,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
           cancelAnimationFrame(frameId);
           processCommandRef.current(cmd);
         });
-      } else if (cmd.displayText.length > 0) {
+      } else if ((cmd.displayText ?? '').length > 0) {
         // Unknown text — try to resolve with previous context
         const ctx = contextRef.current;
         if (
@@ -365,9 +411,9 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
             cancelAnimationFrame(frameId);
             processCommandRef.current({
               ...cmd,
-              intent: ctx.lastIntent,
-              payload: { ...ctx.lastParams, followUp: text },
-              confidence: 'medium',
+              intent: ctx.lastIntent!,
+              confidence: 0.5,
+              entities: { ...ctx.lastParams, followUp: text },
               displayText: `${ctx.lastDisplayText} (${text})`,
             });
           });
@@ -375,7 +421,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
           // No context to resolve
           destroyRecognition();
           clearAllTimers();
-          ttsSpeak('Je n\'ai pas compris. Dites Maison puis votre commande.', {
+          ttsSpeakWithCallbacks('Je n\'ai pas compris. Dites Maison puis votre commande.', {
             onEnd: () => {
               if (mountedRef.current) {
                 setState('idle');
@@ -388,7 +434,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
                 scheduleRestart(500);
               }
             },
-          });
+          }, ttsSpeak);
         }
       }
     };
@@ -441,7 +487,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
         return;
       }
 
-      ttsSpeak(text, {
+      ttsSpeakWithCallbacks(text, {
         onEnd: () => {
           if (!mountedRef.current) return;
           enterConversationWindow();
@@ -450,7 +496,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
           if (!mountedRef.current) return;
           enterConversationWindow();
         },
-      });
+      }, ttsSpeak);
     },
     [ttsSpeak, enterConversationWindow],
   );
@@ -499,10 +545,10 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
       return;
     }
 
-    ttsSpeak('Je regarde la météo...', {
+    ttsSpeakWithCallbacks('Je regarde la météo...', {
       onEnd: () => { doFetch(); },
       onError: () => { doFetch(); },
-    });
+    }, ttsSpeak);
   }, [fetchWeather, ttsSpeak, speakWithCallback]);
 
   /* ── Signal interception — intercept server signals before speaking ── */
@@ -514,7 +560,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
       }
 
       const signal = result.message;
-      const data = result.data ?? {};
+      const data: Record<string, any> = result.data ?? {};
 
       switch (signal) {
         case 'audio_play': {
@@ -580,8 +626,8 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
       // Update context for follow-up questions
       contextRef.current = {
         lastIntent: cmd.intent,
-        lastParams: cmd.payload,
-        lastDisplayText: cmd.displayText,
+        lastParams: cmd.entities,
+        lastDisplayText: cmd.displayText ?? '',
       };
 
       // Handle system_stop immediately — no TTS
@@ -604,12 +650,12 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
 
           if (token) {
             // Tablet mode: execute via server action
-            result = await executeVoiceCommand(token, cmd.intent, cmd.payload);
+            result = await executeVoiceCommand(token, cmd.intent, cmd.entities);
           } else {
             // Dashboard mode: just return parsed info for consumer
             result = {
               success: true,
-              message: `Commande: ${cmd.displayText} (intent: ${cmd.intent})`,
+              message: `Commande: ${cmd.displayText ?? ''} (intent: ${cmd.intent})`,
             };
           }
 
@@ -618,7 +664,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
           setLastResponse(result.message);
 
           // Log the voice command (best-effort)
-          logVoiceCommand(token, hhId, cmd.originalText, cmd.intent, result.message, result.success);
+          logVoiceCommand(token, hhId, cmd.originalText ?? '', cmd.intent, result.message, result.success);
 
           // Notify consumer
           onCommandResultRef.current?.(result);
@@ -690,7 +736,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
         triggerHaptic('error');
         clearAllTimers();
         destroyRecognition();
-        ttsSpeak('Je n\'ai pas compris. Dites Maison puis votre commande.', {
+        ttsSpeakWithCallbacks('Je n\'ai pas compris. Dites Maison puis votre commande.', {
           onEnd: () => {
             if (mountedRef.current) {
               setState('idle');
@@ -703,7 +749,7 @@ export function useVoiceCommand(options: UseVoiceCommandOptions): UseVoiceComman
               scheduleRestart(500);
             }
           },
-        });
+        }, ttsSpeak);
       }
     };
 

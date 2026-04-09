@@ -298,7 +298,7 @@ export function ContactModal({
                         key={cat.value}
                         type="button"
                         onClick={() => setSelectedType(cat.value)}
-                        {...radioBounce}
+                        {...radioBounce as any}
                         className={`
                           flex items-center gap-2.5 p-3.5 rounded-xl border transition-all duration-300 cursor-pointer
                           min-h-[48px]

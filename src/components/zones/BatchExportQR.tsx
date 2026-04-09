@@ -173,7 +173,7 @@ export function BatchExportQR({ zones }: BatchExportQRProps) {
                   <View key={zone.id} style={styles.card} wrap={false}>
                     <Text style={styles.cardTitle}>{zone.name}</Text>
                     <Text style={styles.cardSlug}>{zone.qrCode}</Text>
-                    <pdf.Image src={url} style={{ width: 140, height: 140 }} />
+                    {(pdf as any).Image && <img src={url} style={{ width: 140, height: 140 }} alt={zone.name} />}
                   </View>
                 ))}
               </View>

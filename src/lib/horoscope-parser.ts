@@ -44,6 +44,41 @@ export function getZodiacFromDate(date: Date): ZodiacSign {
   return 'Poissons';
 }
 
+/** Structured horoscope reading for voice actions */
+export interface HoroscopeReading {
+  sign: string;
+  text: string;
+  luckyNumber: number;
+  mood: string;
+}
+
+const HOROSCOPE_MOODS = ['joyeux', 'serein', 'dynamique', 'réfléchi', 'enthousiaste', 'créatif', 'apaisé', 'audacieux'] as const;
+
+/** Get a structured horoscope reading by sign name (flexible input) */
+export async function getHoroscope(sign: string): Promise<HoroscopeReading> {
+  // Normalise sign to match ZodiacSign type
+  const normalisedSign = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
+  const zodiacSign = ZODIAC_SIGNS.find(s => s.toLowerCase() === normalisedSign.toLowerCase()) ?? 'Bélier';
+
+  const text = await fetchHoroscope(zodiacSign);
+  return {
+    sign: zodiacSign,
+    text,
+    luckyNumber: Math.floor(Math.random() * 49) + 1,
+    mood: HOROSCOPE_MOODS[Math.floor(Math.random() * HOROSCOPE_MOODS.length)],
+  };
+}
+
+/** Fallback message when user's zodiac sign is unknown */
+export function getHoroscopeFallback(): string {
+  return 'Je ne connais pas votre signe du zodiaque. Dites par exemple « Je suis Scorpion » pour que je puisse vous donner votre horoscope.';
+}
+
+/** Format a HoroscopeReading into a TTS-friendly French string */
+export function formatHoroscopeForTTS(reading: HoroscopeReading): string {
+  return `Horoscope du ${reading.sign} : ${reading.text}. Votre numéro chance du jour est ${reading.luckyNumber}. Humour du jour : ${reading.mood}.`;
+}
+
 export async function fetchHoroscope(sign: ZodiacSign, rssUrl?: string): Promise<string> {
   // If no URL provided, return a local fallback
   const localFallbacks: Record<ZodiacSign, string[]> = {

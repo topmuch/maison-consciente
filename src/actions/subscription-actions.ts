@@ -60,7 +60,7 @@ export async function toggleModule(
 
     await db.household.update({
       where: { id: householdId },
-      data: { modulesConfig: current },
+      data: { modulesConfig: current as any },
     });
 
     return { success: true };

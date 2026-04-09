@@ -67,6 +67,43 @@ export interface VoiceActionResponse {
   needsConfirmation?: boolean;
 }
 
+/** Hook-compatible result type used by useVoiceCommand */
+export interface VoiceActionResult {
+  success: boolean;
+  message: string;
+  data?: unknown;
+}
+
+/**
+ * Server action adapter for useVoiceCommand hook.
+ * Reconstructs text from intent + entities and forwards to processVoiceCommand.
+ */
+export async function executeVoiceCommand(
+  householdId: string,
+  intent: string,
+  entities: Record<string, string>,
+): Promise<VoiceActionResult> {
+  try {
+    // Reconstruct command text from intent + entities
+    const entityStr = Object.entries(entities)
+      .filter(([, v]) => v)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(' ');
+    const text = intent + (entityStr ? ' ' + entityStr : '');
+    const response = await processVoiceCommand(householdId, text);
+    return {
+      success: true,
+      message: response.message,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Erreur lors de la commande vocale',
+    };
+  }
+}
+
 /* ═══ HELPERS ═══ */
 
 function randomPick<T>(arr: T[]): T {
@@ -135,7 +172,7 @@ export async function processVoiceCommand(
 
   switch (command.intent) {
     case 'greeting':
-      return handleGreeting(hour, prefs);
+      return handleGreeting(hour, prefs as unknown as Record<string, unknown>);
     case 'weather':
       return handleWeather(householdId);
     case 'news':
@@ -227,9 +264,10 @@ export async function processVoiceCommand(
    ═══════════════════════════════════════════════════════ */
 
 /* ─── 1. Greeting ─── */
-function handleGreeting(hour: number, prefs: { musicGenre?: string }): VoiceActionResponse {
-  const musicNote = prefs.musicGenre
-    ? ` Au fait, je me souviens que vous aimez ${prefs.musicGenre}.`
+function handleGreeting(hour: number, prefs: Record<string, unknown>): VoiceActionResponse {
+  const genre = (prefs as any).musicGenre as string | undefined;
+  const musicNote = genre
+    ? ` Au fait, je me souviens que vous aimez ${genre}.`
     : '';
 
   if (hour < 12) {
@@ -324,7 +362,7 @@ async function handleSport(householdId: string): Promise<VoiceActionResponse> {
     const sportKeywords = ['football', 'match', 'but', 'victoire', 'championnat', 'ligue', 'tennis', 'rugby', 'basket', 'sport'];
 
     const sportArticles = articles.filter(a =>
-      sportKeywords.some(kw => a.title.toLowerCase().includes(kw) || a.description.toLowerCase().includes(kw)),
+      sportKeywords.some(kw => a.title.toLowerCase().includes(kw) || (a.description ?? '').toLowerCase().includes(kw)),
     );
 
     if (sportArticles.length === 0) {
@@ -454,7 +492,7 @@ async function handleRecipeSearch(
 /* ─── 10. Recipe Random ─── */
 async function handleRecipeRandom(householdId: string): Promise<VoiceActionResponse> {
   try {
-    const recipe = await getRandomRecipe(householdId);
+    const recipe = getRandomRecipe();
 
     if (!recipe) {
       // Fallback suggestions
@@ -469,7 +507,7 @@ async function handleRecipeRandom(householdId: string): Promise<VoiceActionRespo
     }
 
     return {
-      message: `Je vous propose ${recipe.title}. ${recipe.description}. Elle nécessite ${recipe.ingredientCount} ingrédients et ${recipe.stepCount} étapes. Dites "ingrédients" pour la liste ou "étape suivante" pour commencer.`,
+      message: `Je vous propose ${recipe.title}. ${recipe.description}. Elle nécessite ${recipe.ingredients.length} ingrédients et ${recipe.steps.length} étapes. Dites "ingrédients" pour la liste ou "étape suivante" pour commencer.`,
       actionType: 'recipe_found',
       data: recipe,
     };
@@ -745,7 +783,7 @@ async function handleNameAsk(householdId: string): Promise<VoiceActionResponse> 
       select: { name: true, settings: true },
     });
 
-    let assistantName = DEFAULT_ASSISTANT_NAME;
+    let assistantName: string = DEFAULT_ASSISTANT_NAME;
     if (hh?.settings) {
       try {
         const settings = JSON.parse(hh.settings) as Record<string, unknown>;
@@ -869,7 +907,7 @@ async function handleVolumeChange(
 
     await prisma.household.update({
       where: { id: householdId },
-      data: { voiceSettings },
+      data: { voiceSettings: voiceSettings as any },
     });
 
     const percent = Math.round(newVolume * 100);

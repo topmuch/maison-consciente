@@ -299,7 +299,6 @@ export function ScanAnalytics({ householdId }: ScanAnalyticsProps) {
                   dataKey="scans"
                   fill="oklch(0.60 0.22 280 / 60%)"
                   radius={[4, 4, 0, 0]}
-                  activeFill="oklch(0.60 0.22 280 / 80%)"
                 />
               </BarChart>
             </ResponsiveContainer>

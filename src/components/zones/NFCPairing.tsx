@@ -95,7 +95,7 @@ export function NFCPairing({ zones, onPaired }: NFCPairingProps) {
         speak('Délai dépassé. Réessayez.');
       }, 30000);
 
-      reader.onreading = (event: { serialNumber: string }) => {
+      (reader as any).onreading = (event: { serialNumber: string }) => {
         clearTimeout(timer);
         controller.abort();
         const uid = event.serialNumber.replace(/:/g, '').toLowerCase();
@@ -103,7 +103,7 @@ export function NFCPairing({ zones, onPaired }: NFCPairingProps) {
         handlePair(uid);
       };
 
-      reader.onerror = () => {
+      (reader as any).onerror = () => {
         clearTimeout(timer);
         setStep('error');
         setError('Erreur de lecture NFC');

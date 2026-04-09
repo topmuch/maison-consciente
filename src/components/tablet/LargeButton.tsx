@@ -34,7 +34,7 @@ export default function LargeButton({
 }: LargeButtonProps) {
   return (
     <motion.button
-      whileHover={{ brightness: 1.1 }}
+      whileHover={{ scale: 1.03, filter: 'brightness(1.1)' }}
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className={`

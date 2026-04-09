@@ -683,7 +683,7 @@ export function ZoneManager() {
                   animate="visible"
                   exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3 } }}
                   custom={i}
-                  whileHover={cardHover}
+                  whileHover={cardHover as any}
                   className="cursor-pointer"
                 >
                   <ParallaxCard intensity={0.15}>

@@ -1,14 +1,16 @@
 import { db } from '@/lib/db';
+import { RSS_SOURCES, type RssSource } from './constants';
 
-interface RssItem {
+export interface RssItem {
   title: string;
   source: string;
   link?: string;
   pubDate?: string;
   description?: string;
+  category?: string;
 }
 
-interface RssSource {
+interface RssSourceInternal {
   id: string;
   name: string;
   url: string;
@@ -116,4 +118,37 @@ export function extractHoroscopeText(sign: string, feedItems: RssItem[]): string
   }
   
   return null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   VOICE-ACTION COMPATIBILITY FUNCTIONS
+   ═══════════════════════════════════════════════════════ */
+
+/** Fetch all active RSS feeds and return merged, deduplicated articles */
+export async function fetchAllFeeds(): Promise<RssItem[]> {
+  try {
+    const activeSources = (RSS_SOURCES ?? []).filter((s: RssSource) => s.active);
+    const results = await fetchNewsFromSources(activeSources);
+    const allItems: RssItem[] = [
+      ...results.general,
+      ...results.sport,
+      ...results.culture,
+    ];
+    // Add category from internal _category field if present
+    return allItems.map(item => ({
+      ...item,
+      category: (item as unknown as Record<string, unknown>)._category as string | undefined || item.category,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Format top N articles into a TTS-friendly French string */
+export function formatArticlesForTTS(articles: RssItem[], limit = 5): string {
+  const top = articles.slice(0, limit);
+  if (top.length === 0) return 'Aucune actualité disponible.';
+  return top
+    .map((a, i) => `${i + 1}. ${a.title}${a.source ? ` (${a.source})` : ''}.`)
+    .join(' ');
 }

@@ -92,8 +92,8 @@ export async function POST(request: NextRequest) {
         ...(Object.keys(modulesConfig).length > 0
           ? { modulesConfig }
           : {}),
-        notificationPrefs: notificationPrefs as unknown as Record<string, unknown>,
-        voiceSettings: voiceSettings as unknown as Record<string, unknown>,
+        notificationPrefs: notificationPrefs as any,
+        voiceSettings: voiceSettings as any,
       },
     });
 

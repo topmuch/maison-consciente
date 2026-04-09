@@ -34,8 +34,6 @@ import {
   deleteActivity,
   togglePartnerStatus,
 } from "@/actions/activity-actions";
-import type { ActivityRecord } from "@/actions/activity-actions";
-
 /* ── Types ── */
 interface ActivityItem {
   id: string;
@@ -142,14 +140,14 @@ export default function ActivitiesPage() {
         const result = await updateActivity(editingId, {
           title: form.title,
           category: form.category,
-          description: form.description || null,
-          distance: form.distance || null,
-          priceHint: form.priceHint || null,
-          hoursHint: form.hoursHint || null,
-          address: form.address || null,
-          link: form.link || null,
-          whatsappNumber: form.whatsappNumber || null,
-          image: form.image || null,
+          description: form.description || undefined,
+          distance: form.distance || undefined,
+          priceHint: form.priceHint || undefined,
+          hoursHint: form.hoursHint || undefined,
+          address: form.address || undefined,
+          link: form.link || undefined,
+          whatsappNumber: form.whatsappNumber || undefined,
+          image: form.image || undefined,
           isPartner: form.isPartner,
         });
 
@@ -165,14 +163,14 @@ export default function ActivitiesPage() {
           householdId,
           title: form.title,
           category: form.category,
-          description: form.description || null,
-          distance: form.distance || null,
-          priceHint: form.priceHint || null,
-          hoursHint: form.hoursHint || null,
-          address: form.address || null,
-          link: form.link || null,
-          whatsappNumber: form.whatsappNumber || null,
-          image: form.image || null,
+          description: form.description || undefined,
+          distance: form.distance || undefined,
+          priceHint: form.priceHint || undefined,
+          hoursHint: form.hoursHint || undefined,
+          address: form.address || undefined,
+          link: form.link || undefined,
+          whatsappNumber: form.whatsappNumber || undefined,
+          image: form.image || undefined,
           isPartner: form.isPartner,
         });
 

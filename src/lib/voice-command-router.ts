@@ -22,12 +22,15 @@ export type VoiceIntent =
   | 'thank_you' | 'goodbye'
   // Activités & Sorties
   | 'list_activities' | 'ask_price_context' | 'ask_hours_context' | 'ask_directions_context'
+  | 'system_stop' | 'system_help'
   | 'unknown';
 
 export interface VoiceCommand {
   intent: VoiceIntent;
   confidence: number; // 0-1
   entities: Record<string, string>; // extracted parameters
+  originalText?: string;
+  displayText?: string;
 }
 
 /** Pattern definition */
@@ -78,7 +81,7 @@ const COMMAND_PATTERNS: CommandPattern[] = [
       for (const s of signs) {
         if (text.toLowerCase().includes(s)) return { sign: s };
       }
-      return {};
+      return {} as Record<string, string>;
     },
   },
 

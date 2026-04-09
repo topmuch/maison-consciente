@@ -85,7 +85,7 @@ function GoldSpinner() {
 
 /* ─── Main Auth Page ─── */
 export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: () => void; prefillType?: 'home' | 'hospitality' | null; onRegisterSuccess?: (householdType: string) => void } = {}) {
-  const [activeTab, setActiveTab] = useState<'login' | 'register' | null>(preffillType ? 'register' : null);
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | null>(prefillType ? 'register' : null);
   const [direction, setDirection] = useState(0);
 
   // Visibility toggles
@@ -117,10 +117,10 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
 
   // Auto-switch to register tab if prefillType is set
   useEffect(() => {
-    if (preffillType && activeTab === null) {
+    if (prefillType && activeTab === null) {
       setActiveTab('register');
     }
-  }, [preffillType, activeTab]);
+  }, [prefillType, activeTab]);
 
   // Default to login if no tab is set yet
   const effectiveTab = activeTab || 'login';
@@ -192,8 +192,9 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         householdId: data.user.householdId,
         role: data.user.role,
         name: data.user.name,
+        avatar: data.user.avatar,
         householdName: data.householdName,
-      });
+      } as any);
       setView('dashboard');
       toast.success('Bienvenue !');
     } catch {
@@ -230,9 +231,10 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         householdId: data.user.householdId,
         role: data.user.role,
         name: data.user.name,
+        avatar: data.user.avatar,
         householdName: data.householdName,
         householdType: regHouseholdType,
-      });
+      } as any);
       setView('dashboard');
       toast.success('Compte créé avec succès !');
       onRegisterSuccess?.(regHouseholdType);
@@ -250,7 +252,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         {/* Top-right gold orb */}
         <motion.div
           custom={0}
-          variants={orbFloat}
+          variants={orbFloat as any}
           animate="animate"
           className="absolute -top-32 -right-32 w-[420px] h-[420px] rounded-full opacity-[0.07]"
           style={{
@@ -261,7 +263,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         {/* Bottom-left copper orb */}
         <motion.div
           custom={1}
-          variants={orbFloat}
+          variants={orbFloat as any}
           animate="animate"
           className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-[0.06]"
           style={{
@@ -272,7 +274,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         {/* Center-left violet orb */}
         <motion.div
           custom={2}
-          variants={orbFloat}
+          variants={orbFloat as any}
           animate="animate"
           className="absolute top-1/3 -left-20 w-[320px] h-[320px] rounded-full opacity-[0.05]"
           style={{
@@ -283,7 +285,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         {/* Top-left subtle gold */}
         <motion.div
           custom={3}
-          variants={orbFloat}
+          variants={orbFloat as any}
           animate="animate"
           className="absolute top-20 left-1/4 w-[200px] h-[200px] rounded-full opacity-[0.04]"
           style={{
@@ -294,7 +296,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         {/* Bottom-right faint violet */}
         <motion.div
           custom={4}
-          variants={orbFloat}
+          variants={orbFloat as any}
           animate="animate"
           className="absolute bottom-10 right-1/4 w-[260px] h-[260px] rounded-full opacity-[0.04]"
           style={{

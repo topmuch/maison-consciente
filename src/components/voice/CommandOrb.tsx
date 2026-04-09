@@ -127,7 +127,7 @@ const waveRingVariant = (index: number): Variants => ({
   exit: { scale: 1, opacity: 0 },
 });
 
-const orbScaleVariants: Record<OrbState, Variants> = {
+const orbScaleVariants: Record<OrbState, any> = {
   idle: { scale: 1, transition: { duration: 0.3 } },
   listening: {
     scale: [1, 1.06, 1],
@@ -201,7 +201,7 @@ export default function CommandOrb({
       {/* Outer ring with glow */}
       <motion.button
         type="button"
-        variants={orbScaleVariants}
+        variants={orbScaleVariants as any}
         animate={state}
         whileTap={{ scale: 0.88 }}
         onClick={onClick}

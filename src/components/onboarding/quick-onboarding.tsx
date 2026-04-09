@@ -421,7 +421,7 @@ export function QuickOnboarding({
             cx="12"
             cy="12"
             r="10"
-            variants={checkmarkVariants}
+            variants={checkmarkVariants as any}
             initial="hidden"
             animate="visible"
             style={{ pathLength: 0 }}
@@ -429,7 +429,7 @@ export function QuickOnboarding({
           />
           <motion.path
             d="M8 12l2.5 2.5L16 9"
-            variants={checkmarkVariants}
+            variants={checkmarkVariants as any}
             initial="hidden"
             animate="visible"
             style={{ pathLength: 0 }}

@@ -288,7 +288,7 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
                   duration: 0.35,
                   ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
                 }}
-                whileHover={navItemHover}
+                whileHover={navItemHover as any}
               >
                 <button
                   onClick={() => handleNavClick(item.view)}
@@ -362,7 +362,7 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
                 duration: 0.35,
                 ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
               }}
-              whileHover={navItemHover}
+              whileHover={navItemHover as any}
             >
               <button
                 onClick={() => handleNavClick('admin')}
@@ -411,7 +411,7 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
 
       {/* ── Logout ── */}
       <div className="px-3 pt-3 pb-2">
-        <motion.div whileHover={navItemHover} whileTap={{ scale: 0.98 }}>
+        <motion.div whileHover={navItemHover as any} whileTap={{ scale: 0.98 }}>
           <button
             onClick={handleLogout}
             className="

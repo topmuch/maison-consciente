@@ -16,7 +16,9 @@ export type AppView =
   | 'hospitality'
   | 'guest-checkin'
   | 'pricing'
-  | 'billing';
+  | 'billing'
+  | 'local-guide'
+  | 'hospitality-settings';
 
 interface AppState {
   currentView: AppView;

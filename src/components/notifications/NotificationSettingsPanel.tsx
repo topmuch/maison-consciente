@@ -280,7 +280,7 @@ export function NotificationSettingsPanel() {
   /* ── Toggle single notification ── */
   const handleToggle = useCallback((category: NotificationCategory, key: string, value: boolean) => {
     if (!prefs) return;
-    const categoryPrefs = prefs[category] as Record<string, boolean>;
+    const categoryPrefs = (prefs[category] as unknown) as Record<string, boolean>;
     const updated = { [key]: value };
     savePrefs({ [category]: { ...categoryPrefs, ...updated } });
   }, [prefs, savePrefs]);
@@ -290,7 +290,7 @@ export function NotificationSettingsPanel() {
     if (!prefs) return;
     const catConfig = CATEGORIES_CONFIG.find((c) => c.key === category);
     if (!catConfig) return;
-    const categoryPrefs = prefs[category] as Record<string, boolean>;
+    const categoryPrefs = (prefs[category] as unknown) as Record<string, boolean>;
     const updated: Record<string, boolean> = {};
     for (const item of catConfig.items) {
       updated[item.key] = allOn;
@@ -316,7 +316,7 @@ export function NotificationSettingsPanel() {
     if (!prefs) return false;
     const catConfig = CATEGORIES_CONFIG.find((c) => c.key === category);
     if (!catConfig) return false;
-    const categoryPrefs = prefs[category] as Record<string, boolean>;
+    const categoryPrefs = (prefs[category] as unknown) as Record<string, boolean>;
     return catConfig.items.every((item) => categoryPrefs[item.key] === true);
   }, [prefs]);
 
@@ -374,7 +374,7 @@ export function NotificationSettingsPanel() {
   /* ── Count enabled notifications ── */
   const enabledCount = prefs
     ? CATEGORIES_CONFIG.reduce((acc, cat) => {
-        const catPrefs = prefs[cat.key] as Record<string, boolean>;
+        const catPrefs = (prefs[cat.key] as unknown) as Record<string, boolean>;
         return acc + cat.items.filter((item) => catPrefs[item.key]).length;
       }, 0)
     : 0;
@@ -531,7 +531,7 @@ export function NotificationSettingsPanel() {
             const Icon = cat.icon;
             const isExpanded = expandedCategories.has(cat.key);
             const allOn = isCategoryAllOn(cat.key);
-            const catPrefs = prefs[cat.key] as Record<string, boolean>;
+            const catPrefs = (prefs[cat.key] as unknown) as Record<string, boolean>;
             const enabledInCat = cat.items.filter((item) => catPrefs[item.key]).length;
 
             return (

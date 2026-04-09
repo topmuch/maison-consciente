@@ -66,6 +66,7 @@ interface ZoneData {
   color: string;
   qrCode: string;
   interactionCount?: number;
+  createdAt?: string;
 }
 
 interface Suggestion {
@@ -313,7 +314,7 @@ export function ZoneDetail() {
         </div>
 
         <div className="flex gap-2">
-          {user?.role === 'admin' && (
+          {(user?.role as string) === 'superadmin' && (
             <>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Button

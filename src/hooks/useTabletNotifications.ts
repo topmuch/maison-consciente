@@ -99,9 +99,9 @@ export function useTabletNotifications(
 
   const fetchPrefs = useCallback(async () => {
     try {
-      const prefs = await getNotificationPrefs(token);
-      quietConfigRef.current = prefs.quietHours ?? null;
-      setQuietHours(isNowInQuietHours(prefs.quietHours));
+      const result = await getNotificationPrefs(token);
+      quietConfigRef.current = result.prefs.quietHours ?? null;
+      setQuietHours(isNowInQuietHours(result.prefs.quietHours));
     } catch {
       // Prefs fetch is non-critical — silent fail
     }

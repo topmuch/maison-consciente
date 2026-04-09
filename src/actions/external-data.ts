@@ -86,8 +86,8 @@ export async function fetchNewsForTablet(
         articles: articles.map(a => ({
           title: a.title,
           source: a.source,
-          category: a.category,
-          link: a.link,
+          category: a.category ?? '',
+          link: a.link ?? '',
         })),
         tts,
       },
