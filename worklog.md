@@ -629,3 +629,102 @@ Stage Summary:
 - Key fix: src/app/page.tsx - all heavy components now use dynamic imports
 - Server startup command: double-fork with setsid for persistence
 - Server confirmed running as PID 13250, stable across multiple test invocations
+
+---
+Task ID: 5
+Agent: frontend-styling-expert
+Task: Enhance DemoSelection.tsx for MAXIMUM "Wahoo" effect — Luxe Lumineux
+
+Work Log:
+- Rewrote src/components/demo/DemoSelection.tsx (~652 lines) with 6 major visual enhancements
+- Enhancement 1: Animated mesh gradient background — 5 floating color orbs (amber, violet, rose, sky, emerald) with independent keyframe animations at different speeds (18-25s cycles) and drift paths
+- Enhancement 2: Particle/dot pattern — 40 procedurally placed dots (varying sizes) with staggered opacity/scale animations for subtle visual texture
+- Enhancement 3: Centre de Commande voice button — upgraded to w-32 h-32 / sm:w-36 sm:h-36, triple pulsing rings (scale 1.35/1.6/1.9 with staggered delays), triple-layer boxShadow glow (80px + 40px + 70px), prominent pill-shaped label with Mic icon and bg-amber-50 border
+- Enhancement 4: Title sparkle effect — 8 animated Star icons positioned around the title with twinkle animations (opacity fade, scale pulse, full 360° rotation at staggered delays)
+- Enhancement 5: Demo card enhancements — gradient border glow wrapper (double-layer: blur + sharp, opacity transitions on hover), dramatic hover lift (y: -12), floating animated icons (Heart on Famille card, Star on Airbnb card) with gentle bob/rotate, larger hover glow orbs (72x72 blurred)
+- Enhancement 6: Elegant footer — double-line golden gradient divider (amber-400/40 + amber-200/30), Sparkles icon, animated emerald pulse dot
+- Changed Famille card color scheme from indigo to violet/rose (removing blue/indigo as primary)
+- All animations use framer-motion, all styling uses Tailwind CSS (boxShadow via style prop only)
+- All existing functionality preserved: useMaellisVoice hook, speak() calls, onSelectParticulier/onSelectAirbnb callbacks
+- ESLint: 0 errors on DemoSelection.tsx
+- TypeScript: 0 errors in DemoSelection.tsx (312 pre-existing project-wide errors in node_modules types unchanged)
+
+Stage Summary:
+- DemoSelection now delivers maximum "Wahoo" with: animated mesh gradient, particle texture, dramatic triple-pulse voice button, title sparkle stars, glow-border cards with floating icons, golden divider footer
+- File grew from 382 to 652 lines (+70%)
+- Zero new lint/TS errors introduced
+- All interactive functionality preserved
+
+---
+Task ID: 6
+Agent: frontend-styling-expert
+Task: Enhance DemoAirbnb.tsx for MAXIMUM "Wahoo" effect — Luxe Lumineux
+
+Work Log:
+- **Header Enhancement**: Added animated gradient shimmer bar (amber-200 sweeping across header), weather badge with pulsing amber glow (boxShadow keyframes), amber-tinted border
+- **Check-in/Check-out/Duration Cards**: Added floating animation (y: -2 to 2px, 3s loop) with staggered delays (0, 0.5, 1s). Added emoji icon badges (✈️, 🏠, ⏰) in top-right corner of each card
+- **Welcome Section**: Added animated gradient border (amber → rose → amber, 200% backgroundSize with animated position). "Contacter Isabelle" button has WhatsApp-style green glow on hover (boxShadow: rgba(34, 197, 94, 0.45))
+- **Action Grid**: Added staggered scale-up bounce on mount using containerStagger/itemBounceIn variants (spring physics, 0.06s stagger, 0.2s delay). SOS Urgence button has dual-layer red pulse: inner red-500/20 overlay + outer red-400/40 border ring, both with opacity+scale animations at 1.5s
+- **News & Horoscope**: Added fadeInSlideUp entrance animation triggered by whileInView (0.6s easeOut, slides up 24px)
+- **QR Code Viral Section**: Widened gradient to amber → rose → orange (via-rose-500). Added 12 confetti sparkle dots (SparkleDot component) with staggered opacity/scale/y animations. QR code card has 3D perspective hover (rotateY: -5, rotateX: 3, scale: 1.04, deep shadow)
+- **Centre de Commande Maellis**: Enlarged to w-28 h-28 (112px). Triple animated pulse rings at different speeds (3.2s, 2.6s, 2.0s) with staggered delays (0, 0.4s, 0.8s). Golden glow (amber boxShadow) when idle, red glow when speaking. Glassmorphism label with backdrop-blur-md, animated glow, and emoji icons (🎤/🔊). Larger mic SVG icon (44px) and wider speaking bars
+- **Back Button**: Added smooth scroll-to-top with `window.scrollTo({ top: 0, behavior: 'smooth' })` before triggering onBack
+- **Palette Cleanup**: Replaced indigo duration card with amber/orange gradient. Replaced blue-400 news border with amber-400. Replaced indigo horoscope card with purple/rose gradient
+- Removed unused imports (useAnimation, QrCode, Mic) to pass lint cleanly
+- ESLint: 0 errors
+
+Stage Summary:
+- DemoAirbnb.tsx enhanced from 589 → 843 lines with 8 major visual upgrades
+- All animations use framer-motion exclusively
+- All existing functionality preserved (voice hooks, navigation callbacks, click handlers)
+- Mobile-first responsive design maintained
+- Amber/Gold primary accent palette enforced throughout
+
+---
+Task ID: 7
+Agent: frontend-styling-expert
+Task: Enhance DemoParticulier.tsx for MAXIMUM "Wahoo" effect — Luxe Lumineux family tablet
+
+Work Log:
+- **Header Enhancement**: Added HeaderShimmer component — subtle indigo-200/30 gradient light that sweeps across the header (6s cycle, 4s pause). Weather badge now has soft blue glow (animated bg-blue-300/40 blur with 3s opacity pulse)
+- **Top 3 Action Cards**: Added gentle float animation (y: -6px, 3s loop, staggered delays 0/0.4/0.8s). Added emoji accents in subtitles: ❤️ for Santé, 🍽️ for Recettes, 🛒 for Courses. Added ShimmerOverlay component — moving white/25 gradient that sweeps left-to-right (2.5s, 3s pause between cycles)
+- **Welcome "La maison s'active" Section**: Wrapped in animated gradient border (2px padding with indigo→purple→blue gradient, 200% backgroundSize, animated position). "Voir le Mur Familial" button now has a red "3" notification badge with spring entrance animation (delay 0.8s) and subtle pulse on the badge highlight dot
+- **Action Grid (2x4)**: Enhanced staggered entrance (delay: 0.15 + i*0.08s, y: 16→0). Icon containers have whileHover scale(1.1) transition. Mur Familial card has red "3" unread badge (spring entrance at delay 0.6+i*0.08s). Added hasUnread flag to actionGrid data
+- **Quick Info Cards**: Added staggered fade-up entrance animations (delays 0.6/0.72/0.84s, y: 20→0). Humeur Maison emoji bounces with y: -4px animation (1.5s loop). Second emoji in the text also has subtle bounce (y: -2px, 2s loop)
+- **News & Horoscope**: Horoscope gradient upgraded to dramatic 3-stop: from-indigo-500 via-violet-500 to-purple-600. Added 7 SparkleDot animations in background (varying sizes 2-4px, durations 3.2-4.5s, staggered delays) with opacity/scale/y keyframes and white glow boxShadow
+- **QR Code Section**: Gradient widened to from-indigo-500 via-purple-500 to-violet-600. Added 10 floating sparkle dots around QR code (sizes 3-5px, positioned on all edges with negative offsets). Added dual-layer breathing glow: outer purple-400/30 pulse (3s, scale 0.95-1.05) + inner indigo-400/20 pulse (2.5s). Created reusable SparkleDot component with configurable size/top/left/delay/duration
+- **Centre de Commande Maellis**: Enlarged to w-28 h-28 (112px, w-32 sm:h-32 on desktop). Triple pulsing rings at different speeds: Ring 1 (2.5s, indigo), Ring 2 (3.5s, purple, delay 0.8s), Ring 3 (4.5s, blue, delay 1.6s) — colors shift to red tones when speaking. Idle gradient: indigo-400 via-purple-500 to-blue-500. Speaking gradient: red-500 to-rose-600. Dynamic boxShadow glow (indigo idle, red speaking). Glassmorphism label: bg-white/60 backdrop-blur-lg with indigo-200/50 border, text-indigo-700, ✨ emoji prefix. Speaking bars increased to 4 bars with 1.5 w-1.5
+- **Footer**: Added golden gradient divider (h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent). "Mode Démo Active" text now pulses opacity (0.5-1, 2s) with amber-600 font-semibold. Emerald dot enlarged to 2.5h-2.5w with scale pulse (1-1.4, 1.5s) and green boxShadow glow
+- Created 3 helper components: ShimmerOverlay, SparkleDot, HeaderShimmer
+- Main content pb increased from pb-32 to pb-40 for floating button clearance
+- All existing functionality preserved: useMaellisVoice hook, speak() calls, onBack callback, all click handlers
+- File grew from 672 → 1038 lines
+
+Stage Summary:
+- DemoParticulier.tsx fully enhanced with 9 major visual upgrades for maximum "Wahoo" family tablet experience
+- All animations use framer-motion exclusively, all styling uses Tailwind CSS (boxShadow only via style prop)
+- Blue/Violet primary accent, Amber/Gold secondary palette enforced
+- Mobile-first responsive design maintained
+- Zero existing functionality broken
+
+---
+Task ID: luxe-lumineux-integration
+Agent: main
+Task: Integrate "LUXE LUMINEUX" as default design — light theme + Wahoo-enhanced demos
+
+Work Log:
+- Updated globals.css: Swapped `:root` from dark to light theme (oklch light values for all 30+ CSS variables), `.dark` class now provides dark fallback. Added `color-scheme: light` for `:root` and `color-scheme: dark` for `.dark`
+- Updated layout.tsx: Removed `className="dark"` from `<html>`, changed themeColor from "#0a0a12" to "#ffffff"
+- Updated providers.tsx: Changed ThemeProvider defaultTheme from "system" to "light"
+- Enhanced DemoSelection.tsx (652 lines): Animated mesh gradient (5 color orbs), particle dot pattern (40 dots), triple-pulse Centre de Commande (w-32/w-36), title sparkle stars, gradient glow-border cards, golden footer divider
+- Enhanced DemoAirbnb.tsx (843 lines): Header shimmer animation, floating date cards with emoji badges (✈️🏠⏰), animated gradient welcome border, staggered bounce-in action grid, dual-layer SOS pulse, whileInView news entrance, QR sparkle dots + 3D hover, triple-ring floating Maellis button (w-28)
+- Enhanced DemoParticulier.tsx (1038 lines): Header indigo shimmer, floating top-3 cards with shimmer overlays, animated gradient welcome border + "3" badge, staggered action grid + Mur Familial unread badge, Humeur emoji bounce, dramatic horoscope sparkles, QR breathing glow + sparkles, triple-ring floating Maellis button (w-28/w-32, blue→purple gradient)
+- Dev server verified: Compiles successfully, serves HTTP 200
+- ESLint: 0 new errors in src/ (5 pre-existing in maison-consciente-ref/ only)
+
+Stage Summary:
+- Default theme is now "LUXE LUMINEUX" (light) — dark mode available via .dark class
+- All 3 demo components enhanced with maximum Wahoo visual effects
+- Centre de Commande Maellis prominently displayed in all views with triple-pulse rings
+- Palette: White/Cream base, Amber/Gold primary (Airbnb), Indigo/Purple primary (Famille)
+- Framer Motion animations throughout: mesh gradients, floating orbs, sparkle dots, staggered entrances, 3D hovers

@@ -4,8 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE — DARK LUXE DESIGN SYSTEM
-   Slate-950/Black + Or (Amber) + Cuivre (Rose) + Violet
+   MAISON CONSCIENTE — LUXE LUMINEUX DESIGN SYSTEM
+   Light Mode Default: White/Cream + Or (Amber) + Violet Doux + Bleu Ciel
+   Dark Mode Fallback: Slate-950/Black + Or + Cuivre + Violet
    ═══════════════════════════════════════════════════════ */
 
 @theme inline {
@@ -77,43 +78,43 @@
   --animate-standby-pulse: standby-pulse 4s ease-in-out infinite;
 }
 
-/* ═══ DARK THEME (DEFAULT) — Slate-950 base ═══ */
+/* ═══ LIGHT THEME (DEFAULT) — LUXE LUMINEUX ═══ */
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.08 0.01 260);
-  --foreground: oklch(0.95 0.01 260);
-  --card: oklch(0.12 0.012 260);
-  --card-foreground: oklch(0.95 0.01 260);
-  --popover: oklch(0.13 0.012 260);
-  --popover-foreground: oklch(0.95 0.01 260);
+  --background: oklch(0.985 0.002 260);
+  --foreground: oklch(0.15 0.01 260);
+  --card: oklch(1.0 0 0);
+  --card-foreground: oklch(0.15 0.01 260);
+  --popover: oklch(1.0 0 0);
+  --popover-foreground: oklch(0.15 0.01 260);
   --primary: oklch(0.78 0.14 85);
-  --primary-foreground: oklch(0.12 0.02 260);
-  --secondary: oklch(0.18 0.015 260);
-  --secondary-foreground: oklch(0.90 0.01 260);
-  --muted: oklch(0.18 0.015 260);
-  --muted-foreground: oklch(0.60 0.02 260);
-  --accent: oklch(0.20 0.02 280);
-  --accent-foreground: oklch(0.90 0.01 260);
+  --primary-foreground: oklch(1.0 0 0);
+  --secondary: oklch(0.95 0.01 260);
+  --secondary-foreground: oklch(0.20 0.02 260);
+  --muted: oklch(0.96 0.005 260);
+  --muted-foreground: oklch(0.50 0.02 260);
+  --accent: oklch(0.93 0.02 280);
+  --accent-foreground: oklch(0.20 0.02 280);
   --destructive: oklch(0.65 0.22 25);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
+  --border: oklch(0.88 0.01 260);
+  --input: oklch(0.88 0.01 260);
   --ring: oklch(0.78 0.14 85);
   --chart-1: oklch(0.78 0.14 85);
   --chart-2: oklch(0.65 0.18 20);
   --chart-3: oklch(0.60 0.22 280);
   --chart-4: oklch(0.70 0.15 160);
   --chart-5: oklch(0.72 0.12 330);
-  --sidebar: oklch(0.10 0.012 260);
-  --sidebar-foreground: oklch(0.90 0.01 260);
+  --sidebar: oklch(0.97 0.005 260);
+  --sidebar-foreground: oklch(0.15 0.01 260);
   --sidebar-primary: oklch(0.78 0.14 85);
-  --sidebar-primary-foreground: oklch(0.12 0.02 260);
-  --sidebar-accent: oklch(0.18 0.02 260);
-  --sidebar-accent-foreground: oklch(0.90 0.01 260);
-  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-primary-foreground: oklch(1.0 0 0);
+  --sidebar-accent: oklch(0.93 0.02 260);
+  --sidebar-accent-foreground: oklch(0.20 0.02 260);
+  --sidebar-border: oklch(0.90 0.01 260);
   --sidebar-ring: oklch(0.78 0.14 85);
 }
 
-/* ═══ LIGHT THEME (fallback) ═══ */
+/* ═══ DARK THEME (fallback) — Slate-950 base ═══ */
 .dark {
   --background: oklch(0.08 0.01 260);
   --foreground: oklch(0.95 0.01 260);
@@ -223,6 +224,9 @@
     overscroll-behavior: none;
   }
   html {
+    color-scheme: light;
+  }
+  .dark {
     color-scheme: dark;
   }
 }
