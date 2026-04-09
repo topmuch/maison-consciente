@@ -27,7 +27,6 @@ import {
   Bell,
 } from 'lucide-react';
 import { useTimePhase, type PhaseConfig } from '@/hooks/useTimePhase';
-import { getTabletContext } from '@/actions/tablet-context';
 import type { TimePhase } from '@/hooks/useTimePhase';
 
 /* ═══════════════════════════════════════════════════════
@@ -68,8 +67,8 @@ interface TabletContextData {
 }
 
 interface ContextualWidgetProps {
-  /** Household ID for fetching context data */
-  householdId: string;
+  /** Display token for fetching context data (token-based auth) */
+  displayToken: string;
   /** Optional: callback when action button is pressed */
   onAction?: (action: TabletContextData['action']) => void;
 }
@@ -148,7 +147,7 @@ const contentVariants = {
 
 /* ─── Main Component ─── */
 
-export function ContextualWidget({ householdId, onAction }: ContextualWidgetProps) {
+export function ContextualWidget({ displayToken, onAction }: ContextualWidgetProps) {
   const config: PhaseConfig = useTimePhase();
   const [context, setContext] = useState<TabletContextData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,14 +156,19 @@ export function ContextualWidget({ householdId, onAction }: ContextualWidgetProp
   const fetchContext = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getTabletContext(householdId);
-      setContext(data);
+      const res = await fetch(`/api/display/${displayToken}/context`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.context) {
+          setContext(data.context);
+        }
+      }
     } catch {
       // Silent fail — keep previous data or show nothing
     } finally {
       setLoading(false);
     }
-  }, [householdId]);
+  }, [displayToken]);
 
   useEffect(() => {
     fetchContext();

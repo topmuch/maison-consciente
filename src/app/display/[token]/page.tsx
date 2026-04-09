@@ -20,8 +20,14 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import HybridVoiceControl from "@/components/voice/HybridVoiceControl";
+import { HybridVoiceControl } from "@/components/voice/HybridVoiceControl";
 import EmergencyButton from "@/components/tablet/EmergencyButton";
+import SafeArrivalWidget from "@/components/tablet/SafeArrivalWidget";
+import SeasonalWrapper from "@/components/tablet/SeasonalWrapper";
+import DynamicBackground from "@/components/tablet/DynamicBackground";
+import { ContextualWidget } from "@/components/tablet/ContextualWidget";
+import EventOverlay from "@/components/tablet/EventOverlay";
+import { SleepProvider } from "@/components/tablet/SleepProvider";
 import { GlassCard } from "@/components/shared/glass-card";
 import {
   Sheet,
@@ -215,7 +221,7 @@ export default function TabletDisplayPage() {
   const fetchTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* ─── Hooks ─── */
-  const { phase } = useTimePhase();
+  const timePhase = useTimePhase();
 
   /* ─── Voice Hook ─── */
   const voice = useVoiceCommand({
@@ -577,414 +583,434 @@ export default function TabletDisplayPage() {
      ═══════════════════════════════════════════════════════ */
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white relative overflow-hidden">
-      {/* Ambient glow orbs */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-amber-500/[0.04] rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-violet-500/[0.03] rounded-full blur-[120px]" />
-      </div>
+    <SleepProvider timeoutMs={180_000}>
+      <SeasonalWrapper>
+        <div className="min-h-screen text-white relative overflow-hidden">
+          {/* Dynamic Background — phase & weather wallpapers */}
+          <DynamicBackground weatherCondition={weather?.desc ?? ""} phase={timePhase.phase} />
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 md:px-6 pb-8">
-        {/* ═══════════════════════════════════════════
-            1. HEADER
-            ═══════════════════════════════════════════ */}
-        <motion.header
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-          className="pt-8 pb-6 border-b border-white/[0.06]"
-        >
-          {/* Top row: Clock + Status */}
-          <div className="flex items-start justify-between">
-            {/* Clock + Greeting */}
-            <div>
-              <h1 className="text-7xl md:text-8xl font-serif font-light text-amber-100 tracking-tight leading-none tabular-nums">
-                {timeStr}
-              </h1>
-              <p className="text-base md:text-lg text-slate-400 mt-2 font-light">
-                {phase.greeting} &middot;{" "}
-                <span className="capitalize">{dateStr}</span>
-              </p>
-            </div>
-
-            {/* Status indicators */}
-            <div className="flex items-center gap-2 mt-1">
-              {/* Online indicator */}
-              <motion.div
-                whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${
-                  online
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                    : "bg-red-500/10 text-red-400 border-red-500/20"
-                }`}
-              >
-                {online ? (
-                  <Wifi className="w-3 h-3" />
-                ) : (
-                  <WifiOff className="w-3 h-3" />
-                )}
-              </motion.div>
-
-              {/* Refresh */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={fetchHouseholdData}
-                className="p-2.5 rounded-full bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Rafraîchir"
-              >
-                <RefreshCw className="w-4 h-4 text-slate-400" />
-              </motion.button>
-            </div>
+          {/* Ambient glow orbs */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-amber-500/[0.04] rounded-full blur-[140px]" />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-violet-500/[0.03] rounded-full blur-[120px]" />
           </div>
 
-          {/* Weather + Branding row */}
-          <div className="flex items-center justify-between mt-5">
-            {/* Weather */}
-            {weather && (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-                  {renderWeatherIcon(weatherIconCode, "w-5 h-5 text-amber-400")}
-                </div>
+          <div className="relative z-10 max-w-2xl mx-auto px-4 md:px-6 pb-8">
+            {/* ═══════════════════════════════════════════
+                1. HEADER
+                ═══════════════════════════════════════════ */}
+            <motion.header
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+              className="pt-8 pb-6 border-b border-white/[0.06]"
+            >
+              {/* Top row: Clock + Status */}
+              <div className="flex items-start justify-between">
+                {/* Clock + Greeting */}
                 <div>
-                  <p className="text-xl font-serif text-amber-200">{weather.temp}°C</p>
-                  <p className="text-xs text-slate-500">{weather.desc}</p>
+                  <h1 className="text-7xl md:text-8xl font-serif font-light text-amber-100 tracking-tight leading-none tabular-nums">
+                    {timeStr}
+                  </h1>
+                  <p className="text-base md:text-lg text-slate-400 mt-2 font-light">
+                    {timePhase.greeting} &middot;{" "}
+                    <span className="capitalize">{dateStr}</span>
+                  </p>
+                </div>
+
+                {/* Status indicators */}
+                <div className="flex items-center gap-2 mt-1">
+                  {/* Online indicator */}
+                  <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${
+                      online
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-red-500/10 text-red-400 border-red-500/20"
+                    }`}
+                  >
+                    {online ? (
+                      <Wifi className="w-3 h-3" />
+                    ) : (
+                      <WifiOff className="w-3 h-3" />
+                    )}
+                  </motion.div>
+
+                  {/* Refresh */}
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={fetchHouseholdData}
+                    className="p-2.5 rounded-full bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    aria-label="Rafraîchir"
+                  >
+                    <RefreshCw className="w-4 h-4 text-slate-400" />
+                  </motion.button>
                 </div>
               </div>
+
+              {/* Weather + Branding row */}
+              <div className="flex items-center justify-between mt-5">
+                {/* Weather */}
+                {weather && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                      {renderWeatherIcon(weatherIconCode, "w-5 h-5 text-amber-400")}
+                    </div>
+                    <div>
+                      <p className="text-xl font-serif text-amber-200">{weather.temp}°C</p>
+                      <p className="text-xs text-slate-500">{weather.desc}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Maellis branding */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                  className="flex items-center gap-2"
+                >
+                  <motion.span
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                    className="text-amber-400/40 text-sm"
+                  >
+                    ◆
+                  </motion.span>
+                  <span className="font-serif text-gradient-gold text-lg tracking-wider">
+                    Maellis
+                  </span>
+                  <motion.span
+                    animate={{ rotate: [360, 0] }}
+                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                    className="text-amber-400/40 text-sm"
+                  >
+                    ◆
+                  </motion.span>
+                </motion.div>
+
+                {/* Household name */}
+                {household?.householdName && (
+                  <p className="text-xs text-slate-600 font-serif">
+                    {household.householdName}
+                  </p>
+                )}
+              </div>
+            </motion.header>
+
+            {/* ═══════════════════════════════════════════
+                2. NOTIFICATION BANNER
+                ═══════════════════════════════════════════ */}
+            <AnimatePresence>
+              {notifications.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="py-3">
+                    {notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className="glass-gold rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Bell className="w-4 h-4 text-amber-400 shrink-0" />
+                          <p className="text-sm text-amber-100">{notif.message}</p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setNotifications((prev) =>
+                              prev.filter((n) => n.id !== notif.id)
+                            )
+                          }
+                          className="p-1 rounded-lg hover:bg-white/10 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+                          aria-label="Fermer"
+                        >
+                          <X className="w-3.5 h-3.5 text-slate-400" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ═══════════════════════════════════════════
+                3. QUICK ACTIONS GRID (2×3)
+                ═══════════════════════════════════════════ */}
+            <motion.section
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="py-8"
+            >
+              <motion.h2
+                variants={fadeUp}
+                className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-5"
+              >
+                Accès rapide
+              </motion.h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                {QUICK_ACTIONS.map((action) => (
+                  <motion.button
+                    key={action.id}
+                    variants={scaleIn}
+                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03, transition: { duration: 0.15 } }}
+                    onClick={() => handleQuickAction(action.id)}
+                    className="group flex flex-col items-center justify-center gap-3 p-5 md:p-6 rounded-2xl glass hover:bg-white/[0.06] transition-all cursor-pointer min-h-[120px]"
+                  >
+                    <span className="text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-200">
+                      {action.emoji}
+                    </span>
+                    <span className="text-xs md:text-sm font-medium text-slate-300 group-hover:text-amber-200 transition-colors text-center">
+                      {action.label}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.section>
+
+            {/* ═══════════════════════════════════════════
+                4. NEWS TICKER
+                ═══════════════════════════════════════════ */}
+            {news.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
+                className="pb-6"
+              >
+                <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">
+                  Actualités
+                </h2>
+                <div className="relative overflow-hidden rounded-2xl glass py-3 px-4">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={tickerOffset}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center gap-3"
+                    >
+                      <span className="text-xs font-bold text-amber-400/70 shrink-0">
+                        {String(tickerOffset + 1).padStart(2, "0")}
+                      </span>
+                      <p className="text-sm text-slate-300 leading-relaxed line-clamp-1">
+                        {news[tickerOffset]?.title}
+                      </p>
+                      <span className="text-xs text-slate-600 shrink-0 ml-auto">
+                        {news[tickerOffset]?.source}
+                      </span>
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {/* Ticker dots */}
+                  <div className="flex items-center justify-center gap-1.5 mt-3">
+                    {news.slice(0, 5).map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setTickerOffset(i)}
+                        className={`h-1 rounded-full transition-all duration-300 min-w-[24px] min-h-[12px] ${
+                          i === tickerOffset
+                            ? "bg-amber-400 w-6"
+                            : "bg-white/10 w-2 hover:bg-white/20"
+                        }`}
+                        aria-label={`Actualité ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.section>
             )}
 
-            {/* Maellis branding */}
-            <motion.div
+            {/* ═══════════════════════════════════════════
+                5. VOICE CONTROL SECTION
+                ═══════════════════════════════════════════ */}
+            <motion.section
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="py-8"
+            >
+              <div className="divider-gold mb-8" />
+              <HybridVoiceControl
+                householdId="tablet"
+                compact
+              />
+            </motion.section>
+
+            {/* ═══════════════════════════════════════════
+                6. QUICK ACCESS ROW
+                ═══════════════════════════════════════════ */}
+            <motion.section
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+              className="py-6"
+            >
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-4">
+                Liens rapides
+              </h2>
+              <div className="flex gap-3">
+                {/* WhatsApp */}
+                <a
+                  href={`https://wa.me/${household?.whatsappNumber || ""}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
+                >
+                  <span className="text-2xl">📱</span>
+                  <span className="text-xs text-slate-400 text-center">WhatsApp</span>
+                </a>
+
+                {/* Rappels */}
+                <button
+                  onClick={() => {
+                    setModalContent(
+                      <div className="space-y-4">
+                        <h3 className="font-serif text-xl text-amber-200">Rappels</h3>
+                        <div className="flex flex-col items-center py-8 text-slate-400">
+                          <Bell className="w-10 h-10 mb-3 opacity-40" />
+                          <p className="text-sm">Aucun rappel actif</p>
+                          <p className="text-xs text-slate-600 mt-1">
+                            Utilisez la commande vocale &ldquo;Maison, rappelle-moi de…&rdquo;
+                          </p>
+                        </div>
+                      </div>
+                    );
+                    setActiveModal("reminders");
+                  }}
+                  className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
+                >
+                  <span className="text-2xl">🔔</span>
+                  <span className="text-xs text-slate-400 text-center">Rappels</span>
+                </button>
+
+                {/* POI */}
+                <button
+                  onClick={() => {
+                    setModalContent(
+                      <div className="space-y-4">
+                        <h3 className="font-serif text-xl text-amber-200">
+                          Points d&apos;intérêt
+                        </h3>
+                        <div className="flex flex-col items-center py-8 text-slate-400">
+                          <MapPin className="w-10 h-10 mb-3 opacity-40" />
+                          <p className="text-sm">Aucun point d&apos;intérêt configuré</p>
+                          <p className="text-xs text-slate-600 mt-1">
+                            Les POI apparaîtront ici une fois configurés par l&apos;administrateur
+                          </p>
+                        </div>
+                      </div>
+                    );
+                    setActiveModal("poi");
+                  }}
+                  className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
+                >
+                  <span className="text-2xl">📍</span>
+                  <span className="text-xs text-slate-400 text-center">
+                    Points d&apos;intérêt
+                  </span>
+                </button>
+              </div>
+            </motion.section>
+
+            {/* ═══════════════════════════════════════════
+                6b. CONTEXTUAL WIDGET
+                ═══════════════════════════════════════════ */}
+            <section className="py-6">
+              <ContextualWidget displayToken={token} />
+            </section>
+
+            {/* ═══════════════════════════════════════════
+                6c. SAFE ARRIVAL WIDGET
+                ═══════════════════════════════════════════ */}
+            <SafeArrivalWidget
+              displayToken={token}
+              householdName={household?.householdName}
+            />
+
+            {/* ═══════════════════════════════════════════
+                7. EMERGENCY BUTTON
+                ═══════════════════════════════════════════ */}
+            <EmergencyButton
+              hostWhatsapp={household?.whatsappNumber ?? null}
+              householdName={household?.householdName ?? "Maison"}
+            />
+
+            {/* ═══════════════════════════════════════════
+                8. FOOTER
+                ═══════════════════════════════════════════ */}
+            <motion.footer
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="flex items-center gap-2"
+              transition={{ delay: 0.8, duration: 0.5 }}
+              className="pt-8 pb-4"
             >
-              <motion.span
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                className="text-amber-400/40 text-sm"
-              >
-                ◆
-              </motion.span>
-              <span className="font-serif text-gradient-gold text-lg tracking-wider">
-                Maellis
-              </span>
-              <motion.span
-                animate={{ rotate: [360, 0] }}
-                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                className="text-amber-400/40 text-sm"
-              >
-                ◆
-              </motion.span>
-            </motion.div>
-
-            {/* Household name */}
-            {household?.householdName && (
-              <p className="text-xs text-slate-600 font-serif">
-                {household.householdName}
-              </p>
-            )}
-          </div>
-        </motion.header>
-
-        {/* ═══════════════════════════════════════════
-            2. NOTIFICATION BANNER
-            ═══════════════════════════════════════════ */}
-        <AnimatePresence>
-          {notifications.length > 0 && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="py-3">
-                {notifications.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className="glass-gold rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+              <div className="divider-gold mb-6" />
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <motion.span
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+                    className="text-amber-400/20 text-xs"
                   >
-                    <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-amber-400 shrink-0" />
-                      <p className="text-sm text-amber-100">{notif.message}</p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        setNotifications((prev) =>
-                          prev.filter((n) => n.id !== notif.id)
-                        )
-                      }
-                      className="p-1 rounded-lg hover:bg-white/10 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
-                      aria-label="Fermer"
-                    >
-                      <X className="w-3.5 h-3.5 text-slate-400" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ═══════════════════════════════════════════
-            3. QUICK ACTIONS GRID (2×3)
-            ═══════════════════════════════════════════ */}
-        <motion.section
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-          className="py-8"
-        >
-          <motion.h2
-            variants={fadeUp}
-            className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-5"
-          >
-            Accès rapide
-          </motion.h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {QUICK_ACTIONS.map((action) => (
-              <motion.button
-                key={action.id}
-                variants={scaleIn}
-                whileTap={{ scale: 0.95 }}
-                whileHover={{ scale: 1.03, transition: { duration: 0.15 } }}
-                onClick={() => handleQuickAction(action.id)}
-                className="group flex flex-col items-center justify-center gap-3 p-5 md:p-6 rounded-2xl glass hover:bg-white/[0.06] transition-all cursor-pointer min-h-[120px]"
-              >
-                <span className="text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-200">
-                  {action.emoji}
-                </span>
-                <span className="text-xs md:text-sm font-medium text-slate-300 group-hover:text-amber-200 transition-colors text-center">
-                  {action.label}
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* ═══════════════════════════════════════════
-            4. NEWS TICKER
-            ═══════════════════════════════════════════ */}
-        {news.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-            className="pb-6"
-          >
-            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">
-              Actualités
-            </h2>
-            <div className="relative overflow-hidden rounded-2xl glass py-3 px-4">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={tickerOffset}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center gap-3"
-                >
-                  <span className="text-xs font-bold text-amber-400/70 shrink-0">
-                    {String(tickerOffset + 1).padStart(2, "0")}
+                    ◆
+                  </motion.span>
+                  <span className="font-serif text-sm text-gradient-gold tracking-wider">
+                    Maison Consciente
                   </span>
-                  <p className="text-sm text-slate-300 leading-relaxed line-clamp-1">
-                    {news[tickerOffset]?.title}
-                  </p>
-                  <span className="text-xs text-slate-600 shrink-0 ml-auto">
-                    {news[tickerOffset]?.source}
-                  </span>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Ticker dots */}
-              <div className="flex items-center justify-center gap-1.5 mt-3">
-                {news.slice(0, 5).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setTickerOffset(i)}
-                    className={`h-1 rounded-full transition-all duration-300 min-w-[24px] min-h-[12px] ${
-                      i === tickerOffset
-                        ? "bg-amber-400 w-6"
-                        : "bg-white/10 w-2 hover:bg-white/20"
-                    }`}
-                    aria-label={`Actualité ${i + 1}`}
-                  />
-                ))}
+                  <motion.span
+                    animate={{ rotate: [360, 0] }}
+                    transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+                    className="text-amber-400/20 text-xs"
+                  >
+                    ◆
+                  </motion.span>
+                </div>
+                <p className="text-xs text-slate-600">v2.0</p>
               </div>
-            </div>
-          </motion.section>
-        )}
-
-        {/* ═══════════════════════════════════════════
-            5. VOICE CONTROL SECTION
-            ═══════════════════════════════════════════ */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="py-8"
-        >
-          <div className="divider-gold mb-8" />
-          <HybridVoiceControl
-            state={voice.isSpeaking ? "speaking" : voice.state}
-            transcript={voice.transcript}
-            lastResponse={voice.lastResponse}
-            isSpeaking={voice.isSpeaking}
-            isMuted={voice.isMuted}
-            onStartListening={voice.startListening}
-            onToggleMute={voice.toggleMute}
-            error={voice.error}
-            isSupported={voice.isSupported}
-          />
-        </motion.section>
-
-        {/* ═══════════════════════════════════════════
-            6. QUICK ACCESS ROW
-            ═══════════════════════════════════════════ */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.4 }}
-          className="py-6"
-        >
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-4">
-            Liens rapides
-          </h2>
-          <div className="flex gap-3">
-            {/* WhatsApp */}
-            <a
-              href={`https://wa.me/${household?.whatsappNumber || ""}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
-            >
-              <span className="text-2xl">📱</span>
-              <span className="text-xs text-slate-400 text-center">WhatsApp</span>
-            </a>
-
-            {/* Rappels */}
-            <button
-              onClick={() => {
-                setModalContent(
-                  <div className="space-y-4">
-                    <h3 className="font-serif text-xl text-amber-200">Rappels</h3>
-                    <div className="flex flex-col items-center py-8 text-slate-400">
-                      <Bell className="w-10 h-10 mb-3 opacity-40" />
-                      <p className="text-sm">Aucun rappel actif</p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Utilisez la commande vocale &ldquo;Maison, rappelle-moi de…&rdquo;
-                      </p>
-                    </div>
-                  </div>
-                );
-                setActiveModal("reminders");
-              }}
-              className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
-            >
-              <span className="text-2xl">🔔</span>
-              <span className="text-xs text-slate-400 text-center">Rappels</span>
-            </button>
-
-            {/* POI */}
-            <button
-              onClick={() => {
-                setModalContent(
-                  <div className="space-y-4">
-                    <h3 className="font-serif text-xl text-amber-200">
-                      Points d&apos;intérêt
-                    </h3>
-                    <div className="flex flex-col items-center py-8 text-slate-400">
-                      <MapPin className="w-10 h-10 mb-3 opacity-40" />
-                      <p className="text-sm">Aucun point d&apos;intérêt configuré</p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Les POI apparaîtront ici une fois configurés par l&apos;administrateur
-                      </p>
-                    </div>
-                  </div>
-                );
-                setActiveModal("poi");
-              }}
-              className="flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl glass hover:bg-white/[0.06] transition-all min-h-[80px]"
-            >
-              <span className="text-2xl">📍</span>
-              <span className="text-xs text-slate-400 text-center">
-                Points d&apos;intérêt
-              </span>
-            </button>
+            </motion.footer>
           </div>
-        </motion.section>
 
-        {/* ═══════════════════════════════════════════
-            7. EMERGENCY BUTTON
-            ═══════════════════════════════════════════ */}
-        <EmergencyButton
-          hostWhatsapp={household?.whatsappNumber ?? null}
-          householdName={household?.householdName ?? "Maison"}
-        />
+          {/* ═══════════════════════════════════════════
+              MODAL SHEET
+              ═══════════════════════════════════════════ */}
+          <Sheet
+            open={activeModal !== null}
+            onOpenChange={(open) => {
+              if (!open) {
+                setActiveModal(null);
+                setModalContent(null);
+              }
+            }}
+          >
+            <SheetContent
+              side="bottom"
+              className="bg-[#0a0f1e] border-t border-white/[0.06] rounded-t-3xl max-h-[85vh] overflow-y-auto scrollbar-luxe"
+            >
+              <SheetHeader className="pb-0">
+                <SheetTitle className="sr-only">
+                  {activeModal || "Détails"}
+                </SheetTitle>
+                <SheetDescription className="sr-only">
+                  Contenu détaillé
+                </SheetDescription>
+              </SheetHeader>
+              <div className="px-6 pb-8 pt-2">{modalContent}</div>
+            </SheetContent>
+          </Sheet>
 
-        {/* ═══════════════════════════════════════════
-            8. FOOTER
-            ═══════════════════════════════════════════ */}
-        <motion.footer
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="pt-8 pb-4"
-        >
-          <div className="divider-gold mb-6" />
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-2">
-              <motion.span
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-                className="text-amber-400/20 text-xs"
-              >
-                ◆
-              </motion.span>
-              <span className="font-serif text-sm text-gradient-gold tracking-wider">
-                Maison Consciente
-              </span>
-              <motion.span
-                animate={{ rotate: [360, 0] }}
-                transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-                className="text-amber-400/20 text-xs"
-              >
-                ◆
-              </motion.span>
-            </div>
-            <p className="text-xs text-slate-600">v2.0</p>
-          </div>
-        </motion.footer>
-      </div>
-
-      {/* ═══════════════════════════════════════════
-          MODAL SHEET
-          ═══════════════════════════════════════════ */}
-      <Sheet
-        open={activeModal !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setActiveModal(null);
-            setModalContent(null);
-          }
-        }}
-      >
-        <SheetContent
-          side="bottom"
-          className="bg-[#0a0f1e] border-t border-white/[0.06] rounded-t-3xl max-h-[85vh] overflow-y-auto scrollbar-luxe"
-        >
-          <SheetHeader className="pb-0">
-            <SheetTitle className="sr-only">
-              {activeModal || "Détails"}
-            </SheetTitle>
-            <SheetDescription className="sr-only">
-              Contenu détaillé
-            </SheetDescription>
-          </SheetHeader>
-          <div className="px-6 pb-8 pt-2">{modalContent}</div>
-        </SheetContent>
-      </Sheet>
-    </div>
+          {/* ═══════════════════════════════════════════
+              EVENT OVERLAY (fixed position)
+              ═══════════════════════════════════════════ */}
+          <EventOverlay token={token} />
+        </div>
+      </SeasonalWrapper>
+    </SleepProvider>
   );
 }

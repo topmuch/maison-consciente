@@ -9,7 +9,6 @@
    ═══════════════════════════════════════════════════════ */
 
 import { useEffect, useState, useCallback } from "react";
-import { getUpcomingEvents } from "@/actions/events";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cake, Bell, Calendar, LogOut } from "lucide-react";
 
@@ -45,8 +44,17 @@ export default function EventOverlay({ token }: Props) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   const loadEvents = useCallback(async () => {
-    const evts = await getUpcomingEvents(token, 3);
-    setEvents(evts);
+    try {
+      const res = await fetch(`/api/display/${token}/events`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setEvents(data.events);
+        }
+      }
+    } catch {
+      // Silent fail — overlay is non-critical
+    }
   }, [token]);
 
   useEffect(() => {

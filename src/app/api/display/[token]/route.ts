@@ -25,7 +25,7 @@ export async function GET(
       guestMode?: { maskPresence?: boolean; maskMessages?: boolean };
     };
 
-    const data: Record<string, unknown> = { config, householdName: household.name };
+    const data: Record<string, unknown> = { householdId: household.id, config, householdName: household.name, whatsappNumber: household.whatsappNumber ?? null };
 
     // Weather
     if (config.widgets?.weather) {
