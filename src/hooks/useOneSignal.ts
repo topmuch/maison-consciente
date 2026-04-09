@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 /* ═══════════════════════════════════════════════════════
    OneSignal Push Notification Hook
@@ -50,9 +50,10 @@ function configureOneSignal(setState: React.Dispatch<React.SetStateAction<OneSig
       setState(prev => ({ ...prev, permission: perm, isInitialized: true }));
     });
 
-    os.on('subscriptionChange', (isSubscribed: boolean) => {
-      setState(prev => ({ ...prev, isSubscribed }));
-      if (isSubscribed) {
+    os.on('subscriptionChange', (isSubscribed: unknown) => {
+      const subscribed = Boolean(isSubscribed);
+      setState(prev => ({ ...prev, isSubscribed: subscribed }));
+      if (subscribed) {
         os.getUserId().then((id: string | null) => {
           if (id) {
             setState(prev => ({ ...prev, playerId: id }));
@@ -70,6 +71,7 @@ function configureOneSignal(setState: React.Dispatch<React.SetStateAction<OneSig
 
 export function useOneSignal() {
   const isConfigured = typeof window !== 'undefined' && !!ONESIGNAL_APP_ID;
+  const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [state, setState] = useState<OneSignalState>({
     isSubscribed: false,
@@ -110,6 +112,13 @@ export function useOneSignal() {
     script.onerror = () => {
       console.error('[OneSignal] Failed to load SDK');
       setState(prev => ({ ...prev, isInitialized: true }));
+    };
+
+    // Cleanup on unmount
+    return () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+      }
     };
   }, []);
 

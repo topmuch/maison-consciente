@@ -55,7 +55,7 @@ export function encryptPIIRecord<T extends Record<string, unknown>>(
 export function decryptPIIRecord(
   record: Record<string, string | null | undefined>,
   sensitiveKeys: string[]
-): Record<string, string> {
+): Record<string, string | null | undefined> {
   const result = { ...record };
   for (const key of sensitiveKeys) {
     if (result[key]) {

@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { TemplateSelector } from '@/components/themes/TemplateSelector';
 import { NotificationSettingsPanel } from '@/components/notifications/NotificationSettingsPanel';
 
@@ -238,9 +239,4 @@ export default function SettingsPage() {
       </motion.div>
     </div>
   );
-}
-
-/* ─── Helper ─── */
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }

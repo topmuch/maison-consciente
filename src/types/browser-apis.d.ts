@@ -79,6 +79,7 @@ declare let SpeechRecognition: {
 interface Window {
   SpeechRecognition: typeof SpeechRecognition;
   webkitSpeechRecognition: typeof SpeechRecognition;
+  OneSignal?: OneSignal[] | OneSignal;
 }
 
 /* ─── OneSignal Web SDK ─── */
@@ -100,10 +101,4 @@ interface OneSignal {
   deleteExternalId(): Promise<void>;
   setSubscription(enabled: boolean): Promise<void>;
   on(event: string, listener: (...args: unknown[]) => void): void;
-}
-
-declare global {
-  interface Window {
-    OneSignal?: OneSignal[] | OneSignal;
-  }
 }
