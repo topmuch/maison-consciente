@@ -59,6 +59,7 @@ export async function GET() {
         isQuietMode: true,
         name: true,
         type: true,
+        voiceSettings: true,
       },
     });
 
@@ -71,7 +72,10 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      settings: formatSettings(household),
+      settings: {
+        ...formatSettings(household),
+        voiceSettings: (household as Record<string, unknown>).voiceSettings || null,
+      },
     });
   } catch (error) {
     if (error instanceof Error && error.message === "FORBIDDEN") {
@@ -136,6 +140,16 @@ export async function PATCH(request: NextRequest) {
     // Preferences
     if (p.timezone !== undefined) data.timezone = p.timezone;
     if (p.isQuietMode !== undefined) data.isQuietMode = p.isQuietMode;
+
+    // Voice Settings (merge with existing)
+    if (p.voiceSettings !== undefined) {
+      const existingHousehold = await db.household.findUnique({
+        where: { id: householdId! },
+        select: { voiceSettings: true },
+      });
+      const existingVoice = (existingHousehold?.voiceSettings as Record<string, unknown>) || {};
+      data.voiceSettings = { ...existingVoice, ...p.voiceSettings };
+    }
 
     // Skip if nothing to update
     if (Object.keys(data).length === 0) {

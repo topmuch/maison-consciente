@@ -26,17 +26,17 @@ export function usePWA() {
 
   useEffect(() => {
     // Register service worker
+    let updateInterval: ReturnType<typeof setInterval> | undefined;
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
           console.log('[PWA] Service Worker registered:', registration.scope);
-
           // Check for updates every 60 seconds
-          const interval = setInterval(() => {
+          updateInterval = setInterval(() => {
             registration.update();
           }, 60_000);
-          return () => clearInterval(interval);
         })
         .catch((err) => {
           console.warn('[PWA] SW registration failed:', err);
@@ -78,6 +78,7 @@ export function usePWA() {
     mql.addEventListener('change', handleDisplayChange);
 
     return () => {
+      if (updateInterval) clearInterval(updateInterval);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);

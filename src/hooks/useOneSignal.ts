@@ -91,7 +91,7 @@ export function useOneSignal() {
         return;
       }
       // SDK not ready yet, retry after a short delay
-      const timer = setTimeout(tryInit, 1000);
+      retryTimerRef.current = setTimeout(tryInit, 1000);
     }
 
     // Check if script already loaded

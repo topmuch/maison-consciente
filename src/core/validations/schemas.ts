@@ -177,10 +177,22 @@ export const householdPreferencesSchema = z.object({
   isQuietMode: z.boolean().optional(),
 });
 
+// ─── Voice Settings ───
+export const voiceSettingsSchema = z.object({
+  enabled: z.boolean().optional(),
+  rate: z.number().min(0.5).max(2).optional(),
+  volume: z.number().min(0).max(1).optional(),
+  language: z.string().optional(),
+  conversationWindow: z.number().int().min(1).max(60).optional(),
+  assistantName: z.string().min(1).max(50).optional(),
+  wakeWordEnabled: z.boolean().optional(),
+});
+
 /** Combined schema for PATCH /api/household/settings */
 export const updateHouseholdSettingsSchema = householdIdentitySchema
   .merge(householdSeoSchema)
   .merge(householdPreferencesSchema)
+  .extend({ voiceSettings: voiceSettingsSchema.optional() })
   .partial();
 
 // ─── Billing: Checkout ───
