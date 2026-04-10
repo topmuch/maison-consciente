@@ -114,6 +114,7 @@ export default async function DashboardLayout({
 /* ─── Navigation Items ─── */
 const navItems = [
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Modules", href: "/dashboard/modules" },
   { label: "Paramètres", href: "/dashboard/settings" },
   { label: "Voix", href: "/dashboard/settings/voice" },
   { label: "Santé", href: "/dashboard/settings/health" },

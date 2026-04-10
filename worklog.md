@@ -2179,3 +2179,21 @@ Stage Summary:
 - Architecture: MaellisBrain pattern = Audio → Deepgram STT → Gemini LLM → TTS Router
 - TTS Router logic: emotional/critical/urgent → ElevenLabs, functional → Web Speech API
 - Cost per interaction: < 0.02$ (Deepgram 0.002$ + Gemini 0.001$ + TTS varies)
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Restore SaaS navigation structure — Landing page + Demo + Modules
+
+Work Log:
+- Analyzed current project structure: page.tsx was "Global Host Pro Showcase" (modules marketplace)
+- Copied current page.tsx to /dashboard/modules/page.tsx, renamed export to ModulesPage
+- Created new landing page at /page.tsx with: Navbar, Hero, DualAudience (Particulier/Airbnb), Features grid, DemoCTA, PricingPreview, Footer
+- Updated dashboard layout nav to include "Modules" link pointing to /dashboard/modules
+- Confirmed /demo/page.tsx already has DemoSelection (both Particulier + Airbnb demos)
+- Verified: dev server compiles OK, lint passes with 0 errors
+
+Stage Summary:
+- Structure restored: / (landing) → /demo (both demos) → /connexion (login) → /dashboard/modules (marketplace)
+- New landing page is a clean SaaS design with white background, gold accents, responsive
+- Demo page at /demo works with both DemoParticulier and DemoAirbnb (via DemoSelection component)
