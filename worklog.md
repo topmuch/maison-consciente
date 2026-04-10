@@ -1885,3 +1885,50 @@ Stage Summary:
 - TypeScript: 0 errors ✅
 - ESLint: 0 errors ✅
 - Prisma: schema pushed, client regenerated ✅
+
+---
+Task ID: system-config-superadmin
+Agent: Main
+Task: Move SMTP, Sentry, and general platform configuration to SuperAdmin panel
+
+Work Log:
+- Added `SystemConfig` Prisma model with fields: id, category, key, value, isSecret, label, description, timestamps
+- Ran `db:push` to sync schema + generated Prisma client
+- Created `src/actions/admin-system-config.ts` with:
+  - 13 config definitions across 3 categories (smtp:6, sentry:3, general:4)
+  - `getSystemConfigs()` — grouped by category with masked secrets
+  - `updateSystemConfig()` — AES-256-GCM encryption for secrets, audit logging
+  - `testSmtpConnection()` — test via DB config → env fallback
+  - `testSentryConnection()` — test via DB config → env fallback
+  - `sendTestEmail()` — full email test with template rendering
+  - `getSystemConfigValue()` + `getSystemConfigValues()` — backend DB readers
+- Created `src/components/admin/SystemConfigPanel.tsx` with:
+  - 3 collapsible category sections (SMTP/Sentry/General) with animated expand/collapse
+  - Config fields with save-on-change, masked secret display, show/hide toggle
+  - SMTP test button + test email sender
+  - Sentry test button
+  - Badge counters for configured/total per category
+  - Security notice about encryption priority (DB → env)
+- Added "Configuration" tab (8th tab) to `admin-dashboard.tsx`
+- Updated `src/lib/smtp-client.ts`:
+  - `readSmtpConfigFromDB()` reads from SystemConfig table
+  - `mergeConfig()` prioritizes DB over env vars
+  - `isEmailConfigured()` now async (reads DB first)
+  - `isEmailConfiguredSync()` added for backward compatibility
+  - `resetTransportCache()` resets when SMTP config changes from admin
+- Updated `src/lib/sentry-config.ts`:
+  - `readSentryConfigFromDB()` reads DSN/environment/tracesSampleRate from DB
+  - `initSentry()` now uses DB config first, falls back to env
+  - `getSentryDsnSource()` returns "db", "env", or "none"
+- Updated `src/lib/email-service.ts`:
+  - Local sync `isEmailConfigured()` wrapper for backward compatibility with 16 email functions
+- ESLint: 0 errors, 0 warnings
+- Dev server: running clean on port 3000
+
+Stage Summary:
+- New Prisma model: SystemConfig (31st model)
+- New server action: admin-system-config.ts (5 exported functions)
+- New component: SystemConfigPanel.tsx
+- Updated: admin-dashboard.tsx (8 tabs), smtp-client.ts, sentry-config.ts, email-service.ts
+- Configuration priority: **Database (SuperAdmin UI) → Environment Variables (.env)**
+- All secrets: AES-256-GCM encrypted, never exposed to client

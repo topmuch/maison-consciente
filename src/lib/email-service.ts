@@ -12,7 +12,17 @@
 // and never throws. Uses the Maison Consciente brand templates.
 // ═══════════════════════════════════════════════════════════════
 
-import { sendMail, isEmailConfigured } from "@/lib/smtp-client";
+import { sendMail, isEmailConfigured as isEmailConfiguredAsync } from "@/lib/smtp-client";
+
+/** Legacy sync wrapper for backward compatibility */
+function isEmailConfigured(): boolean {
+  // Check env vars synchronously as a quick pre-check
+  const host = process.env.SMTP_HOST || "";
+  const user = process.env.SMTP_USER || "";
+  const pass = process.env.SMTP_PASS || "";
+  const from = process.env.SMTP_FROM_EMAIL || "";
+  return !!(host && user && pass && from);
+}
 import {
   generateEmailTemplate,
   alertContent,

@@ -582,6 +582,21 @@ model Activity {
   @@index([isPartner])
 }
 
+/* ═══ SYSTEM CONFIG (SuperAdmin — Platform Settings) ═══ */
+model SystemConfig {
+  id          String   @id @default(uuid())
+  category    String                       // "smtp" | "sentry" | "general"
+  key         String   @unique              // "smtp_host", "sentry_dsn", "platform_name", etc.
+  value       String   @default("")         // Encrypted for secrets, plain for non-secrets
+  isSecret    Boolean  @default(false)      // If true, value is AES-256-GCM encrypted
+  label       String                       // Display label: "Hôte SMTP", "Sentry DSN"
+  description String   @default("")         // Help text shown in admin UI
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+}
+
 /* ═══ SAFE ARRIVAL (Sécurité Familiale) ═══ */
 model SafeArrival {
   id             String   @id @default(uuid())

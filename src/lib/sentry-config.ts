@@ -1,15 +1,17 @@
-/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    MAISON CONSCIENTE — Sentry Configuration Wrapper
 
    Conditionally initializes Sentry only when SENTRY_DSN is set
-   and the environment is production. Falls back to console.error
-   in all other cases.
+   (from SystemConfig DB or .env) and environment is production.
+   Falls back to console.error in all other cases.
+
+   Configuration priority: DB (SuperAdmin) → .env variables
 
    Usage:
      import { reportError, reportMessage } from "@/lib/sentry-config";
      reportError(err, { userId: "..." });
      reportMessage("Deployment complete", { version: "1.2.0" });
-   ═══════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════ */
 
 /* ── Lazy-loaded Sentry references ────────────────────────── */
 
@@ -18,12 +20,47 @@ let captureMessage: ((message: string, context?: Record<string, unknown>) => voi
 
 let _initialized = false;
 
+/* ── DB-backed config reader ── */
+
+async function readSentryConfigFromDB(): Promise<Partial<{
+  dsn: string;
+  environment: string;
+  tracesSampleRate: string;
+}>> {
+  try {
+    const { db } = await import("@/lib/db");
+    const { decryptSecret } = await import("@/lib/aes-crypto");
+
+    const keys = ["sentry_dsn", "sentry_environment", "sentry_traces_sample_rate"];
+    const rows = await db.systemConfig.findMany({
+      where: { key: { in: keys } },
+    });
+
+    const rowMap = new Map(rows.map((r) => [r.key, r.value]));
+
+    return {
+      dsn: rowMap.has("sentry_dsn") ? decryptSecret(rowMap.get("sentry_dsn")!) : "",
+      environment: rowMap.get("sentry_environment") || "",
+      tracesSampleRate: rowMap.get("sentry_traces_sample_rate") || "",
+    };
+  } catch {
+    // DB not available — fall back to env vars entirely
+    return {};
+  }
+}
+
 /* ── Initialize Sentry (call once at app startup) ─────────── */
 
 export async function initSentry(): Promise<void> {
   if (_initialized) return;
 
-  const dsn = process.env.SENTRY_DSN;
+  // Read from DB first, then fall back to env
+  const dbConfig = await readSentryConfigFromDB();
+  const dsn = dbConfig.dsn || process.env.SENTRY_DSN;
+  const environment = dbConfig.environment || process.env.SENTRY_ENVIRONMENT || "production";
+  const tracesSampleRate = parseFloat(
+    dbConfig.tracesSampleRate || process.env.SENTRY_TRACES_SAMPLE_RATE || "0.1"
+  );
   const isProduction = process.env.NODE_ENV === "production";
 
   if (!dsn || !isProduction) {
@@ -37,9 +74,8 @@ export async function initSentry(): Promise<void> {
 
     Sentry.init({
       dsn,
-      environment: process.env.SENTRY_ENVIRONMENT || "production",
-      tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || "0.1"),
-      // Only send errors in production
+      environment,
+      tracesSampleRate,
       enabled: isProduction,
     });
 
@@ -58,7 +94,7 @@ export async function initSentry(): Promise<void> {
     };
 
     _initialized = true;
-    console.info("[SENTRY] Initialized successfully");
+    console.info("[SENTRY] Initialized successfully (DB config)");
   } catch (error) {
     console.warn("[SENTRY] Failed to initialize:", error);
     _initialized = true; // Don't retry
@@ -98,8 +134,18 @@ export function isSentryEnabled(): boolean {
 }
 
 /**
- * Export the DSN for reference (does not expose the value).
+ * Get the Sentry DSN source — does not expose the actual value.
+ * Returns "db" if configured via SuperAdmin panel, "env" if from .env, or "none".
  */
-export function getSentryDsn(): string | undefined {
-  return process.env.SENTRY_DSN;
+export async function getSentryDsnSource(): Promise<string> {
+  try {
+    const { db } = await import("@/lib/db");
+    const row = await db.systemConfig.findUnique({
+      where: { key: "sentry_dsn" },
+    });
+    if (row && row.value) return "db";
+  } catch {
+    // DB not available
+  }
+  return process.env.SENTRY_DSN ? "env" : "none";
 }

@@ -20,6 +20,7 @@ import {
   Mail,
   Filter,
   Plug,
+  Settings,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,6 +33,7 @@ import { toast } from 'sonner';
 import { DeploymentChecklist } from '@/components/admin/deployment-checklist';
 import { ApiConfigPanel } from '@/components/admin/ApiConfigPanel';
 import { SecurityAuditPanel } from '@/components/admin/SecurityAuditPanel';
+import { SystemConfigPanel } from '@/components/admin/SystemConfigPanel';
 import { BarChart3, ClipboardCheck } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════
@@ -170,7 +172,7 @@ function HouseholdRowSkeleton() {
    ADMIN DASHBOARD
    ═══════════════════════════════════════════════════════ */
 
-type AdminTab = 'overview' | 'users' | 'logs' | 'audit' | 'subscriptions' | 'checklist' | 'apis';
+type AdminTab = 'overview' | 'users' | 'logs' | 'audit' | 'subscriptions' | 'checklist' | 'apis' | 'config';
 
 export function AdminDashboard() {
   const { user } = useAuthStore();
@@ -499,6 +501,7 @@ export function AdminDashboard() {
             { key: 'audit' as AdminTab, label: 'Audit sécurité', icon: Shield },
             { key: 'subscriptions' as AdminTab, label: 'Abonnements', icon: CreditCard },
             { key: 'apis' as AdminTab, label: 'APIs', icon: Plug },
+            { key: 'config' as AdminTab, label: 'Configuration', icon: Settings },
           ]).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -523,6 +526,9 @@ export function AdminDashboard() {
           })}
         </div>
       </motion.div>
+
+      {/* ═══ SYSTEM CONFIG TAB ═══ */}
+      {activeTab === 'config' && <SystemConfigPanel />}
 
       {/* ═══ DEPLOYMENT CHECKLIST ═══ */}
       {activeTab === 'checklist' && <DeploymentChecklist />}
