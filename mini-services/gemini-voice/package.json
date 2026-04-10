@@ -1,15 +1,15 @@
 {
   "name": "gemini-voice-proxy",
   "version": "1.0.0",
+  "type": "module",
   "description": "WebSocket proxy for Google Gemini Multimodal Live API (voice)",
   "scripts": {
-    "dev": "bun --hot index.ts"
+    "dev": "node --watch index.ts"
   },
   "dependencies": {
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@types/ws": "^8.5.13",
-    "@types/bun": "^1.1.0"
+    "@types/ws": "^8.5.13"
   }
 }

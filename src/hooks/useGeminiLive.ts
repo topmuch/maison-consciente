@@ -78,7 +78,7 @@ const DEFAULT_SYSTEM_PROMPT =
   "Tu es Maellis, l'assistant intelligent de Maison Consciente. Tu es poli, chaleureux et professionnel. Tu parles toujours en français. Tu aides les utilisateurs avec leur maison intelligente, leurs recettes, leurs courses, la santé, et le bien-être familial. Tu es concis mais chaleureux dans tes réponses.";
 
 const WS_PORT = 3004;
-const MAX_RECONNECT_ATTEMPTS = 3;
+const MAX_RECONNECT_ATTEMPTS = 1;
 const BASE_RECONNECT_DELAY_MS = 1000;
 const AUDIO_SAMPLE_RATE = 16000;
 const BUFFER_SIZE = 4096;
@@ -500,7 +500,7 @@ export function useGeminiLive(config?: GeminiLiveConfig): UseGeminiLiveReturn {
             }
           }, delay);
         } else {
-          setError('Impossible de se connecter au service vocal après plusieurs tentatives.');
+          setError('Service vocal indisponible. Vérifiez la clé API Gemini dans le panneau admin.');
           setState('error');
         }
       } else {

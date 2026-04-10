@@ -1,7 +1,7 @@
 import WebSocket, { WebSocketServer } from "ws";
 
 const PORT = 3004;
-const GEMINI_MODEL = "models/gemini-2.0-flash-live-001";
+const GEMINI_MODEL = "models/gemini-2.5-flash-preview-native-audio-dialog";
 const DEFAULT_VOICE = "Charon";
 const DEFAULT_SYSTEM_PROMPT =
   "Tu es Maellis, l'assistant intelligent de Maison Consciente. Tu es poli, chaleureux et professionnel. Tu parles toujours en français. Tu aides les utilisateurs avec leur maison intelligente, leurs recettes, leurs courses, la santé, et le bien-être familial. Tu es concis mais chaleureux dans tes réponses.";
@@ -28,21 +28,6 @@ const API_KEY_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // Refresh every 5 minutes
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface ClientSetupMessage {
-  type: "setup";
-  voice?: string;
-  systemPrompt?: string;
-}
-
-interface ClientTextMessage {
-  type: "text";
-  text: string;
-}
-
-interface ClientInterruptMessage {
-  type: "interrupt";
-}
 
 interface ClientMessage {
   type: "setup" | "text" | "interrupt";
@@ -140,6 +125,35 @@ function sendJson(ws: WebSocket, obj: Record<string, unknown>) {
   }
 }
 
+/**
+ * Convert WebSocket.Data to string (handles both string and Buffer).
+ * Bun's ws sometimes delivers text frames as Buffer.
+ */
+function dataToString(data: WebSocket.Data): string {
+  if (typeof data === "string") return data;
+  if (Buffer.isBuffer(data)) return data.toString("utf8");
+  if (data instanceof ArrayBuffer) return new TextDecoder().decode(data);
+  return String(data);
+}
+
+/**
+ * Check if data looks like a JSON message (starts with '{').
+ * Used to distinguish JSON control messages from PCM audio binary.
+ */
+function isJsonMessage(data: WebSocket.Data): boolean {
+  if (typeof data === "string") {
+    return data.trimStart().startsWith("{");
+  }
+  // For binary data, check first byte is '{' (0x7b)
+  if (Buffer.isBuffer(data) && data.length > 0) {
+    return data[0] === 0x7b;
+  }
+  if (data instanceof ArrayBuffer && data.byteLength > 0) {
+    return new Uint8Array(data)[0] === 0x7b;
+  }
+  return false;
+}
+
 function buildGeminiSetup(voice: string, systemPrompt: string): string {
   const setupMsg = {
     setup: {
@@ -168,11 +182,19 @@ function createGeminiUrl(apiKey: string): string {
 }
 
 function parseGeminiMessage(data: WebSocket.Data, session: SessionState) {
-  if (typeof data !== "string") return; // binary — handled separately
+  // Binary from Gemini = audio PCM → forward to client
+  if (!isJsonMessage(data)) {
+    if (session.clientWs.readyState === WebSocket.OPEN) {
+      session.clientWs.send(data);
+    }
+    return;
+  }
+
+  const str = dataToString(data);
 
   let msg: Record<string, unknown>;
   try {
-    msg = JSON.parse(data);
+    msg = JSON.parse(str);
   } catch {
     log("⚠️ Could not parse Gemini text message");
     return;
@@ -230,7 +252,6 @@ function parseGeminiMessage(data: WebSocket.Data, session: SessionState) {
 
     // --- Audio activity (voice activity detection) ---
     if (serverContent.interruptionFeedback) {
-      // Model detected an interruption from the user
       sendJson(session.clientWs, {
         type: "audio_activity",
         speaking: false,
@@ -273,14 +294,7 @@ function connectToGemini(session: SessionState, apiKey: string) {
     });
 
     geminiWs.on("message", (data) => {
-      if (typeof data === "string") {
-        parseGeminiMessage(data, session);
-      } else {
-        // Binary = audio from Gemini → forward to client
-        if (session.clientWs.readyState === WebSocket.OPEN) {
-          session.clientWs.send(data);
-        }
-      }
+      parseGeminiMessage(data, session);
     });
 
     geminiWs.on("close", (code, reason) => {
@@ -289,7 +303,6 @@ function connectToGemini(session: SessionState, apiKey: string) {
       session.setupComplete = false;
 
       if (session.clientWs.readyState === WebSocket.OPEN) {
-        // Attempt reconnect unless client has disconnected
         if (session.reconnectAttempts < session.maxReconnectAttempts) {
           session.reconnectAttempts++;
           const delay = Math.min(1000 * session.reconnectAttempts, 5000);
@@ -304,7 +317,7 @@ function connectToGemini(session: SessionState, apiKey: string) {
           sendJson(session.clientWs, {
             type: "error",
             message:
-              "Gemini connection lost. Max reconnection attempts reached. Please send a new setup message.",
+              "Gemini connection lost. Max reconnection attempts reached.",
           });
         }
       }
@@ -336,113 +349,113 @@ async function handleClientMessage(
   data: WebSocket.Data,
   session: SessionState,
 ) {
-  // Binary from client = PCM audio → forward to Gemini
-  if (typeof data !== "string") {
+  // If data looks like JSON, parse it as a control message.
+  // Otherwise treat as PCM audio binary and forward to Gemini.
+  if (isJsonMessage(data)) {
+    const str = dataToString(data);
+
+    let msg: ClientMessage;
+    try {
+      msg = JSON.parse(str);
+    } catch {
+      log("⚠️ Invalid JSON from client");
+      sendJson(session.clientWs, { type: "error", message: "Invalid JSON message" });
+      return;
+    }
+
+    switch (msg.type) {
+      case "setup": {
+        session.voice =
+          msg.voice && AVAILABLE_VOICES.includes(msg.voice)
+            ? msg.voice
+            : DEFAULT_VOICE;
+        session.systemPrompt = msg.systemPrompt || DEFAULT_SYSTEM_PROMPT;
+        session.reconnectAttempts = 0;
+
+        log(`Setup requested (voice=${session.voice})`);
+
+        // Fetch fresh API key from DB
+        const apiKey = await refreshApiKey();
+
+        if (!apiKey) {
+          log("❌ No Gemini API key available");
+          sendJson(session.clientWs, {
+            type: "error",
+            message:
+              "Aucune clé API Gemini configurée. Veuillez la définir dans le panneau admin (section APIs).",
+          });
+          return;
+        }
+
+        // Disconnect existing Gemini connection if any
+        if (session.geminiWs) {
+          log("Closing existing Gemini connection...");
+          session.geminiWs.removeAllListeners();
+          session.geminiWs.close();
+          session.geminiWs = null;
+        }
+
+        // Connect to Gemini
+        connectToGemini(session, apiKey);
+        break;
+      }
+
+      case "text": {
+        if (!session.geminiWs || session.geminiWs.readyState !== WebSocket.OPEN) {
+          sendJson(session.clientWs, {
+            type: "error",
+            message: "Not connected to Gemini. Send a setup message first.",
+          });
+          return;
+        }
+
+        const geminiTextMsg = {
+          client_content: {
+            turns: [
+              {
+                role: "user",
+                parts: [{ text: msg.text ?? "" }],
+              },
+            ],
+          },
+        };
+        session.geminiWs.send(JSON.stringify(geminiTextMsg));
+        log(`📝 Sent text to Gemini: "${(msg.text ?? "").substring(0, 50)}..."`);
+        break;
+      }
+
+      case "interrupt": {
+        if (!session.geminiWs || session.geminiWs.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        const geminiInterruptMsg = {
+          client_content: {
+            turns: [
+              {
+                role: "user",
+                parts: [{ interrupt: true }],
+              },
+            ],
+          },
+        };
+        session.geminiWs.send(JSON.stringify(geminiInterruptMsg));
+        log("⛔ Sent interrupt to Gemini");
+        break;
+      }
+
+      default:
+        log(`⚠️ Unknown message type: ${(msg as Record<string, unknown>).type}`);
+        sendJson(session.clientWs, {
+          type: "error",
+          message: `Unknown message type: ${(msg as Record<string, unknown>).type}`,
+        });
+    }
+  } else {
+    // Binary PCM audio → forward to Gemini
     if (session.geminiWs && session.geminiWs.readyState === WebSocket.OPEN) {
       session.geminiWs.send(data);
     }
-    return;
-  }
-
-  // Parse JSON text frame
-  let msg: ClientMessage;
-  try {
-    msg = JSON.parse(data);
-  } catch {
-    log("⚠️ Invalid JSON from client");
-    sendJson(session.clientWs, { type: "error", message: "Invalid JSON message" });
-    return;
-  }
-
-  switch (msg.type) {
-    case "setup": {
-      const setupMsg = msg as ClientSetupMessage;
-      session.voice =
-        setupMsg.voice && AVAILABLE_VOICES.includes(setupMsg.voice)
-          ? setupMsg.voice
-          : DEFAULT_VOICE;
-      session.systemPrompt = setupMsg.systemPrompt || DEFAULT_SYSTEM_PROMPT;
-      session.reconnectAttempts = 0;
-
-      log(`Setup requested (voice=${session.voice})`);
-
-      // Fetch fresh API key from DB (in case it was updated in admin panel)
-      const apiKey = await refreshApiKey();
-
-      if (!apiKey) {
-        log("❌ No Gemini API key available");
-        sendJson(session.clientWs, {
-          type: "error",
-          message:
-            "Aucune clé API Gemini configurée. Veuillez la définir dans le panneau admin (section APIs).",
-        });
-        return;
-      }
-
-      // Disconnect existing Gemini connection if any
-      if (session.geminiWs) {
-        log("Closing existing Gemini connection...");
-        session.geminiWs.removeAllListeners();
-        session.geminiWs.close();
-        session.geminiWs = null;
-      }
-
-      // Connect to Gemini
-      connectToGemini(session, apiKey);
-      break;
-    }
-
-    case "text": {
-      const textMsg = msg as ClientTextMessage;
-      if (!session.geminiWs || session.geminiWs.readyState !== WebSocket.OPEN) {
-        sendJson(session.clientWs, {
-          type: "error",
-          message: "Not connected to Gemini. Send a setup message first.",
-        });
-        return;
-      }
-
-      const geminiTextMsg = {
-        client_content: {
-          turns: [
-            {
-              role: "user",
-              parts: [{ text: textMsg.text }],
-            },
-          ],
-        },
-      };
-      session.geminiWs.send(JSON.stringify(geminiTextMsg));
-      log(`📝 Sent text to Gemini: "${textMsg.text.substring(0, 50)}..."`);
-      break;
-    }
-
-    case "interrupt": {
-      if (!session.geminiWs || session.geminiWs.readyState !== WebSocket.OPEN) {
-        return; // nothing to interrupt
-      }
-
-      const geminiInterruptMsg = {
-        client_content: {
-          turns: [
-            {
-              role: "user",
-              parts: [{ interrupt: true }],
-            },
-          ],
-        },
-      };
-      session.geminiWs.send(JSON.stringify(geminiInterruptMsg));
-      log("⛔ Sent interrupt to Gemini");
-      break;
-    }
-
-    default:
-      log(`⚠️ Unknown message type: ${msg.type}`);
-      sendJson(session.clientWs, {
-        type: "error",
-        message: `Unknown message type: ${msg.type}`,
-      });
   }
 }
 
@@ -485,9 +498,12 @@ async function startServer() {
     // Send connected confirmation
     sendJson(ws, { type: "connected" });
 
-    // Handle client messages (async to support API key fetching)
+    // Handle client messages — wrap async handler to catch errors
     ws.on("message", (data) => {
-      handleClientMessage(data, session);
+      handleClientMessage(data, session).catch((err) => {
+        log(`❌ Error handling client message: ${err instanceof Error ? err.message : String(err)}`);
+        sendJson(ws, { type: "error", message: "Internal server error" });
+      });
     });
 
     // Handle client disconnection
