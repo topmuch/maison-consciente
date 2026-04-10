@@ -34,6 +34,7 @@ const PUBLIC_API_PATHS = [
   "/api/smart-grocery",
   "/api/enrichment",
   "/api/internal", // Internal API for mini-services (key management)
+  "/api/demo",     // Demo voice & chat APIs (no auth required for demos)
 ];
 
 // Static assets
