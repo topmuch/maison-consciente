@@ -1782,3 +1782,23 @@ Stage Summary:
 - DemoSelection updated: Old voice button → Gemini Live voice orb
 - Architecture: Browser ↔ Caddy(:81) ↔ GeminiVoiceProxy(:3004) ↔ Google Gemini Live API
 - For production: Set GEMINI_API_KEY in .env to enable real voice conversations
+---
+Task ID: 1
+Agent: Main Agent
+Task: Integrate Google Gemini Live as Maellis primary voice engine
+
+Work Log:
+- Discovered existing Gemini Live infrastructure: mini-service (port 3004), React hook (useGeminiLive), UI component (GeminiVoiceOrb)
+- Configured API key REDACTED_GEMINI_KEY in .env (GEMINI_API_KEY)
+- Replaced floating Maellis button in DemoParticulier.tsx with GeminiVoiceOrb (custom system prompt for Famille Martin)
+- Replaced floating Maellis button in DemoAirbnb.tsx with GeminiVoiceOrb (custom system prompt for Villa Azur/Sophie)
+- Kept useMaellisVoice for card click-to-speak interactions (Web Speech API TTS fallback)
+- Started mini-service gemini-voice on port 3004 with API key
+- ESLint: 0 errors
+- Next.js dev server: /demo page compiles successfully
+
+Stage Summary:
+- Gemini Live is now the primary voice engine for both Demo pages
+- Architecture: Gemini Live (real-time conversation) + Web Speech API (card click TTS) + Retell AI (emergency calls, not configured)
+- Mini-service running on port 3004 as WebSocket proxy to Gemini API
+- Files modified: .env, src/components/demo/DemoParticulier.tsx, src/components/demo/DemoAirbnb.tsx

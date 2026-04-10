@@ -21,6 +21,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useMaellisVoice } from '@/hooks/useMaellisVoice';
+import { GeminiVoiceOrb } from '@/components/demo/GeminiVoiceOrb';
 
 /* ═══════════════════════════════════════════════════════════════
    MOCK DATA
@@ -681,156 +682,13 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
       </main>
 
       {/* ═══════════════════════════════════════════════════════
-         7. FLOATING MAELLIS COMMAND BUTTON (Triple-Ring Pulse)
+         7. GEMINI LIVE VOICE ORB (real-time AI conversation)
          ═══════════════════════════════════════════════════════ */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
-        {/* Triple animated rings at different speeds */}
-        <div className="relative flex items-center justify-center">
-          {/* Outer ring - slowest */}
-          <motion.div
-            className="absolute w-36 h-36 rounded-full border-2 border-amber-300/50 pointer-events-none"
-            animate={{
-              scale: [1, 1.35, 1],
-              opacity: [0.5, 0, 0.5],
-            }}
-            transition={{ duration: 3.2, repeat: Infinity, ease: 'easeOut' }}
-            style={{
-              boxShadow: isSpeaking
-                ? '0 0 30px rgba(239, 68, 68, 0.2)'
-                : '0 0 30px rgba(245, 158, 11, 0.15)',
-            }}
-          />
-          {/* Middle ring - medium speed */}
-          <motion.div
-            className="absolute w-36 h-36 rounded-full border-2 border-amber-400/60 pointer-events-none"
-            animate={{
-              scale: [1, 1.28, 1],
-              opacity: [0.6, 0, 0.6],
-            }}
-            transition={{
-              duration: 2.6,
-              repeat: Infinity,
-              ease: 'easeOut',
-              delay: 0.4,
-            }}
-            style={{
-              boxShadow: isSpeaking
-                ? '0 0 24px rgba(239, 68, 68, 0.25)'
-                : '0 0 24px rgba(245, 158, 11, 0.2)',
-            }}
-          />
-          {/* Inner ring - fastest */}
-          <motion.div
-            className="absolute w-36 h-36 rounded-full border-2 border-amber-500/70 pointer-events-none"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.7, 0, 0.7],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'easeOut',
-              delay: 0.8,
-            }}
-            style={{
-              boxShadow: isSpeaking
-                ? '0 0 18px rgba(239, 68, 68, 0.3)'
-                : '0 0 18px rgba(245, 158, 11, 0.25)',
-            }}
-          />
-
-          {/* Main button */}
-          <motion.button
-            onClick={() =>
-              handleSpeak(
-                'Bonjour Sophie ! Je suis Maellis, votre concierge virtuelle. Comment puis-je vous aider pour votre séjour à Nice ?',
-              )
-            }
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            animate={{
-              boxShadow: isSpeaking
-                ? [
-                    '0 0 20px 6px rgba(239, 68, 68, 0.4)',
-                    '0 0 40px 12px rgba(239, 68, 68, 0.6)',
-                    '0 0 20px 6px rgba(239, 68, 68, 0.4)',
-                  ]
-                : [
-                    '0 0 20px 6px rgba(245, 158, 11, 0.25)',
-                    '0 0 35px 10px rgba(245, 158, 11, 0.45)',
-                    '0 0 20px 6px rgba(245, 158, 11, 0.25)',
-                  ],
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className={`relative w-28 h-28 rounded-full shadow-2xl flex items-center justify-center border-4 border-white transition-colors ${
-              isSpeaking
-                ? 'bg-gradient-to-br from-red-400 to-red-600'
-                : 'bg-gradient-to-br from-amber-400 to-orange-500'
-            }`}
-            aria-label="Parler à Maellis"
-          >
-            {isSpeaking ? (
-              /* Animated speaking bars */
-              <div className="flex items-end gap-1 h-10">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <motion.div
-                    key={i}
-                    className="w-2 bg-white rounded-full"
-                    animate={{ height: [10, 30, 10, 20, 10] }}
-                    transition={{
-                      duration: 0.8,
-                      repeat: Infinity,
-                      delay: i * 0.1,
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              /* Microphone SVG icon */
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="44"
-                height="44"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" x2="12" y1="19" y2="22" />
-              </svg>
-            )}
-          </motion.button>
-        </div>
-
-        {/* Glassmorphism label */}
-        <motion.div
-          className="px-4 py-2 rounded-2xl text-xs font-semibold text-white backdrop-blur-md border border-white/20"
-          style={{
-            backgroundColor: isSpeaking
-              ? 'rgba(239, 68, 68, 0.35)'
-              : 'rgba(245, 158, 11, 0.25)',
-          }}
-          animate={{
-            boxShadow: isSpeaking
-              ? [
-                  '0 4px 12px rgba(239, 68, 68, 0.2)',
-                  '0 4px 20px rgba(239, 68, 68, 0.4)',
-                  '0 4px 12px rgba(239, 68, 68, 0.2)',
-                ]
-              : [
-                  '0 4px 12px rgba(245, 158, 11, 0.15)',
-                  '0 4px 20px rgba(245, 158, 11, 0.3)',
-                  '0 4px 12px rgba(245, 158, 11, 0.15)',
-                ],
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          {isSpeaking ? '🔊 Maellis parle...' : '🎤 Appuyez pour Maellis'}
-        </motion.div>
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <GeminiVoiceOrb
+          systemPrompt="Tu es Maellis, la concierge virtuelle intelligente de la Villa Azur à Nice. Tu es poli, chaleureuse et professionnelle. Tu parles toujours en français. Tu aides Sophie, la voyageuse, avec son séjour : check-in, check-out, activités, restaurants, services, et urgences. Tu connais la villa et ses équipements. Tu es concis mais chaleureuse. L'hôte est Isabelle."
+          voice="Charon"
+        />
       </div>
 
       {/* ═══════════════════════════════════════════════════════

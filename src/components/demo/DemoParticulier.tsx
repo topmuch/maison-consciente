@@ -26,6 +26,7 @@ import {
   QrCode,
 } from 'lucide-react';
 import { useMaellisVoice } from '@/hooks/useMaellisVoice';
+import { GeminiVoiceOrb } from '@/components/demo/GeminiVoiceOrb';
 
 /* ═══════════════════════════════════════════════════════════════
    MOCK DATA
@@ -886,117 +887,13 @@ export function DemoParticulier({ onBack }: { onBack: () => void }) {
       </main>
 
       {/* ═══════════════════════════════════════════════════════════
-          8. FLOATING MAELLIS COMMAND BUTTON (w-28 h-28 + triple rings)
+          8. GEMINI LIVE VOICE ORB (real-time AI conversation)
           ═══════════════════════════════════════════════════════════ */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
-        {/* Triple pulsing rings */}
-        <div className="absolute w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center pointer-events-none">
-          {/* Ring 1 — fastest */}
-          <motion.div
-            animate={{
-              scale: [1, 1.8, 2.2],
-              opacity: [0.4, 0.15, 0],
-            }}
-            transition={{
-              duration: 2.5,
-              repeat: Infinity,
-              ease: 'easeOut',
-            }}
-            className={`absolute w-full h-full rounded-full border-2 ${
-              isSpeaking
-                ? 'border-red-400/50'
-                : 'border-indigo-400/40'
-            }`}
-          />
-          {/* Ring 2 — medium */}
-          <motion.div
-            animate={{
-              scale: [1, 1.6, 2.0],
-              opacity: [0.35, 0.12, 0],
-            }}
-            transition={{
-              duration: 3.5,
-              repeat: Infinity,
-              ease: 'easeOut',
-              delay: 0.8,
-            }}
-            className={`absolute w-full h-full rounded-full border-2 ${
-              isSpeaking
-                ? 'border-rose-400/40'
-                : 'border-purple-400/35'
-            }`}
-          />
-          {/* Ring 3 — slowest */}
-          <motion.div
-            animate={{
-              scale: [1, 1.5, 1.9],
-              opacity: [0.3, 0.1, 0],
-            }}
-            transition={{
-              duration: 4.5,
-              repeat: Infinity,
-              ease: 'easeOut',
-              delay: 1.6,
-            }}
-            className={`absolute w-full h-full rounded-full border-2 ${
-              isSpeaking
-                ? 'border-pink-400/30'
-                : 'border-blue-400/30'
-            }`}
-          />
-        </div>
-
-        {/* Main button */}
-        <motion.button
-          onClick={() => {
-            if (isSpeaking) return;
-            handleSpeak(
-              'Bonjour Paul ! Je suis Maellis, votre assistant familial. Que puis-je faire pour vous aujourd\'hui ?',
-            );
-          }}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-2xl flex items-center justify-center transition-all ${
-            isSpeaking
-              ? 'bg-gradient-to-br from-red-500 to-rose-600'
-              : 'bg-gradient-to-br from-indigo-400 via-purple-500 to-blue-500'
-          }`}
-          style={{
-            boxShadow: isSpeaking
-              ? '0 0 40px rgba(239, 68, 68, 0.4), 0 0 80px rgba(239, 68, 68, 0.2)'
-              : '0 0 40px rgba(99, 102, 241, 0.3), 0 0 80px rgba(139, 92, 246, 0.15)',
-          }}
-        >
-          {isSpeaking ? (
-            <div className="flex items-center gap-1.5">
-              {[0, 1, 2, 3].map((i) => (
-                <motion.div
-                  key={i}
-                  animate={{ height: [8, 24, 8] }}
-                  transition={{
-                    duration: 0.6,
-                    repeat: Infinity,
-                    delay: i * 0.12,
-                    ease: 'easeInOut',
-                  }}
-                  className="w-1.5 bg-white rounded-full"
-                />
-              ))}
-            </div>
-          ) : (
-            <Mic className="w-12 h-12 sm:w-14 sm:h-14 text-white" />
-          )}
-        </motion.button>
-
-        {/* Glassmorphism label */}
-        <motion.span
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="relative text-xs sm:text-sm text-indigo-700 font-semibold text-center bg-white/60 backdrop-blur-lg px-5 py-2 rounded-2xl shadow-lg border border-indigo-200/50"
-        >
-          ✨ Appuyez pour parler à Maellis
-        </motion.span>
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <GeminiVoiceOrb
+          systemPrompt="Tu es Maellis, l'assistant familial intelligent de la famille Martin. Tu es poli, chaleureux et professionnel. Tu parles toujours en français. Tu aides Paul et sa famille avec leur maison intelligente, leurs recettes, leurs courses, la santé, et le bien-être familial. Tu connais les membres : Paul (père), Marie (mère), Pierre (fils). Tu es concis mais chaleureux."
+          voice="Charon"
+        />
       </div>
 
       {/* ═══════════════════════════════════════════════════════════
