@@ -1598,3 +1598,37 @@ Avec ~2 semaines de travail concentré sur les items 🔴 et 🟠, le projet peu
 *Projet : Maellis — Maison Consciente*
 *Fichiers : 283 | Lignes : ~65 000 | Score global : ~62%*
 *Date : Juillet 2025*
+
+---
+Task ID: blockers-resolution
+Agent: Main
+Task: Resolve 6 production blockers (B1-B6)
+
+Work Log:
+- Assessed current state of all 6 blockers
+- B1 (page.tsx renders real app): ✅ ALREADY FIXED — page.tsx properly routes loading→unauth→onboarding→app with AppShell+ViewRouter
+- B2 (AdminDashboard): ✅ ALREADY FIXED — ViewRouter imports AdminDashboard dynamically, renders for admin view; AppShell sidebar shows admin nav for superadmin
+- B3 (Onboarding): ✅ ALREADY FIXED — page.tsx routes to OnboardingFlow when onboardingCompleted is false
+- B4 (Server actions auth): PARTIALLY FIXED — all actions already had getAuthUser() but 8 mutations lacked household ownership verification
+  - Fixed activity-actions.ts: updateActivity, deleteActivity, togglePartnerStatus now verify householdId ownership
+  - Fixed health-actions.ts: updateReminder, deleteReminder, toggleReminderNotified now verify householdId ownership
+  - Fixed knowledge-actions.ts: updateKnowledgeItem, deleteKnowledgeItem now verify householdId ownership
+  - Verified: external-data.ts uses getOptionalAuthUser() with ownership check; themealdb-recipes.ts is public recipe data (no sensitive info); subscription-actions.ts uses getAuthUser() with ownership check
+- B5 (notificationclick handler): ✅ ALREADY FIXED — sw.js lines 122-140 have proper handler with focus existing window or open new
+- B6 (EventOverlay): ✅ ALREADY FIXED — imported at line 29 and rendered at line 593 in display/[token]/page.tsx
+
+Files Modified:
+- src/actions/activity-actions.ts (3 functions: ownership checks added)
+- src/actions/health-actions.ts (3 functions: ownership checks added)
+- src/actions/knowledge-actions.ts (2 functions: ownership checks added)
+
+Verification:
+- tsc --noEmit: 0 errors ✅
+- eslint: 0 errors ✅
+- Dev server: GET / 200, GET /api/auth/me 401 (expected) ✅
+
+Stage Summary:
+- 5 of 6 blockers were already fixed in previous sessions
+- B4 security fix: 8 server action mutations now verify household ownership before modification
+- All 6 production blockers: ✅ RESOLVED
+- Updated module completion estimates: Dashboard 95%, Superadmin 95%, Onboarding 95%, PWA 80%

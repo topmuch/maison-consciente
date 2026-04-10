@@ -283,6 +283,15 @@ export async function updateActivity(
       return { success: false, error: 'ID requis' };
     }
 
+    // Verify household ownership
+    const existing = await prisma.activity.findUnique({
+      where: { id },
+      select: { householdId: true },
+    });
+    if (!existing || existing.householdId !== auth.householdId) {
+      return { success: false, error: 'Activité non trouvée ou accès refusé' };
+    }
+
     const parsed = updateActivitySchema.safeParse(data);
 
     if (!parsed.success) {
@@ -328,6 +337,15 @@ export async function deleteActivity(
       return { success: false, error: 'ID requis' };
     }
 
+    // Verify household ownership
+    const existing = await prisma.activity.findUnique({
+      where: { id },
+      select: { householdId: true },
+    });
+    if (!existing || existing.householdId !== auth.householdId) {
+      return { success: false, error: 'Activité non trouvée ou accès refusé' };
+    }
+
     await prisma.activity.delete({
       where: { id },
     });
@@ -351,13 +369,14 @@ export async function togglePartnerStatus(
       return { success: false, error: 'ID requis' };
     }
 
+    // Verify household ownership
     const activity = await prisma.activity.findUnique({
       where: { id },
-      select: { isPartner: true },
+      select: { isPartner: true, householdId: true },
     });
 
-    if (!activity) {
-      return { success: false, error: 'Activité non trouvée' };
+    if (!activity || activity.householdId !== auth.householdId) {
+      return { success: false, error: 'Activité non trouvée ou accès refusé' };
     }
 
     await prisma.activity.update({

@@ -107,6 +107,15 @@ export async function updateReminder(
       return { success: false, error: 'ID requis' };
     }
 
+    // Verify household ownership
+    const existing = await db.reminder.findUnique({
+      where: { id },
+      select: { householdId: true },
+    });
+    if (!existing || existing.householdId !== auth.householdId) {
+      return { success: false, error: 'Rappel non trouvé ou accès refusé' };
+    }
+
     const data: Record<string, unknown> = {};
     if (updates.text !== undefined) data.text = updates.text;
     if (updates.triggerAt !== undefined) {
@@ -138,6 +147,15 @@ export async function deleteReminder(
       return { success: false, error: 'ID requis' };
     }
 
+    // Verify household ownership
+    const existing = await db.reminder.findUnique({
+      where: { id },
+      select: { householdId: true },
+    });
+    if (!existing || existing.householdId !== auth.householdId) {
+      return { success: false, error: 'Rappel non trouvé ou accès refusé' };
+    }
+
     await db.reminder.delete({
       where: { id },
     });
@@ -155,10 +173,12 @@ export async function toggleReminderNotified(
     const auth = await getAuthUser();
     const reminder = await db.reminder.findUnique({
       where: { id },
-      select: { notified: true },
+      select: { notified: true, householdId: true },
     });
 
-    if (!reminder) return { success: false };
+    if (!reminder || reminder.householdId !== auth.householdId) {
+      return { success: false };
+    }
 
     await db.reminder.update({
       where: { id },

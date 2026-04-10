@@ -61,6 +61,14 @@ export async function updateKnowledgeItem(id: string, updates: {
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const auth = await getAuthUser();
+    // Verify household ownership
+    const existing = await db.knowledgeBaseItem.findUnique({
+      where: { id },
+      select: { householdId: true },
+    });
+    if (!existing || existing.householdId !== auth.householdId) {
+      return { success: false, error: 'Élément non trouvé ou accès refusé' };
+    }
     const data: Record<string, unknown> = {};
     if (updates.question !== undefined) data.question = updates.question;
     if (updates.answer !== undefined) data.answer = updates.answer;
@@ -79,6 +87,14 @@ export async function updateKnowledgeItem(id: string, updates: {
 export async function deleteKnowledgeItem(id: string): Promise<{ success: boolean }> {
   try {
     const auth = await getAuthUser();
+    // Verify household ownership
+    const existing = await db.knowledgeBaseItem.findUnique({
+      where: { id },
+      select: { householdId: true },
+    });
+    if (!existing || existing.householdId !== auth.householdId) {
+      return { success: false };
+    }
     await db.knowledgeBaseItem.delete({ where: { id } });
     return { success: true };
   } catch {
