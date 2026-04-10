@@ -2129,3 +2129,28 @@ Stage Summary:
 - Security hardened: CSP + HSTS + auth audit logging
 - Project state: ~85% functional / Production-ready at ~75% (up from ~60%)
 - Remaining gaps: Real API keys in production env, CSP tuning for production domains
+
+---
+Task ID: git-cleanup-secrets
+Agent: Main Agent
+Task: Git History Cleanup — Purge secrets from commit history using git-filter-repo
+
+Work Log:
+- Scanned entire git history (43 commits) for sensitive content
+- Identified 4 secrets in history: VAULT_AES_KEY, CRON_SECRET, GEMINI_API_KEY, GitHub PAT
+- Identified .env file was committed and later deleted (still in history)
+- Installed git-filter-repo v2.47.0 via pip3
+- Created replacement rules file mapping all 4 secrets to REDACTED_* placeholders
+- Executed git-filter-repo --replace-text + --invert-paths --path .env
+- Fixed .git/config: removed PAT from remote URL, moved to ~/.git-credentials (chmod 600)
+- Re-added clean remote: https://github.com/topmuch/maison-consciente.git
+- Force pushed cleaned history to GitHub (17f0e1c...6126834)
+
+Stage Summary:
+- ✅ All 4 secrets reduced to 0 occurrences in git history
+- ✅ .env file completely removed from all 43 commits
+- ✅ .git/config no longer contains PAT (now uses credential store)
+- ✅ Force push successful — GitHub repo is now clean
+- 🔒 Credentials securely stored in ~/.git-credentials with mode 600
+- 📌 IMPORTANT: The old commit hashes have changed. All collaborators must re-clone or reset.
+- 📌 IMPORTANT: If these secrets were ever exposed externally, they should be ROTATED immediately.
