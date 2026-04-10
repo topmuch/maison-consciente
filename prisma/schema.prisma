@@ -373,15 +373,21 @@ model UserLog {
   id          String   @id @default(uuid())
   userId      String?
   householdId String
-  action      String                       // "login", "scan", "settings_update", "vault_access", "subscription_change"
+  action      String                       // "login", "login_failed", "register", "logout", "settings_update", "vault_access", "subscription_change", "emergency_call", "api_config_update", "safe_arrival_alert", "payment_failed"
   details     String?
   ip          String?
+  country     String?  @default("unknown") // Auto-detected from x-vercel-ip-country
+  city        String?                         // Future: geo-IP lookup
+  userAgent   String?                         // Browser / client User-Agent
+  status      String?  @default("success")  // "success" | "failure" | "security_alert"
   createdAt   DateTime @default(now())
   user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
   @@index([householdId, createdAt(sort: Desc)])
   @@index([action])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
 }
 
 /* ═══ FACTURE (Stripe) ═══ */

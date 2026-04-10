@@ -1853,3 +1853,35 @@ Stage Summary:
 - TypeScript: 0 errors ✅
 - ESLint: 0 errors ✅
 - All pages use consistent navbar + footer with 6 navigation links
+---
+Task ID: 8-email-audit-system
+Agent: Main
+Task: Implement complete SMTP email notification system + Audit & Security monitoring
+
+Work Log:
+- Installed nodemailer@8.0.5 + @types/nodemailer@8.0.0 + @sentry/nextjs@10.48.0
+- Created src/lib/smtp-client.ts — Nodemailer transport factory with dry-run mode, connection pooling, caching
+- Created src/lib/email-template.ts — Responsive HTML email templates (gold/dark brand, 600px max, inline CSS, Outlook fallback)
+- Created src/lib/email-service.ts — 16 email notification functions across 4 categories
+- Created src/lib/audit.ts — Fire-and-forget audit logging with IP, country, user-agent extraction
+- Created src/lib/sentry-config.ts — Conditional Sentry wrapper with no-op fallback
+- Created .env.example — Complete template with 11 sections (DB, Security, SMTP, Sentry, Voice, etc.)
+- Updated Prisma UserLog model: added country, city, userAgent, status fields + 2 new indexes
+- Integrated sendChildLateAlert into safe-arrival-engine.ts (cron job email notifications)
+- Integrated logActionSync into auth/login (login success + failure logging)
+- Integrated logActionSync into auth/register (registration logging)
+- Integrated sendPaymentFailedAlert + sendSubscriptionChangedEmail into Stripe webhook
+- Integrated logActionSync into Stripe webhook (subscription_change, payment_failed)
+- Updated CSP connect-src to allow *.sentry.io
+- Created src/app/api/admin/audit/route.ts — Paginated audit logs API with filters + CSV export
+- Created src/components/admin/SecurityAuditPanel.tsx — Full audit dashboard with filters, stats, table, pagination, export
+- Integrated SecurityAuditPanel into admin-dashboard.tsx as "Audit sécurité" tab
+
+Stage Summary:
+- 7 new files created, 6 existing files modified
+- 16 email notification functions (Safe Arrival, Billing, Hospitality, Account)
+- Full audit trail system with geo-detection
+- Admin security audit panel with 4 stat cards, filtered table, CSV export
+- TypeScript: 0 errors ✅
+- ESLint: 0 errors ✅
+- Prisma: schema pushed, client regenerated ✅

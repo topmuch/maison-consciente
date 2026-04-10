@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { sendPushToHousehold } from "@/lib/push-service";
+import { sendChildLateAlert } from "@/lib/email-service";
 
 /**
  * Check all pending safe arrival records and mark late ones.
@@ -53,6 +54,18 @@ export async function checkSafeArrivals(): Promise<{ checked: number; late: numb
     ).catch(() => {
       // Push failures are non-blocking
     });
+
+    // Send email alert to household owner
+    if (arrival.household?.contactEmail) {
+      const expectedTime = arrival.expectedBefore.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      await sendChildLateAlert(arrival.household.contactEmail, {
+        childName: arrival.memberName,
+        expectedTime,
+        lateMinutes,
+      }).catch(() => {
+        // Email failures are non-blocking
+      });
+    }
 
     lateCount++;
   }

@@ -10,6 +10,7 @@ import { db } from "@/core/db";
 import { auth, verifyPassword } from "@/core/auth/lucia";
 import { loginSchema } from "@/core/validations/schemas";
 import { rateLimit } from "@/lib/rate-limit";
+import { logActionSync } from "@/lib/audit";
 
 /* ═══════════════════════════════════════════════════════
    POST /api/auth/login
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      logActionSync({ action: "login_failed", details: `Email not found: ${email}`, status: "failure", request });
       return NextResponse.json(
         { success: false, error: "Email ou mot de passe invalide" },
         { status: 401 }
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
     // Vérifier le mot de passe avec Argon2
     const isValid = await verifyPassword(user.passwordHash, password);
     if (!isValid) {
+      logActionSync({ userId: user.id, action: "login_failed", details: `Invalid password for ${email}`, status: "failure", request });
       return NextResponse.json(
         { success: false, error: "Email ou mot de passe invalide" },
         { status: 401 }
@@ -93,6 +96,9 @@ export async function POST(request: NextRequest) {
     // Définir le cookie de session
     const sessionCookie = auth.createSessionCookie(session.id);
     response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+
+    // Audit log: successful login
+    logActionSync({ userId: user.id, householdId: user.householdId ?? undefined, action: "login", details: `Login from ${ip}`, status: "success", request });
 
     return response;
   } catch (error) {

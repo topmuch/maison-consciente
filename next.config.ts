@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://image.tmdb.org https://*.googleusercontent.com https://images.unsplash.com https://via.placeholder.com",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.onesignal.com https://api.open-meteo.com https://api.themoviedb.org https://translate.googleapis.com wss://",
+              "connect-src 'self' https://*.onesignal.com https://api.open-meteo.com https://api.themoviedb.org https://translate.googleapis.com https://*.sentry.io wss://",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

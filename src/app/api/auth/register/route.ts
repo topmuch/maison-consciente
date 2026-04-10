@@ -10,6 +10,7 @@ import { db } from "@/core/db";
 import { auth, hashPassword } from "@/core/auth/lucia";
 import { registerSchema } from "@/core/validations/schemas";
 import { rateLimit } from "@/lib/rate-limit";
+import { logActionSync } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,6 +98,9 @@ export async function POST(request: NextRequest) {
     // Définir le cookie de session
     const sessionCookie = auth.createSessionCookie(session.id);
     response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+
+    // Audit log: new user registration
+    logActionSync({ userId: user.id, householdId: household.id, action: "register", details: `New user: ${name} (${email})`, status: "success", request });
 
     return response;
   } catch (error) {

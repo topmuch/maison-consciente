@@ -11,6 +11,8 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/core/db";
 import type Stripe from "stripe";
+import { sendPaymentFailedAlert, sendSubscriptionChangedEmail } from "@/lib/email-service";
+import { logActionSync } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +93,27 @@ export async function POST(request: Request) {
           });
           console.log(`[WEBHOOK] Subscription updated for household ${householdId}, status: ${status}`);
 
+          /* ── Send email notification for status changes ── */
+          try {
+            const household = await db.household.findUnique({
+              where: { id: householdId },
+              select: { contactEmail: true, name: true },
+            });
+            if (household?.contactEmail && (status === "active" || status === "canceled" || status === "past_due")) {
+              const planLabel = subscription.metadata?.plan || status;
+              await sendSubscriptionChangedEmail(household.contactEmail, {
+                userName: household.name || "Utilisateur",
+                newPlan: planLabel as string,
+                effectiveDate: new Date().toLocaleDateString("fr-FR"),
+              }).catch(() => {});
+            }
+          } catch (emailErr) {
+            console.warn("[WEBHOOK] Could not send subscription email:", emailErr);
+          }
+
+          /* ── Audit log ── */
+          logActionSync({ action: "subscription_change", details: `Stripe: ${status}`, householdId, status: status === "past_due" ? "failure" : "success" });
+
           /* ── Sync latest invoice PDF if available ── */
           try {
             const latestInvoice = (subscription as unknown as Record<string, unknown>).latest_invoice;
@@ -155,6 +178,7 @@ export async function POST(request: Request) {
           });
 
           if (household) {
+            const failAmountCents = invoice.amount_due || invoice.amount_remaining || 0;
             await db.household.update({
               where: { id: household.id },
               data: {
@@ -162,6 +186,27 @@ export async function POST(request: Request) {
               },
             });
             console.log(`[WEBHOOK] Payment failed for household ${household.id}`);
+
+            /* ── Send email alert for payment failure ── */
+            try {
+              const hh = await db.household.findUnique({
+                where: { id: household.id },
+                select: { contactEmail: true, name: true },
+              });
+              if (hh?.contactEmail) {
+                const amount = `${(failAmountCents / 100).toFixed(2)} €`;
+                await sendPaymentFailedAlert(hh.contactEmail, {
+                  userName: hh.name || "Utilisateur",
+                  amount,
+                  reason: "Paiement refusé par la banque",
+                }).catch(() => {});
+              }
+            } catch (emailErr) {
+              console.warn("[WEBHOOK] Could not send payment failed email:", emailErr);
+            }
+
+            /* ── Audit log ── */
+            logActionSync({ action: "payment_failed", details: `Amount: ${failAmountCents} cents`, householdId: household.id, status: "failure" });
 
             /* ── Create Invoice record with past_due status ── */
             try {
