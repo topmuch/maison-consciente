@@ -1802,3 +1802,31 @@ Stage Summary:
 - Architecture: Gemini Live (real-time conversation) + Web Speech API (card click TTS) + Retell AI (emergency calls, not configured)
 - Mini-service running on port 3004 as WebSocket proxy to Gemini API
 - Files modified: .env, src/components/demo/DemoParticulier.tsx, src/components/demo/DemoAirbnb.tsx
+
+---
+Task ID: gemini-admin-panel
+Agent: Main
+Task: Integrate Gemini + Retell AI API keys into the SuperAdmin panel
+
+Work Log:
+- Added GEMINI and RETELL_AI to SUPPORTED_SERVICES in admin-api-config.ts (27 services total)
+- Added test logic for GEMINI (validates key via Gemini model endpoint) and RETELL_AI (validates via /list-agents)
+- Added GEMINI and RETELL_AI cards to SERVICE_REGISTRY in ApiConfigPanel.tsx with Bot and Mic icons
+- Added GEMINI and RETELL_AI definitions to API_DEFINITIONS in external-apis.ts (new "ai" theme category)
+- Created /api/internal/api-key/[serviceKey] route for internal mini-services to fetch decrypted keys
+- Added /api/internal to PUBLIC_API_PATHS in middleware.ts (bypass auth for internal services)
+- Updated mini-services/gemini-voice/index.ts to fetch Gemini API key from database via internal API
+  - Refreshes key every 5 minutes from DB
+  - Fetches fresh key on every new "setup" request (picks up admin panel changes immediately)
+  - Falls back to GEMINI_API_KEY env var if DB is unreachable
+- Created scripts/seed-gemini-key.ts to seed the Gemini API key into ApiConfig table
+- Seeded Gemini API key into DB (encrypted with AES-256-GCM)
+- Verified internal API returns decrypted key correctly: {"serviceKey":"GEMINI","apiKey":"AIza...","isActive":true}
+
+Stage Summary:
+- Superadmin API panel: 25 → 27 services (added 🤖 Intelligence Artificielle section with Gemini + Retell AI)
+- Gemini Voice proxy: Now reads API key from database (admin panel) instead of .env only
+- Internal API: /api/internal/api-key/[serviceKey] provides decrypted keys for mini-services
+- Migration path: In production, set Gemini API key in SuperAdmin → APIs → Google Gemini
+- ESLint: 0 errors, 0 warnings
+- Files modified: 6 files, 2 files created

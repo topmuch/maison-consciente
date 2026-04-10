@@ -54,6 +54,9 @@ const SUPPORTED_SERVICES = [
   'HOLIDAYS',
   'DICTIONARY',
   'TIMEZONEDB',
+  // ── 🤖 Intelligence Artificielle ──
+  'GEMINI',
+  'RETELL_AI',
 ] as const;
 
 type ServiceKey = (typeof SUPPORTED_SERVICES)[number];
@@ -705,6 +708,45 @@ async function testServiceEndpoint(
           return { success: false, message: `HTTP ${res.status}`, latencyMs: Date.now() - start };
         }
         return { success: true, message: 'TimeZoneDB OK — Fuseaux horaires accessibles', latencyMs: Date.now() - start };
+      }
+
+      // ── 🤖 Intelligence Artificielle ──
+
+      case 'GEMINI': {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-live-001?key=${apiKey}`,
+          { signal: controller.signal },
+        );
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            return { success: false, message: 'Clé Gemini API invalide', latencyMs: Date.now() - start };
+          }
+          return { success: false, message: `HTTP ${res.status}`, latencyMs: Date.now() - start };
+        }
+        const data = await res.json();
+        const modelName = data?.modelVersions?.[0] ?? data?.displayName ?? 'OK';
+        return { success: true, message: `Gemini API OK — Modèle: ${modelName}`, latencyMs: Date.now() - start };
+      }
+
+      case 'RETELL_AI': {
+        const res = await fetch(
+          'https://api.retellai.com/list-agents',
+          {
+            headers: { Authorization: `Bearer ${apiKey}` },
+            signal: controller.signal,
+          },
+        );
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            return { success: false, message: 'Clé Retell AI invalide', latencyMs: Date.now() - start };
+          }
+          // 200 range = API reachable
+          if (res.status >= 200 && res.status < 300) {
+            return { success: true, message: 'Retell AI OK — API accessible', latencyMs: Date.now() - start };
+          }
+          return { success: false, message: `HTTP ${res.status}`, latencyMs: Date.now() - start };
+        }
+        return { success: true, message: 'Retell AI OK — Agents accessibles', latencyMs: Date.now() - start };
       }
 
       default:

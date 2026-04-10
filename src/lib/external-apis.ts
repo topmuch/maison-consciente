@@ -21,7 +21,9 @@ export type ApiKey =
   // Existing keys (backward compat)
   | 'FOURSQUARE' | 'DEEPL' | 'STRIPE' | 'RESEND'
   | 'OPENWEATHER' | 'GOOGLE_PLACES' | 'OPEN_METEO'
-  | 'ICECAST' | 'NEWS_API' | 'TRANSIT' | 'SPORTS';
+  | 'ICECAST' | 'NEWS_API' | 'TRANSIT' | 'SPORTS'
+  // AI services
+  | 'GEMINI' | 'RETELL_AI';
 
 export interface ApiDefinition {
   key: ApiKey;
@@ -395,6 +397,34 @@ const API_DEFINITIONS: ApiDefinition[] = [
     icon: 'Building2',
     themeEmoji: '🌍',
   },
+
+  // ═══ 🤖 INTELLIGENCE ARTIFICIELLE ═══
+  {
+    key: 'GEMINI',
+    name: 'Google Gemini',
+    description: 'Voix AI temps réel — assistant vocal Maellis (STT + LLM + TTS)',
+    theme: 'ai',
+    baseUrl: 'https://generativelanguage.googleapis.com',
+    requiresKey: true,
+    quotaInfo: 'Prix: ~$0.02–0.05/min (Flash Live)',
+    cacheTtlMs: 300000,
+    timeoutMs: 10000,
+    icon: 'Bot',
+    themeEmoji: '🤖',
+  },
+  {
+    key: 'RETELL_AI',
+    name: 'Retell AI',
+    description: "Appels téléphoniques d'urgence — agent vocal automatisé",
+    theme: 'ai',
+    baseUrl: 'https://api.retellai.com',
+    requiresKey: true,
+    quotaInfo: 'Prix: ~$0.06/min + $0.02/min téléphonique',
+    cacheTtlMs: 300000,
+    timeoutMs: 5000,
+    icon: 'Mic',
+    themeEmoji: '🤖',
+  },
 ];
 
 /* ─── In-Memory Cache ─── */
@@ -497,7 +527,7 @@ export function getThemes(): Array<{ id: string; label: string; emoji: string }>
         audio: 'Audio & Radio', news: 'Actualités & Info', sport: 'Sport',
         transport: 'Transport & Voyages', food: 'Restaurants & Alimentation',
         entertainment: 'Divertissement & Cinéma', knowledge: 'Connaissances & Culture',
-        utils: 'Utilitaires', core: 'Core & Paiements',
+        utils: 'Utilitaires', core: 'Core & Paiements', ai: 'Intelligence Artificielle',
       };
       themes.set(def.theme, {
         id: def.theme,

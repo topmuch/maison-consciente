@@ -21,6 +21,10 @@ const AVAILABLE_VOICES = [
   "Nitro",
 ];
 
+// Internal API endpoint to fetch Gemini key from the database
+const MAIN_APP_URL = process.env.MAIN_APP_URL || "http://127.0.0.1:3000";
+const API_KEY_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // Refresh every 5 minutes
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -55,6 +59,71 @@ interface SessionState {
   systemPrompt: string;
   reconnectAttempts: number;
   maxReconnectAttempts: number;
+}
+
+// ---------------------------------------------------------------------------
+// API Key Management
+// ---------------------------------------------------------------------------
+
+let cachedApiKey: string | null = null;
+let lastKeyFetchTime = 0;
+
+/**
+ * Fetch the Gemini API key from the main app's internal API.
+ * Falls back to GEMINI_API_KEY env var if the API is unreachable.
+ */
+async function fetchApiKey(): Promise<string | null> {
+  try {
+    const res = await fetch(`${MAIN_APP_URL}/api/internal/api-key/GEMINI`, {
+      headers: { "X-Internal-Service": "true" },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.apiKey) {
+        log("🔑 Gemini API key loaded from database (admin panel)");
+        return data.apiKey as string;
+      }
+    } else {
+      log(`⚠️ Internal API returned ${res.status} — falling back to env var`);
+    }
+  } catch (err) {
+    log(`⚠️ Could not reach internal API (${err instanceof Error ? err.message : "unknown"}) — falling back to env var`);
+  }
+
+  // Fallback: environment variable
+  const envKey = process.env.GEMINI_API_KEY;
+  if (envKey) {
+    log("🔑 Using GEMINI_API_KEY from environment variable (fallback)");
+    return envKey;
+  }
+
+  return null;
+}
+
+/**
+ * Get the cached API key, refreshing from the DB if stale.
+ */
+async function getApiKey(): Promise<string | null> {
+  const now = Date.now();
+  if (!cachedApiKey || now - lastKeyFetchTime > API_KEY_REFRESH_INTERVAL_MS) {
+    const key = await fetchApiKey();
+    if (key) {
+      cachedApiKey = key;
+      lastKeyFetchTime = now;
+    }
+  }
+  return cachedApiKey;
+}
+
+/**
+ * Force refresh the API key from the database.
+ */
+async function refreshApiKey(): Promise<string | null> {
+  cachedApiKey = await fetchApiKey();
+  lastKeyFetchTime = Date.now();
+  return cachedApiKey;
 }
 
 // ---------------------------------------------------------------------------
@@ -254,7 +323,7 @@ function connectToGemini(session: SessionState, apiKey: string) {
     log(`❌ Failed to create Gemini connection: ${err instanceof Error ? err.message : String(err)}`);
     sendJson(session.clientWs, {
       type: "error",
-      message: "Failed to connect to Gemini. Check your API key.",
+      message: "Failed to connect to Gemini. Check your API key in the admin panel.",
     });
   }
 }
@@ -263,10 +332,9 @@ function connectToGemini(session: SessionState, apiKey: string) {
 // Client message handler
 // ---------------------------------------------------------------------------
 
-function handleClientMessage(
+async function handleClientMessage(
   data: WebSocket.Data,
   session: SessionState,
-  apiKey: string
 ) {
   // Binary from client = PCM audio → forward to Gemini
   if (typeof data !== "string") {
@@ -297,6 +365,19 @@ function handleClientMessage(
       session.reconnectAttempts = 0;
 
       log(`Setup requested (voice=${session.voice})`);
+
+      // Fetch fresh API key from DB (in case it was updated in admin panel)
+      const apiKey = await refreshApiKey();
+
+      if (!apiKey) {
+        log("❌ No Gemini API key available");
+        sendJson(session.clientWs, {
+          type: "error",
+          message:
+            "Aucune clé API Gemini configurée. Veuillez la définir dans le panneau admin (section APIs).",
+        });
+        return;
+      }
 
       // Disconnect existing Gemini connection if any
       if (session.geminiWs) {
@@ -369,12 +450,16 @@ function handleClientMessage(
 // WebSocket server
 // ---------------------------------------------------------------------------
 
-function startServer() {
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    log("⚠️ WARNING: GEMINI_API_KEY environment variable is not set.");
-    log("   The server will start, but setup requests will fail.");
+async function startServer() {
+  // Pre-fetch API key on startup
+  log("🔄 Pre-fetching Gemini API key...");
+  const initialKey = await fetchApiKey();
+  if (initialKey) {
+    log("✅ Gemini API key loaded successfully");
+  } else {
+    log("❌ WARNING: No Gemini API key found (env var or database)");
+    log("   The server will start, but voice setup requests will fail.");
+    log("   Configure the key in the superadmin panel → APIs → Google Gemini");
   }
 
   const wss = new WebSocketServer({ port: PORT });
@@ -400,21 +485,13 @@ function startServer() {
     // Send connected confirmation
     sendJson(ws, { type: "connected" });
 
-    // Handle client messages
+    // Handle client messages (async to support API key fetching)
     ws.on("message", (data) => {
-      if (!apiKey) {
-        sendJson(ws, {
-          type: "error",
-          message:
-            "GEMINI_API_KEY not configured. Set it as an environment variable and restart the server.",
-        });
-        return;
-      }
-      handleClientMessage(data, session, apiKey);
+      handleClientMessage(data, session);
     });
 
     // Handle client disconnection
-    ws.on("close", (code, reason) => {
+    ws.on("close", (code) => {
       log(`👋 Client disconnected (code=${code})`);
       if (session.geminiWs) {
         log("Cleaning up Gemini connection...");
@@ -434,13 +511,17 @@ function startServer() {
     });
   });
 
-  // CORS: Allow all origins (WebSocket doesn't use HTTP headers the same way,
-  // but the ws library handles this by default for ws:// connections).
-  // For wss:// through a reverse proxy, configure CORS there.
-
   wss.on("error", (err) => {
     log(`❌ Server error: ${err.message}`);
   });
+
+  // Periodically refresh the API key from the database
+  setInterval(async () => {
+    const key = await getApiKey();
+    if (key) {
+      log("🔄 Gemini API key refreshed from database");
+    }
+  }, API_KEY_REFRESH_INTERVAL_MS);
 }
 
 // ---------------------------------------------------------------------------

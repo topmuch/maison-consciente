@@ -38,6 +38,8 @@ import {
   Calendar,
   Apple,
   Sparkles,
+  Bot,
+  Mic,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -292,6 +294,24 @@ const SERVICE_REGISTRY: ServiceMetadata[] = [
     icon: Clock,
     iconBg: 'bg-[#14b8a6]/15',
     iconColor: 'text-[#14b8a6]',
+  },
+
+  // ── 🤖 Intelligence Artificielle ──
+  {
+    serviceKey: 'GEMINI',
+    serviceName: 'Google Gemini',
+    serviceDescription: 'Voix AI temps réel — assistant vocal Maellis (STT + LLM + TTS)',
+    icon: Bot,
+    iconBg: 'bg-[#4285f4]/15',
+    iconColor: 'text-[#4285f4]',
+  },
+  {
+    serviceKey: 'RETELL_AI',
+    serviceName: 'Retell AI',
+    serviceDescription: 'Appels téléphoniques d\'urgence — agent vocal automatisé',
+    icon: Mic,
+    iconBg: 'bg-[#f43f5e]/15',
+    iconColor: 'text-[#f43f5e]',
   },
 ];
 

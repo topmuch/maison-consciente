@@ -33,6 +33,7 @@ const PUBLIC_API_PATHS = [
   "/api/soundscapes",
   "/api/smart-grocery",
   "/api/enrichment",
+  "/api/internal", // Internal API for mini-services (key management)
 ];
 
 // Static assets
