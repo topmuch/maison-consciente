@@ -69,6 +69,11 @@ const HospitalityExtendedPanel = dynamic(
   { ssr: false, loading: () => <ViewLoader /> },
 );
 
+const HospitalityAnalytics = dynamic(
+  () => import('@/components/hospitality/HospitalityAnalytics').then(m => ({ default: m.HospitalityAnalytics })),
+  { ssr: false, loading: () => <ViewLoader /> },
+);
+
 const BarcodeScannerModal = dynamic(
   () => import('@/components/shared/barcode-scanner-modal'),
   { ssr: false },
@@ -216,6 +221,9 @@ export function ViewRouter() {
 
     case 'hospitality-settings':
       return <HospitalityExtendedPanel />;
+
+    case 'hospitality-analytics':
+      return <HospitalityAnalytics />;
 
     default:
       return <Dashboard />;

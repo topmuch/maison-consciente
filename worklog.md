@@ -749,6 +749,65 @@ Stage Summary:
 | 5 | **Abonnements** | ✅ 100% | MRR estimé, factures filtrées par statut, envoi rappels past_due, download PDF |
 | 6 | **APIs** | ✅ 100% | Grille de **25 services**, clé masquée, URL base, toggle actif, sauvegarde, test avec latence, chiffrement AES-256-GCM |
 
+---
+Task ID: 3
+Agent: Main
+Task: Hospitality Intelligence — Retell AI calls + Gemini analysis + API endpoints
+
+Work Log:
+- Created `src/lib/retell-hospitality.ts`:
+  - `buildSystemPrompt(checkType, guestName, propertyName, stayInfo)` — generates full Retell-compatible system prompt with 5-step call flow (permission → silence handling → adaptive questions → dissatisfaction detection → graceful ending)
+  - `initiateHospitalityCall(householdId, checkInState, checkType)` — reads RETELL_AI config from ApiConfig, creates Retell phone call, creates DailyCheck record
+  - `initiateCallByDailyCheckId(dailyCheckId)` — manual trigger wrapper
+  - Config reads API key from `ApiConfig` table (serviceKey "RETELL_AI"), decrypts with AES-256-GCM, agent ID from baseUrl field
+  - Includes negative keyword detection list (30 French keywords) and adaptive question templates for arrival/daily/departure
+
+- Created `src/lib/gemini-analysis.ts`:
+  - `analyzeDailyCheckTranscription(dailyCheckId, transcription)` — calls Gemini 2.0 Flash-Lite, extracts structured analysis (overallScore 1-5, sentiment, issues[], keywords[], aiSummary, categoryScores for 6 categories)
+  - Auto-creates HostAlert when sentiment is negative/critical OR score < 4
+  - `generateStayReviewReport(checkInStateId)` — aggregates all DailyChecks for a stay, calls Gemini for comprehensive report (weighted averages, verbatim, highlights, painPoints, aiSummary, recommendation, publicReview draft)
+  - Uses upsert for StayReviewReport (one report per stay)
+  - Rate limit handling with exponential backoff retry (max 3 attempts)
+  - Config reads API key from `ApiConfig` table (serviceKey "GEMINI")
+
+- Created `src/app/api/webhooks/retell-analysis/route.ts`:
+  - POST endpoint accepting Retell webhook payloads (call_ended + call_transcription events)
+  - Updates DailyCheck with transcription, duration, status (completed/no_answer/failed)
+  - Handles both transcript string and transcript_object (words/chunks) formats
+  - Fire-and-forget async Gemini analysis after response sent
+  - Auto-triggers stay review report generation for departure checks
+
+- Created `src/app/api/cron/hospitality-check/route.ts`:
+  - GET endpoint protected by CRON_SECRET (timingSafeEqual pattern)
+  - At 20-21h UTC: creates "daily" checks for active stays with dailyConcierge module active
+  - At 07-08h UTC: creates "departure" checks for stays checking out today with safeDeparture module active
+  - Reads modulesConfig JSON from Household (safeDeparture.active, dailyConcierge.active)
+  - Dedup: skips if check already exists for same stay+type today
+  - Creates DailyCheck with status "pending"
+
+- Created `src/app/api/hospitality/analytics/route.ts`:
+  - GET endpoint with auth + hospitality type check
+  - Returns: KPIs (avgScore, satisfactionRate, totalStays, totalAlerts), recentChecks, reports, recentAlerts, recurringIssues, sentimentDistribution, alertSeverityDistribution, categoryAverages
+
+- Created `src/app/api/hospitality/daily-checks/route.ts`:
+  - GET: paginated list with filters (status, sentiment, checkType, checkInStateId, guestName)
+  - POST: manually trigger a daily check call (validates checkInStateId, checkType, initiates Retell call)
+
+- Created `src/app/api/hospitality/host-alerts/route.ts`:
+  - GET: paginated list with filters (status, severity, category), enriched with dailyCheck data
+  - PATCH: acknowledge/resolve/dismiss actions, auto-marks DailyCheck as resolved on resolve
+
+- Created `src/app/api/hospitality/stay-reports/route.ts`:
+  - GET: paginated list of stay review reports
+  - POST: manually trigger report generation for a stay (validates completed checks exist)
+
+Stage Summary:
+- New files created: 8 (2 lib modules + 6 API routes)
+- New API endpoints: 9 (1 webhook POST, 1 cron GET, 7 hospitality GET/POST/PATCH)
+- ESLint: 0 errors, 0 warnings
+- TypeScript: 0 new errors (1 pre-existing error in admin-system-config.ts untouched)
+- Patterns followed: timingSafeEqual for CRON_SECRET, AES decryption for API keys, fire-and-forget async analysis, pagination with filters, auth guards
+
 ### 25 Services API Gérés
 
 | Catégorie | Services (nécessitent clé?) |
@@ -1932,3 +1991,82 @@ Stage Summary:
 - Updated: admin-dashboard.tsx (8 tabs), smtp-client.ts, sentry-config.ts, email-service.ts
 - Configuration priority: **Database (SuperAdmin UI) → Environment Variables (.env)**
 - All secrets: AES-256-GCM encrypted, never exposed to client
+
+---
+Task ID: 7
+Agent: Main
+Task: Hospitality Analytics Dashboard — Frontend Component
+
+Work Log:
+- Created `src/components/hospitality/HospitalityAnalytics.tsx` — comprehensive single-file analytics dashboard
+- Component includes 5 tabs:
+  1. **Vue d'ensemble**: 4 KPI cards (Note Moyenne with stars, Taux de Satisfaction with progress bar, Séjours Analysés, Alertes Actives), recent alerts preview, radar chart for category averages, sentiment distribution bar
+  2. **Audits Quotidiens**: Filter bar (status + sentiment), paginated list of daily checks with expand-to-reveal details (full transcription, issues, keywords, AI summary)
+  3. **Alertes Hôte**: Filter bar (status + severity), alert cards with colored left border by severity, action buttons (Acquitter, Résoudre with dialog, Ignorer), resolution display
+  4. **Rapports de Séjour**: Grid of stay report cards with SVG radar chart (6 categories), highlights/pain points pills, expandable detail with AI summary/recommendation/public review, copy-to-clipboard for public review
+  5. **Problèmes Récurrents**: Ranked list of recurring issues with frequency badges
+- Custom inline SVG RadarChart component (200x200 viewBox, 6 axes, gold fill/stroke, grid rings)
+- Full Noir/Or/Blanc design system compliance: glass cards, text-gradient-gold, bg-gradient-gold, glow-gold, scrollbar-luxe
+- Framer Motion animations: fadeUp entrance for KPIs, stagger children for lists, AnimatePresence for expand/collapse
+- Loading states with Skeleton components, error handling with toast notifications, empty states for each tab
+- Uses shadcn/ui components: Tabs, Badge, Button, Select, Dialog, Textarea, Card, Skeleton, Separator
+- Updated `src/app/page.tsx` to render HospitalityAnalytics for preview
+- ESLint: 0 errors, 0 warnings
+- TypeScript: 0 new errors (1 pre-existing in admin-system-config.ts)
+
+Stage Summary:
+- New file: `src/components/hospitality/HospitalityAnalytics.tsx` (~1050 lines)
+- Updated: `src/app/page.tsx` (preview wrapper)
+- Connected APIs: /api/hospitality/analytics, /api/hospitality/daily-checks, /api/hospitality/host-alerts, /api/hospitality/stay-reports
+- Design: Full Noir/Or/Blanc luxury compliance with gold accents
+- UX: Responsive grid, expandable cards, filter selects, pagination, action buttons, clipboard copy
+
+---
+Task ID: hospitality-modules-paid
+Agent: Main
+Task: Implement Safe Departure & Security + Daily Concierge & Care paid modules
+
+Work Log:
+- Analyzed existing codebase — found 85% of infrastructure already built:
+  - Prisma: DailyCheck, StayReviewReport, HostAlert, SystemConfig models already exist
+  - retell-hospitality.ts: Full system prompt builder, call initiation, silence handling
+  - gemini-analysis.ts: Daily check transcription analysis, stay review report generation
+  - /api/hospitality/analytics: KPIs, sentiment distribution, category averages
+  - /api/hospitality/daily-checks: CRUD with pagination/filters
+  - /api/hospitality/host-alerts: CRUD with acknowledge/resolve/dismiss
+  - /api/hospitality/stay-reports: List + manual generation
+  - /api/webhooks/retell-analysis: Retell webhook → Gemini async analysis
+  - HospitalityAnalytics component: Full 5-tab dashboard with radar chart
+
+- Created cron-hospitality-check.ts:
+  - runHospitalityCron(): Identifies active stays, checks modules, triggers calls
+  - generateReportsForCompletedStays(): Auto-generates StayReviewReport for checked-out stays
+  - Timezone-aware scheduling (22h daily, 09h departure)
+  - Deduplication: skips if DailyCheck already exists for today + checkType
+
+- Created /api/cron/hospitality-check/route.ts:
+  - GET endpoint with CRON_SECRET authentication
+  - Returns summary: checks triggered, reports generated, errors
+
+- Updated subscription-actions.ts:
+  - Added safeDeparture + dailyConcierge to ModuleConfig interface
+  - Added MODULES_CATALOG with full pricing, descriptions, features for all 8 modules
+  - Safe Departure: 6.90€/mois, 69€/an
+  - Daily Concierge: 9.90€/mois, 99€/an
+  - Bundle offer: 14.90€/mois
+
+- Updated store/app-store.ts: Added 'hospitality-analytics' to AppView type
+- Updated view-router.tsx: Added dynamic import + route case for HospitalityAnalytics
+- Updated app-shell.tsx: Added "Analytics & Avis" nav item to HOSPITALITY_NAV_ITEMS
+
+- Built comprehensive homepage (page.tsx) with 4 tabs:
+  1. Modules & Tarifs: Pricing cards, bundle offer, cron schedule
+  2. Conversation IA: Animated conversation flow demo, system prompt logic, negative keywords
+  3. Architecture: Prisma models, API endpoints, cron logic, Gemini analysis details
+  4. Dashboard Analytics: Embedded HospitalityAnalytics component
+
+Stage Summary:
+- New files: cron-hospitality-check.ts, /api/cron/hospitality-check/route.ts
+- Modified files: subscription-actions.ts, app-store.ts, view-router.tsx, app-shell.tsx, page.tsx
+- ESLint: 0 errors, 0 warnings
+- Dev server: Running, page compiles successfully (200 OK)

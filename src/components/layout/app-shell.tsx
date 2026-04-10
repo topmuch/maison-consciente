@@ -24,6 +24,7 @@ import {
   Compass,
   Key,
   Tablet,
+  BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -64,6 +65,7 @@ const HOME_NAV_ITEMS: NavItem[] = [
 
 const HOSPITALITY_NAV_ITEMS: NavItem[] = [
   { label: 'Accueil', view: 'dashboard', icon: LayoutDashboard },
+  { label: 'Analytics & Avis', view: 'hospitality-analytics', icon: BarChart3 },
   { label: 'Guide Local', view: 'local-guide', icon: Compass },
   { label: 'Enregistrement', view: 'guest-checkin', icon: Key },
   { label: 'Scanner', view: 'scan', icon: ScanLine },

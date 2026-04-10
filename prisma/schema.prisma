@@ -87,6 +87,10 @@ model Household {
   googleRating        Float?
   reviewSettings      String   @default("{}")
   contactSettings     String   @default("{}")
+  /* ═══ HOSPITALITY MODULES PAID ═══ */
+  dailyChecks         DailyCheck[]
+  stayReviewReports   StayReviewReport[]
+  hostAlerts          HostAlert[]
 }
 
 /* ═══ CHECK-IN / CHECK-OUT DIGITAL (Hospitalité) ═══ */
@@ -616,4 +620,106 @@ model SafeArrival {
 
   @@index([householdId, status])
   @@index([expectedBefore])
+}
+
+/* ═══ DAILY CHECK — Audit Quotidien Concierge (Hospitalité) ═══ */
+model DailyCheck {
+  id             String    @id @default(uuid())
+  householdId    String
+  checkInStateId String?                          // Lien vers le CheckInState actif
+  guestName      String                           // Nom de l'invité interrogé
+  checkDate      DateTime  @default(now())        // Date/heure du check
+  checkType      String    @default("daily")      // "arrival" | "daily" | "departure"
+  status         String    @default("pending")    // "pending" | "calling" | "completed" | "no_answer" | "failed"
+  /* ═══ RÉSULTATS DE L'APPEL ═══ */
+  callId         String?                          // Retell AI call ID
+  durationSec    Int?                             // Durée de l'appel en secondes
+  transcription  String?                          // Transcription brute de Retell
+  answeredAt     DateTime?                        // Moment où l'invité a répondu
+  /* ═══ DÉTECTION DE PROBLÈMES ═══ */
+  overallScore   Int?                             // Note globale 1-5 extraite par Gemini
+  sentiment      String?   @default("neutral")    // "positive" | "neutral" | "negative" | "critical"
+  issues         String    @default("[]")         // JSON array: ["climatisation défaillante", "bruit extérieur"]
+  keywords       String    @default("[]")         // JSON array: mots-clés extraits
+  aiSummary      String?                          // Résumé généré par Gemini
+  /* ═══ FLAGS ═══ */
+  hostAlerted    Boolean   @default(false)        // Alerte hôte déclenchée?
+  resolved       Boolean   @default(false)        // Problème résolu par l'hôte?
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  household      Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, checkDate(sort: Desc)])
+  @@index([checkInStateId])
+  @@index([status])
+  @@index([sentiment])
+}
+
+/* ═══ STAY REVIEW REPORT — Rapport IA Complet (Hospitalité) ═══ */
+model StayReviewReport {
+  id             String    @id @default(uuid())
+  householdId    String
+  checkInStateId String    @unique                // Un rapport par séjour
+  guestName      String
+  checkInAt      DateTime
+  checkOutAt     DateTime?
+  /* ═══ NOTES PAR CATÉGORIE (extraites par Gemini) ═══ */
+  cleanliness    Int?                             // 1-5 Propreté
+  comfort        Int?                             // 1-5 Confort (lit, literie)
+  equipment      Int?                             // 1-5 Équipement (WiFi, clim, TV)
+  location       Int?                             // 1-5 Emplacement / Accessibilité
+  hostContact    Int?                             // 1-5 Contact avec l'hôte
+  valueForMoney  Int?                             // 1-5 Rapport qualité-prix
+  overallScore   Float?                           // Note moyenne pondérée
+  /* ═══ ANALYSE SENTIMENT ═══ */
+  sentiment      String    @default("neutral")    // "positive" | "neutral" | "negative" | "critical"
+  sentimentScore Float?                           // -1.0 à 1.0 (négatif à positif)
+  verbatim       String?                          // Citation directe la plus marquante
+  highlights     String    @default("[]")         // JSON array: points positifs
+  painPoints     String    @default("[]")         // JSON array: points négatifs / problèmes
+  keywords       String    @default("[]")         // JSON array: mots-clés fréquents
+  /* ═══ RAPPORT IA ═══ */
+  aiSummary      String?                          // Résumé narratif généré par Gemini
+  recommendation String?                          // Suggestion d'amélioration
+  publicReview   String?                          // Brouillon d'avis public positif
+  /* ═══ MÉTADONNÉES ═══ */
+  dailyCheckCount Int      @default(0)            // Nombre de daily checks effectués
+  totalAlerts    Int       @default(0)            // Nombre d'alertes déclenchées
+  resolvedAlerts Int       @default(0)            // Alertes résolues
+  generatedAt    DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  household      Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, generatedAt(sort: Desc)])
+  @@index([checkInStateId])
+  @@index([sentiment])
+}
+
+/* ═══ HOST ALERT — Alerte Hôte en Temps Réel ═══ */
+model HostAlert {
+  id             String    @id @default(uuid())
+  householdId    String
+  dailyCheckId   String?                          // Check ayant déclenché l'alerte
+  checkInStateId String?                          // Séjour concerné
+  guestName      String
+  severity       String    @default("medium")     // "low" | "medium" | "high" | "critical"
+  category       String                           // "cleanliness" | "equipment" | "noise" | "safety" | "comfort" | "other"
+  message        String                           // Description du problème détecté
+  transcription  String?                          // Transcription source
+  status         String    @default("pending")    // "pending" | "sent" | "acknowledged" | "resolved" | "dismissed"
+  /* ═══ NOTIFICATION ═══ */
+  notifiedVia    String?                          // "retell_call" | "push" | "email"
+  notifiedAt     DateTime?
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  resolution     String?                          // Commentaire de résolution
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  household      Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, createdAt(sort: Desc)])
+  @@index([status])
+  @@index([severity])
 }
