@@ -105,16 +105,34 @@ export default function HomePage() {
               Maison Consciente
             </span>
           </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/demo"
-              className="px-3 sm:px-4 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
+              className="px-2.5 sm:px-3 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
             >
               Démo
             </Link>
             <Link
+              href="/pricing"
+              className="px-2.5 sm:px-3 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
+            >
+              Tarifs
+            </Link>
+            <Link
+              href="/about"
+              className="hidden sm:block px-2.5 sm:px-3 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
+            >
+              À propos
+            </Link>
+            <Link
+              href="/contact"
+              className="hidden md:block px-2.5 sm:px-3 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
+            >
+              Contact
+            </Link>
+            <Link
               href="/connexion"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-gradient-gold text-[#020617] rounded-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium bg-gradient-gold text-[#020617] rounded-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
             >
               Connexion
             </Link>
@@ -362,15 +380,24 @@ export default function HomePage() {
                 &copy; 2025 Maison Consciente
               </span>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
               <Link href="/" className="text-xs text-[#f0d78c]/80 hover:text-[#f0d78c] transition-colors">
                 Accueil
               </Link>
               <Link href="/demo" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
                 Démo
               </Link>
-              <Link href="/connexion" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Connexion
+              <Link href="/pricing" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
+                Tarifs
+              </Link>
+              <Link href="/about" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
+                À propos
+              </Link>
+              <Link href="/contact" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
+                Contact
+              </Link>
+              <Link href="/legal/privacy" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
+                Confidentialité
               </Link>
             </div>
             <p className="text-xs text-[#475569]">
