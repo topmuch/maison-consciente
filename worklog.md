@@ -2070,3 +2070,36 @@ Stage Summary:
 - Modified files: subscription-actions.ts, app-store.ts, view-router.tsx, app-shell.tsx, page.tsx
 - ESLint: 0 errors, 0 warnings
 - Dev server: Running, page compiles successfully (200 OK)
+
+---
+Task ID: 1
+Agent: Main
+Task: Add Global Host Pro pack, Airbnb demo simulations (Arrival Upsell + Late Checkout), and update pricing page
+
+Work Log:
+- Read existing files: DemoAirbnb.tsx (703 lines), pricing/page.tsx (374 lines), useMaellisVoice.ts (69 lines), demo/page.tsx (84 lines)
+- Created `src/lib/modules-config.ts` — Central module configuration with 7 individual modules + 1 bundle (Global Host Pro 29.90€/mois)
+- Updated `src/components/demo/DemoAirbnb.tsx` (from 703 → ~780 lines):
+  - Added `SimulationPanel` component — Floating purple button + slide-in panel with 2 scenario triggers
+  - Added `simulateWelcomeUpsell()` — AI banner + TTS upsell message + Services button highlight animation + confirmation toast
+  - Added `simulateLateCheckoutSell()` — AI banner + TTS checkout proposal + interactive modal with Accept(+20€)/Decline buttons
+  - Added `LateCheckoutModal` — Full-screen modal with time comparison, price badge, CTA buttons, animated gradient top bar
+  - Added `AiMessageBanner` — Fixed top banner showing AI speaking with animated dots
+  - Added `ConfirmationToast` — Bottom toast with auto-dismiss after 5s
+  - Added `ServiceHighlight` — Pulsing ring + arrow annotation on Services button
+  - Updated Check-out card to dynamically show "14h00 ✨" + "Late Checkout activé" badge when accepted
+  - Updated Gemini system prompt to include upsell and late checkout capabilities
+- Updated `src/app/pricing/page.tsx` (from 374 → ~520 lines):
+  - Added hero section for "Maellis Global Host Pro" bundle with gold-to-purple gradient
+  - 7 features listed with animated checkmarks
+  - Savings callout (-22% vs individual modules)
+  - Dual CTAs (Choose + See Demo)
+  - Reorganized page: Global Host Pro hero → Individual plans grid → Hospitality modules section → Bundle offer → Calculator → FAQ
+  - Added 2 new FAQ items about Global Host Pro and AI selling features
+- Ran `bun run lint` — 0 errors
+
+Stage Summary:
+- modules-config.ts: Created with 7 modules + 1 pack + helper functions
+- DemoAirbnb.tsx: Added 2 interactive WOW scenarios with voice + animations
+- pricing/page.tsx: Added Global Host Pro hero + Hospitality section + updated FAQ
+- ESLint: 0 errors, Dev server: compiling successfully

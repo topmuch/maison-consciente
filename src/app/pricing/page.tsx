@@ -10,7 +10,6 @@ import {
   Zap,
   Star,
   ArrowRight,
-  ArrowLeft,
   Sparkles,
   Users,
   ChefHat,
@@ -20,12 +19,18 @@ import {
   MessageSquare,
   ShoppingBag,
   Baby,
+  Crown,
+  Globe,
+  BarChart3,
+  Brain,
+  CreditCard,
+  TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 
 /* ═══════════════════════════════════════════════════════
    PRICING PAGE — Maison Consciente
-   Modular pricing: Base gratuite + Modules premium
+   Modular pricing: Base gratuite + Modules premium + Bundle Global Host Pro
    ═══════════════════════════════════════════════════════ */
 
 /* ─── Animation Variants ─── */
@@ -95,9 +100,9 @@ const plans = [
     ],
     cta: 'Activer la S\u00e9curit\u00e9',
     ctaLink: '/connexion',
-    popular: true,
-    borderClass: 'border-[#d4a853]/40 shadow-[0_0_40px_rgba(212,168,83,0.1)]',
-    badgeBg: 'bg-gradient-gold',
+    popular: false,
+    borderClass: 'border-white/[0.08] hover:border-[#d4a853]/20',
+    badgeBg: 'bg-white/[0.06]',
     iconColor: '#f59e0b',
   },
   {
@@ -123,6 +128,17 @@ const plans = [
   },
 ];
 
+/* ─── Global Host Pro Pack ─── */
+const globalHostProFeatures = [
+  { icon: Shield, text: 'Safe Departure & Security (Sauvetage avis)' },
+  { icon: Clock, text: 'Daily Concierge (Audit quotidien 22h)' },
+  { icon: Brain, text: 'Guest Memory (M\u00e9moire pr\u00e9f\u00e9rences)' },
+  { icon: Sparkles, text: 'Auto Upsell Intelligent (Pr\u00e9sentation services)' },
+  { icon: CreditCard, text: 'Smart Late Checkout Seller (Vente heures libres)' },
+  { icon: Globe, text: 'Auto Language Adapt (Polyglotte automatique)' },
+  { icon: BarChart3, text: 'Analytics & Reports complets' },
+];
+
 /* ─── FAQ ─── */
 const faqItems = [
   {
@@ -140,6 +156,14 @@ const faqItems = [
   {
     q: 'Mes donn\u00e9es sont-elles s\u00e9curis\u00e9es ?',
     a: 'Absolument. Toutes les donn\u00e9es sont chiffr\u00e9es AES-256. Nous sommes conformes RGPD et vos donn\u00e9es restent sur nos serveurs europ\u00e9ens.',
+  },
+  {
+    q: 'Qu\u2019est-ce que le pack Global Host Pro ?',
+    a: 'C\u2019est la solution compl\u00e8te pour h\u00f4tes Airbnb professionnels. Il inclut TOUS les modules Maellis (S\u00e9curit\u00e9, Concierge, Upsell, Late Checkout, Memory, Langues, Analytics) \u00e0 un prix r\u00e9duit de 29,90\u202F\u20AC/mois au lieu de 38,30\u202F\u20AC.',
+  },
+  {
+    q: 'Comment l\u2019IA vend-elle les services \u00e0 ma place ?',
+    a: '2 heures apr\u00e8s le check-in, l\u2019IA vocale pr\u00e9sente automatiquement vos services payants (m\u00e9nage, chef, transfert). Le jour du d\u00e9part, elle propose un Late Checkout si le logement est libre. Tout est automatis\u00e9 via Retell AI.',
   },
 ];
 
@@ -217,27 +241,151 @@ export default function PricingPage() {
         </motion.div>
       </section>
 
-      {/* ═══ PRICING GRID ═══ */}
+      {/* ═══════════════════════════════════════════════════════
+         HERO: GLOBAL HOST PRO BUNDLE
+         ═══════════════════════════════════════════════════════ */}
+      <section className="py-8 md:py-12 px-4">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+            className="relative"
+          >
+            {/* Background glow */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/5 via-purple-500/5 to-amber-500/5 rounded-3xl blur-2xl pointer-events-none" />
+
+            <div className="relative bg-white/[0.03] backdrop-blur-xl border border-[#d4a853]/30 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(212,168,83,0.08)]">
+              {/* Animated gradient top bar */}
+              <div
+                className="h-1 w-full"
+                style={{
+                  background: 'linear-gradient(90deg, #d4af37, #7c3aed, #d4af37, #7c3aed)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 3s linear infinite',
+                }}
+              />
+
+              <div className="p-6 sm:p-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                  {/* Left: Content */}
+                  <div>
+                    {/* Badges */}
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-purple-500/20 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider text-[#f0d78c]">
+                        <Crown className="w-3 h-3" />
+                        Best Value
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400">
+                        -22% vs modules s\u00e9par\u00e9s
+                      </span>
+                    </div>
+
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold mb-3">
+                      <span className="text-gradient-gold">Maellis</span>{' '}
+                      <span className="bg-gradient-to-r from-amber-300 via-rose-300 to-purple-300 bg-clip-text text-transparent">
+                        Global Host Pro
+                      </span>
+                    </h2>
+
+                    <p className="text-sm sm:text-base text-[#94a3b8] leading-relaxed mb-6">
+                      La solution ultime pour h\u00f4tes professionnels Airbnb. S\u00e9curit\u00e9, Revenus Passifs et Exp\u00e9rience Client 5 \u00e9toiles — le tout pilot\u00e9 par l&apos;IA.
+                    </p>
+
+                    {/* Price */}
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-5xl sm:text-6xl font-bold font-serif text-gradient-gold">29,90</span>
+                      <span className="text-xl text-[#64748b]">\u20AC/mois</span>
+                    </div>
+                    <p className="text-sm text-[#475569] mb-6">
+                      ou <span className="text-[#d4a853] font-medium">299\u20AC/an</span> — \u00e9conomisez 60\u20AC
+                    </p>
+
+                    {/* CTA */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link
+                        href="/connexion"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-semibold text-[#020617] transition-all duration-300 shadow-[0_0_32px_rgba(212,168,83,0.2)] hover:shadow-[0_0_48px_rgba(212,168,83,0.35)] hover:scale-[1.02] active:scale-[0.98]"
+                        style={{
+                          background: 'linear-gradient(135deg, #d4af37 0%, #7c3aed 100%)',
+                        }}
+                      >
+                        Choisir Global Host Pro
+                        <ArrowRight size={18} />
+                      </Link>
+                      <Link
+                        href="/demo"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-medium text-[#94a3b8] bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-[#d4a853]/20 transition-all duration-300 text-sm"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        Voir la d\u00e9mo
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Right: Features list */}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-4">
+                      7 modules inclus
+                    </h3>
+                    {globalHostProFeatures.map((feat, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-[#d4a853]/15 transition-all duration-300 group"
+                      >
+                        <div className="shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-[#d4a853]/10 to-purple-500/10 flex items-center justify-center group-hover:from-[#d4a853]/20 group-hover:to-purple-500/20 transition-colors">
+                          <feat.icon className="w-4 h-4 text-[#d4a853]" />
+                        </div>
+                        <span className="text-sm text-[#94a3b8] group-hover:text-[#e2e8f0] transition-colors">
+                          {feat.text}
+                        </span>
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0 ml-auto" />
+                      </motion.div>
+                    ))}
+
+                    {/* Savings callout */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.9 }}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15"
+                    >
+                      <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-xs text-emerald-400/90">
+                        Valeur totale : <strong className="text-emerald-300">38,30\u20AC/mois</strong> — vous payez 29,90\u20AC
+                      </span>
+                    </motion.div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ PRICING GRID (Individual Plans) ═══ */}
       <section className="py-12 md:py-16 px-4">
         <div className="max-w-6xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-serif mb-3 tracking-tight">
+              Ou choisissez un{' '}
+              <span className="text-gradient-gold">module individuel</span>
+            </h2>
+            <p className="text-sm text-[#64748b] max-w-lg mx-auto">
+              Composez votre Maellis id\u00e9al en ajoutant uniquement les modules dont vous avez besoin.
+            </p>
+          </motion.div>
+
           <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
-            {plans.map((plan, idx) => (
+            {plans.map((plan) => (
               <motion.div
                 key={plan.id}
                 variants={staggerItem}
-                className={`relative bg-white/[0.03] backdrop-blur-xl border ${plan.borderClass} rounded-2xl p-6 md:p-8 flex flex-col transition-all duration-300 ${
-                  plan.popular ? 'md:scale-105 md:z-10' : ''
-                }`}
+                className={`relative bg-white/[0.03] backdrop-blur-xl border ${plan.borderClass} rounded-2xl p-6 md:p-8 flex flex-col transition-all duration-300`}
               >
-                {/* Popular badge */}
-                {plan.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <div className="bg-gradient-gold text-[#020617] px-5 py-1 rounded-full text-xs font-bold shadow-[0_0_20px_rgba(212,168,83,0.3)]">
-                      Recommand\u00e9
-                    </div>
-                  </div>
-                )}
-
                 {/* Plan header */}
                 <div className="mb-6">
                   <h3 className="text-xl md:text-2xl font-serif font-bold text-[#f1f5f9] mb-2">
@@ -270,11 +418,7 @@ export default function PricingPage() {
                 {/* CTA */}
                 <Link
                   href={plan.ctaLink}
-                  className={`w-full py-3.5 rounded-xl font-semibold text-center transition-all duration-300 flex items-center justify-center gap-2 ${
-                    plan.popular
-                      ? 'bg-gradient-gold text-[#020617] shadow-[0_0_24px_rgba(212,168,83,0.2)] hover:shadow-[0_0_32px_rgba(212,168,83,0.3)] hover:scale-[1.02] active:scale-[0.98]'
-                      : 'bg-white/[0.06] hover:bg-white/[0.1] text-[#f1f5f9] border border-white/[0.08] hover:border-[#d4a853]/20'
-                  }`}
+                  className="w-full py-3.5 rounded-xl font-semibold text-center transition-all duration-300 flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-[#f1f5f9] border border-white/[0.08] hover:border-[#d4a853]/20"
                 >
                   {plan.cta} <ArrowRight size={16} />
                 </Link>
@@ -284,8 +428,161 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* ═══ HOSPITALITY MODULES (Airbnb-specific) ═══ */}
+      <section className="py-12 md:py-16 px-4 bg-black/20">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4"
+            >
+              <Zap className="w-3 h-3" />
+              Pour h\u00f4tes Airbnb
+            </motion.div>
+            <h2 className="text-2xl sm:text-3xl font-serif mb-3 tracking-tight">
+              Modules{' '}
+              <span className="text-gradient-gold">Hospitality</span>
+            </h2>
+            <p className="text-sm text-[#64748b] max-w-lg mx-auto">
+              Propuls\u00e9s par Retell AI et Gemini 2.0 Flash pour prot\u00e9ger votre r\u00e9putation et booster vos revenus.
+            </p>
+          </motion.div>
+
+          <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {/* Safe Departure */}
+            <motion.div
+              variants={staggerItem}
+              className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] hover:border-emerald-500/20 rounded-2xl p-6 md:p-8 flex flex-col transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 rounded-xl bg-emerald-600/15 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-bold text-[#f1f5f9]">Safe Departure & Security</h3>
+                  <p className="text-[10px] text-[#64748b]">Check-out intelligent + sauvetage de r\u00e9putation</p>
+                </div>
+              </div>
+
+              <div className="mb-6 flex items-baseline gap-1">
+                <span className="text-3xl font-bold font-serif text-gradient-gold">6,90</span>
+                <span className="text-sm text-[#64748b]">\u20AC/mois</span>
+              </div>
+
+              <ul className="space-y-2.5 mb-6 flex-1">
+                {[
+                  'Appel vocal Retell AI le jour du d\u00e9part',
+                  'D\u00e9tection insatisfaction en temps r\u00e9el',
+                  'Alerte imm\u00e9diate \u00e0 l\'h\u00f4te',
+                  'Rapport IA StayReview complet',
+                  'G\u00e9n\u00e9ration automatique d\'avis public',
+                ].map((f, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm">
+                    <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="text-[#94a3b8] leading-relaxed">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/connexion"
+                className="w-full py-3 rounded-xl font-semibold text-center flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-[#f1f5f9] border border-white/[0.08] hover:border-emerald-500/20 transition-all duration-300 text-sm"
+              >
+                Activer <ArrowRight size={14} />
+              </Link>
+            </motion.div>
+
+            {/* Daily Concierge */}
+            <motion.div
+              variants={staggerItem}
+              className="bg-white/[0.03] backdrop-blur-xl border border-[#d4a853]/20 rounded-2xl p-6 md:p-8 flex flex-col transition-all duration-300 shadow-[0_0_40px_rgba(212,168,83,0.06)]"
+            >
+              {/* Popular badge */}
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                <div className="bg-gradient-gold text-[#020617] px-5 py-1 rounded-full text-xs font-bold shadow-[0_0_20px_rgba(212,168,83,0.3)]">
+                  Populaire
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 rounded-xl bg-[#d4a853]/15 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-[#d4a853]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-bold text-[#f1f5f9]">Daily Concierge & Care</h3>
+                  <p className="text-[10px] text-[#64748b]">Audit quotidien \u00e0 22h + r\u00e9solution proactive</p>
+                </div>
+              </div>
+
+              <div className="mb-6 flex items-baseline gap-1">
+                <span className="text-3xl font-bold font-serif text-gradient-gold">9,90</span>
+                <span className="text-sm text-[#64748b]">\u20AC/mois</span>
+              </div>
+
+              <ul className="space-y-2.5 mb-6 flex-1">
+                {[
+                  'Audit quotidien automatique \u00e0 22h',
+                  'Appel vocal respectueux (permission)',
+                  'Gestion du silence + relance 1h',
+                  'Analyse sentiment Gemini 2.0 Flash',
+                  'Alerte h\u00f4te si score < 4/5',
+                  'Dashboard analytics avec radar 6 axes',
+                ].map((f, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm">
+                    <Check className="w-4 h-4 text-[#d4a853] shrink-0 mt-0.5" />
+                    <span className="text-[#94a3b8] leading-relaxed">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/connexion"
+                className="w-full py-3 rounded-xl font-semibold text-center flex items-center justify-center gap-2 bg-gradient-gold text-[#020617] shadow-[0_0_24px_rgba(212,168,83,0.2)] hover:shadow-[0_0_32px_rgba(212,168,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 text-sm"
+              >
+                Activer <ArrowRight size={14} />
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* Bundle offer */}
+          <motion.div {...fadeUp} className="mt-8">
+            <div className="bg-white/[0.03] backdrop-blur-xl border border-[#d4a853]/15 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+              <div className="p-3 rounded-xl bg-[#d4a853]/10 shrink-0">
+                <Heart className="w-6 h-6 text-[#d4a853]" />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-sm font-serif font-semibold text-[#f1f5f9] mb-1">
+                  Bundle Hospitality — Safe Departure + Daily Concierge
+                </h3>
+                <p className="text-xs text-[#94a3b8]">
+                  Les deux modules pour une protection compl\u00e8te de votre r\u00e9putation Airbnb.
+                </p>
+              </div>
+              <div className="text-center shrink-0">
+                <div className="flex items-baseline gap-1 justify-center">
+                  <span className="text-2xl font-bold font-serif text-gradient-gold">14,90</span>
+                  <span className="text-sm text-[#64748b]">\u20AC/mois</span>
+                </div>
+                <p className="text-[10px] text-emerald-400 mt-1">
+                  \u00c9conomisez 1,90\u20AC/mois
+                </p>
+                <Link
+                  href="/connexion"
+                  className="mt-2 inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-gold text-[#020617] shadow-[0_4px_16px_rgba(212,168,83,0.2)] hover:shadow-[0_4px_24px_rgba(212,168,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 text-xs font-semibold"
+                >
+                  Activer le bundle
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ═══ CALCULATOR / VISUAL ═══ */}
-      <section className="py-16 md:py-20 px-4 bg-black/20">
+      <section className="py-16 md:py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl mb-4 tracking-tight">
             Envie de <span className="text-gradient-gold">personnaliser</span> ?
@@ -305,7 +602,7 @@ export default function PricingPage() {
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section className="py-16 md:py-20 px-4">
+      <section className="py-16 md:py-20 px-4 bg-black/20">
         <div className="max-w-3xl mx-auto">
           <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl text-center text-[#f1f5f9] mb-4 tracking-tight">
             Questions <span className="text-gradient-gold">fr\u00e9quentes</span>

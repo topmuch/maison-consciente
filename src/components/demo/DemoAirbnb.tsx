@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   Sun,
@@ -19,6 +20,12 @@ import {
   AlertTriangle,
   Settings,
   Sparkles,
+  Play,
+  ChevronRight,
+  X,
+  Check,
+  CreditCard,
+  PartyPopper,
 } from 'lucide-react';
 import { useMaellisVoice } from '@/hooks/useMaellisVoice';
 import { GeminiVoiceOrb } from '@/components/demo/GeminiVoiceOrb';
@@ -179,11 +186,388 @@ const fadeInSlideUp = {
 };
 
 /* ═══════════════════════════════════════════════════════════════
+   LATE CHECKOUT MODAL
+   ═══════════════════════════════════════════════════════════════ */
+function LateCheckoutModal({
+  isOpen,
+  onAccept,
+  onDecline,
+}: {
+  isOpen: boolean;
+  onAccept: () => void;
+  onDecline: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4"
+        >
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onDecline}
+          />
+
+          {/* Modal Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 80, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 80, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="relative bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md overflow-hidden"
+          >
+            {/* Decorative gradient top */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-rose-400 to-purple-500" />
+
+            {/* Close button */}
+            <button
+              onClick={onDecline}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+            >
+              <X className="w-4 h-4 text-slate-500" />
+            </button>
+
+            {/* Content */}
+            <div className="text-center">
+              {/* Icon */}
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 mb-4">
+                <Clock className="w-8 h-8 text-amber-600" />
+              </div>
+
+              <h3 className="text-xl font-bold text-slate-800 mb-2">
+                Prolongez votre confort ☀️
+              </h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-6">
+                Votre appartement est <strong className="text-slate-700">libre cet après-midi</strong>.
+                Profitez d&apos;un départ jusqu&apos;à <strong className="text-amber-600">14h00</strong> pour seulement{' '}
+                <strong className="text-amber-600">20€</strong>.
+              </p>
+
+              {/* Visual time comparison */}
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="text-center px-4 py-2 rounded-xl bg-red-50 border border-red-100">
+                  <p className="text-xs text-red-400 font-medium">Avant</p>
+                  <p className="text-lg font-bold text-red-500">11h00</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-300" />
+                <div className="text-center px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-100">
+                  <p className="text-xs text-emerald-400 font-medium">Après</p>
+                  <p className="text-lg font-bold text-emerald-500">14h00</p>
+                </div>
+              </div>
+
+              {/* Price highlight */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 mb-6">
+                <CreditCard className="w-4 h-4 text-amber-500" />
+                <span className="text-sm font-semibold text-amber-700">+20€</span>
+                <span className="text-xs text-amber-500">paiement sécurisé</span>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <motion.button
+                  onClick={onDecline}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex-1 py-3 px-4 rounded-2xl bg-slate-100 text-slate-600 font-semibold text-sm hover:bg-slate-200 transition-colors"
+                >
+                  Non merci
+                </motion.button>
+                <motion.button
+                  onClick={onAccept}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-shadow"
+                >
+                  Accepter (+20€)
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIMULATION PANEL — Demo-only floating buttons
+   ═══════════════════════════════════════════════════════════════ */
+function SimulationPanel({
+  onSimulateArrival,
+  onSimulateDeparture,
+  isSimulating,
+}: {
+  onSimulateArrival: () => void;
+  onSimulateDeparture: () => void;
+  isSimulating: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      {/* Floating trigger button */}
+      <motion.button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed top-20 right-4 z-[90] w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30 flex items-center justify-center"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        animate={{
+          boxShadow: [
+            '0 4px 12px rgba(168, 85, 247, 0.3)',
+            '0 4px 24px rgba(168, 85, 247, 0.5)',
+            '0 4px 12px rgba(168, 85, 247, 0.3)',
+          ],
+        }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <Play className="w-5 h-5 ml-0.5" />
+      </motion.button>
+
+      {/* Panel */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 20, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="fixed top-20 right-4 z-[89] w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-white" />
+                <span className="text-sm font-bold text-white">Scénarios Démo</span>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+              >
+                <X className="w-3 h-3 text-white" />
+              </button>
+            </div>
+
+            {/* Simulation buttons */}
+            <div className="p-4 space-y-3">
+              <motion.button
+                onClick={() => {
+                  onSimulateArrival();
+                  setIsOpen(false);
+                }}
+                disabled={isSimulating}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-left hover:border-emerald-300 transition-colors disabled:opacity-50"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base">✈️</span>
+                  <span className="text-sm font-semibold text-emerald-800">
+                    Scénario A — Arrivée (+2h)
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-600/70 leading-relaxed">
+                  L&apos;IA présente les services (Ménage, Chef, Transfert) et invite à cliquer sur Services.
+                </p>
+              </motion.button>
+
+              <motion.button
+                onClick={() => {
+                  onSimulateDeparture();
+                  setIsOpen(false);
+                }}
+                disabled={isSimulating}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-left hover:border-amber-300 transition-colors disabled:opacity-50"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base">🏨</span>
+                  <span className="text-sm font-semibold text-amber-800">
+                    Scénario B — Départ (09h)
+                  </span>
+                </div>
+                <p className="text-xs text-amber-600/70 leading-relaxed">
+                  L&apos;IA propose un &quot;Late Check-out&quot; payant si le calendrier le permet.
+                </p>
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SERVICE HIGHLIGHT OVERLAY
+   ═══════════════════════════════════════════════════════════════ */
+function ServiceHighlight({
+  active,
+}: {
+  active: boolean;
+}) {
+  return (
+    <AnimatePresence>
+      {active && (
+        <>
+          {/* Pulsing ring around Services button */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.15, 1] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-[-8px] rounded-[1.75rem] border-2 border-amber-400 pointer-events-none z-20"
+          />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.15, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+            className="absolute inset-[-8px] rounded-[1.75rem] bg-amber-400 pointer-events-none z-20"
+          />
+          {/* Arrow pointing up */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: [0.6, 1, 0.6], y: [0, -4, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-12 left-1/2 -translate-x-1/2 z-20 bg-amber-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap"
+          >
+            👇 Services disponibles !
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AI MESSAGE BANNER (appears at the top when simulation runs)
+   ═══════════════════════════════════════════════════════════════ */
+function AiMessageBanner({
+  message,
+  icon,
+  color,
+  visible,
+}: {
+  message: string;
+  icon: React.ReactNode;
+  color: string;
+  visible: boolean;
+}) {
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: -30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -30, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[95] w-[calc(100%-2rem)] max-w-lg"
+        >
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border backdrop-blur-md ${color}`}>
+            <div className="shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              {icon}
+            </div>
+            <p className="text-sm font-medium text-slate-800 leading-relaxed flex-1">
+              {message}
+            </p>
+            {/* Animated dots to show AI is "speaking" */}
+            <div className="flex items-center gap-1 shrink-0">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full bg-amber-500"
+                  animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
+                  transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
+                />
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONFIRMATION TOAST
+   ═══════════════════════════════════════════════════════════════ */
+function ConfirmationToast({
+  message,
+  visible,
+  onClose,
+}: {
+  message: string;
+  visible: boolean;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (visible) {
+      const timer = setTimeout(onClose, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, onClose]);
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 40, scale: 0.9 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[96] w-[calc(100%-2rem)] max-w-md"
+        >
+          <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-2xl shadow-emerald-500/30">
+            <div className="shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <PartyPopper className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-semibold leading-relaxed flex-1">{message}</p>
+            <button
+              onClick={onClose}
+              className="shrink-0 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT — LUXE LUMINEUX (MAXIMUM WAHOO)
    ═══════════════════════════════════════════════════════════════ */
 export function DemoAirbnb({ onBack }: { onBack: () => void }) {
   const { speak, isSpeaking } = useMaellisVoice();
   const handleSpeak = (text: string) => speak(text);
+
+  /* ── Simulation State ── */
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [showServiceHighlight, setShowServiceHighlight] = useState(false);
+  const [showLateCheckoutModal, setShowLateCheckoutModal] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [aiBanner, setAiBanner] = useState<{ message: string; icon: React.ReactNode; color: string; visible: boolean }>({
+    message: '',
+    icon: null,
+    color: '',
+    visible: false,
+  });
+  const [lateCheckoutAccepted, setLateCheckoutAccepted] = useState(false);
+  const servicesRef = useRef<HTMLButtonElement>(null);
 
   const handleBack = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -192,6 +576,107 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
       onBack();
     }, 300);
   };
+
+  /* ── Scenario A: Welcome Upsell (Arrival +2h) ── */
+  const simulateWelcomeUpsell = useCallback(() => {
+    if (isSimulating) return;
+    setIsSimulating(true);
+    setLateCheckoutAccepted(false);
+
+    const guestName = 'Sophie';
+
+    // Step 1: Show AI speaking banner
+    setAiBanner({
+      message: '',
+      icon: <Sparkles className="w-5 h-5 text-amber-500" />,
+      color: 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200',
+      visible: true,
+    });
+
+    // Step 2: Speak the upsell message
+    const upsellText = `Bonjour ${guestName}, j'espère que votre installation s'est bien passée. Pour rendre votre séjour parfait, sachez que nous proposons des services exclusifs : pressing, ménage express, chef à domicile et navette aéroport. Cliquez simplement sur l'onglet "Services" en bas pour commander !`;
+
+    setTimeout(() => {
+      setAiBanner({
+        message: `Bonjour ${guestName}, j'espère que votre installation s'est bien passée. Pour rendre votre séjour parfait, nous proposons des services exclusifs...`,
+        icon: <Sparkles className="w-5 h-5 text-amber-500" />,
+        color: 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200',
+        visible: true,
+      });
+      handleSpeak(upsellText);
+
+      // Step 3: Highlight Services button after 2 seconds
+      setTimeout(() => {
+        setShowServiceHighlight(true);
+        servicesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 2000);
+
+      // Step 4: Show confirmation and clean up
+      setTimeout(() => {
+        setShowConfirmation(true);
+        setConfirmationMessage('🎉 Upsell déclenché ! L\'IA a présenté les services à Sophie.');
+        setAiBanner((prev) => ({ ...prev, visible: false }));
+
+        setTimeout(() => {
+          setShowServiceHighlight(false);
+          setIsSimulating(false);
+        }, 3000);
+      }, 12000);
+    }, 500);
+  }, [isSimulating, handleSpeak]);
+
+  /* ── Scenario B: Late Checkout Sell (Departure 09h) ── */
+  const simulateLateCheckoutSell = useCallback(() => {
+    if (isSimulating) return;
+    setIsSimulating(true);
+    setShowServiceHighlight(false);
+    setLateCheckoutAccepted(false);
+
+    const guestName = 'Sophie';
+
+    // Step 1: Show AI banner
+    setAiBanner({
+      message: '',
+      icon: <Clock className="w-5 h-5 text-amber-500" />,
+      color: 'bg-gradient-to-r from-amber-50 to-rose-50 border-amber-200',
+      visible: true,
+    });
+
+    // Step 2: Speak and show banner
+    setTimeout(() => {
+      setAiBanner({
+        message: `Bonjour ! Avant de partir, sachez que l'appartement est libre cet après-midi. Souhaitez-vous prolonger votre check-out jusqu'à 14h00 pour seulement 20€ ?`,
+        icon: <Clock className="w-5 h-5 text-amber-500" />,
+        color: 'bg-gradient-to-r from-amber-50 to-rose-50 border-amber-200',
+        visible: true,
+      });
+
+      const checkoutText = `Bonjour ${guestName} ! Avant de partir, sachez que l'appartement est libre cet après-midi. Souhaitez-vous prolonger votre check-out jusqu'à 14 heures pour seulement 20 euros ? Cela vous permettra de prendre votre temps sans stress.`;
+      handleSpeak(checkoutText);
+
+      // Step 3: Show late checkout modal after speech starts (2.5s)
+      setTimeout(() => {
+        setShowLateCheckoutModal(true);
+        setAiBanner((prev) => ({ ...prev, visible: false }));
+      }, 2500);
+    }, 500);
+  }, [isSimulating, handleSpeak]);
+
+  /* ── Handle Late Checkout response ── */
+  const handleAcceptCheckout = useCallback(() => {
+    setShowLateCheckoutModal(false);
+    setLateCheckoutAccepted(true);
+    handleSpeak('Super ! Votre départ est repoussé à 14 heures. Profitez bien de votre dernière journée !');
+    setShowConfirmation(true);
+    setConfirmationMessage('✅ Check-out repoussé à 14h00 ! Sophie a payé 20€ via Stripe.');
+    setIsSimulating(false);
+  }, [handleSpeak]);
+
+  const handleDeclineCheckout = useCallback(() => {
+    setShowLateCheckoutModal(false);
+    handleSpeak('Pas de souci ! Votre check-out reste à 11 heures. Bonne journée et bon voyage !');
+    setIsSimulating(false);
+  }, [handleSpeak]);
 
   /* Sparkle positions around QR code */
   const sparklePositions = [
@@ -209,8 +694,107 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
     { bottom: '35%', right: '8%' },
   ];
 
+  /* Action grid items (with ref for Services) */
+  const actionItems = [
+    {
+      icon: Wifi,
+      label: 'WiFi & Codes',
+      iconBg: 'bg-sky-50 text-sky-500',
+      speakText:
+        'Le WiFi de la villa est Villa Azur Guest, mot de passe : Bienvenue2026. Le code du portail est 4827.',
+    },
+    {
+      icon: MapPin,
+      label: 'Activités',
+      iconBg: 'bg-orange-50 text-orange-500',
+      speakText:
+        'Découvrez les meilleures activités à Nice : la promenade des Anglais, le marché Cours Saleya, le château de Nice, et bien plus encore.',
+    },
+    {
+      icon: Utensils,
+      label: 'Services',
+      iconBg: 'bg-purple-50 text-purple-500',
+      speakText:
+        'Les services disponibles : ménage, cuisine traditionnelle, massage à domicile, et navette aéroport. Réservez via WhatsApp.',
+      isServices: true,
+    },
+    {
+      icon: Shield,
+      label: 'SOS Urgence',
+      iconBg: 'bg-red-50 text-red-500',
+      speakText:
+        "En cas d'urgence, composez le 15 pour le SAMU, le 17 pour la police, ou le 18 pour les pompiers. Votre hôte Isabelle est aussi joignable 24h sur 24.",
+      pulse: true,
+    },
+    {
+      icon: Camera,
+      label: 'Mon Séjour',
+      iconBg: 'bg-teal-50 text-teal-500',
+      speakText:
+        'Votre séjour à Nice : arrivée le mercredi 8 avril, départ le jeudi 9 avril. 1 nuit dans la Villa Azur.',
+    },
+    {
+      icon: Star,
+      label: 'Avis',
+      iconBg: 'bg-amber-50 text-amber-500',
+      speakText:
+        'Vous pouvez laisser votre avis à la fin du séjour. Votre retour est très important pour Isabelle et les futurs voyageurs.',
+    },
+    {
+      icon: AlertTriangle,
+      label: 'Support',
+      iconBg: 'bg-slate-50 text-slate-500',
+      speakText:
+        "Pour le support technique, contactez l'équipe Maellis via le bouton WhatsApp ou par email. Nous répondons sous 15 minutes.",
+    },
+    {
+      icon: Settings,
+      label: 'Options',
+      iconBg: 'bg-gray-50 text-gray-500',
+      speakText:
+        'Options du séjour : mode nuit, heures calmes, réglages du volume, préférences de langue. Tout est personnalisable.',
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50 flex flex-col">
+      {/* ═══════════════════════════════════════════════════════
+         SIMULATION PANEL (Demo Only)
+         ═══════════════════════════════════════════════════════ */}
+      <SimulationPanel
+        onSimulateArrival={simulateWelcomeUpsell}
+        onSimulateDeparture={simulateLateCheckoutSell}
+        isSimulating={isSimulating}
+      />
+
+      {/* ═══════════════════════════════════════════════════════
+         AI MESSAGE BANNER
+         ═══════════════════════════════════════════════════════ */}
+      <AiMessageBanner
+        message={aiBanner.message}
+        icon={aiBanner.icon}
+        color={aiBanner.color}
+        visible={aiBanner.visible}
+      />
+
+      {/* ═══════════════════════════════════════════════════════
+         LATE CHECKOUT MODAL
+         ═══════════════════════════════════════════════════════ */}
+      <LateCheckoutModal
+        isOpen={showLateCheckoutModal}
+        onAccept={handleAcceptCheckout}
+        onDecline={handleDeclineCheckout}
+      />
+
+      {/* ═══════════════════════════════════════════════════════
+         CONFIRMATION TOAST
+         ═══════════════════════════════════════════════════════ */}
+      <ConfirmationToast
+        message={confirmationMessage}
+        visible={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+      />
+
       {/* ═══════════════════════════════════════════════════════
          1. STICKY HEADER — Gradient Shimmer + Weather Glow
          ═══════════════════════════════════════════════════════ */}
@@ -234,13 +818,15 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
               <ArrowLeft className="size-5 text-slate-600" />
             </motion.button>
 
-            {/* Title & subtitle */}
+            {/* Title & subtitle — updated for late checkout */}
             <div className="flex-1 min-w-0 text-center">
               <h1 className="text-base font-bold text-slate-800 truncate">
                 Villa Azur — Nice
               </h1>
               <p className="text-xs text-slate-500 truncate">
-                Voyageur : Sophie • Mercredi 8 Avril 2026
+                {lateCheckoutAccepted
+                  ? 'Voyageur : Sophie • Check-out repoussé à 14h00 ✨'
+                  : 'Voyageur : Sophie • Mercredi 8 Avril 2026'}
               </p>
             </div>
 
@@ -310,27 +896,44 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
             </motion.button>
           </motion.div>
 
-          {/* Check-out */}
+          {/* Check-out — dynamic based on late checkout acceptance */}
           <motion.div {...floatAnimation} transition={{ ...floatAnimation.transition, delay: 0.5 } as any}>
             <motion.button
               onClick={() =>
                 handleSpeak(
-                  'Votre check-out est prévu pour demain à 11 heures. Pensez à préparer vos affaires la veille.',
+                  lateCheckoutAccepted
+                    ? 'Votre check-out a été repoussé à 14 heures. Vous avez toute la journée pour profiter de Nice !'
+                    : 'Votre check-out est prévu pour demain à 11 heures. Pensez à préparer vos affaires la veille.',
                 )
               }
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
-              className="relative rounded-3xl p-6 sm:p-8 text-white shadow-xl bg-gradient-to-br from-rose-400 to-pink-600 flex flex-col items-center justify-center gap-2 text-center overflow-hidden"
+              className={`relative rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col items-center justify-center gap-2 text-center overflow-hidden transition-all duration-500 ${
+                lateCheckoutAccepted
+                  ? 'bg-gradient-to-br from-emerald-400 to-teal-600'
+                  : 'bg-gradient-to-br from-rose-400 to-pink-600'
+              }`}
             >
               {/* Icon badge top-right */}
-              <span className="absolute top-2 right-2 text-lg leading-none">🏠</span>
+              <span className="absolute top-2 right-2 text-lg leading-none">
+                {lateCheckoutAccepted ? '🎉' : '🏠'}
+              </span>
               <LogOut className="size-10 sm:size-12 mb-1" />
               <span className="text-xs font-medium opacity-90 uppercase tracking-wider">
                 Check-out
               </span>
               <span className="text-sm sm:text-base font-bold leading-tight">
-                Demain 11h00
+                {lateCheckoutAccepted ? '14h00 ✨' : 'Demain 11h00'}
               </span>
+              {lateCheckoutAccepted && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-semibold"
+                >
+                  Late Checkout activé
+                </motion.span>
+              )}
             </motion.button>
           </motion.div>
 
@@ -429,73 +1032,21 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
             initial="hidden"
             animate="show"
           >
-            {[
-              {
-                icon: Wifi,
-                label: 'WiFi & Codes',
-                iconBg: 'bg-sky-50 text-sky-500',
-                speakText:
-                  'Le WiFi de la villa est Villa Azur Guest, mot de passe : Bienvenue2026. Le code du portail est 4827.',
-              },
-              {
-                icon: MapPin,
-                label: 'Activités',
-                iconBg: 'bg-orange-50 text-orange-500',
-                speakText:
-                  'Découvrez les meilleures activités à Nice : la promenade des Anglais, le marché Cours Saleya, le château de Nice, et bien plus encore.',
-              },
-              {
-                icon: Utensils,
-                label: 'Services',
-                iconBg: 'bg-purple-50 text-purple-500',
-                speakText:
-                  'Les services disponibles : ménage, cuisine traditionnelle, massage à domicile, et navette aéroport. Réservez via WhatsApp.',
-              },
-              {
-                icon: Shield,
-                label: 'SOS Urgence',
-                iconBg: 'bg-red-50 text-red-500',
-                speakText:
-                  "En cas d'urgence, composez le 15 pour le SAMU, le 17 pour la police, ou le 18 pour les pompiers. Votre hôte Isabelle est aussi joignable 24h sur 24.",
-                pulse: true,
-              },
-              {
-                icon: Camera,
-                label: 'Mon Séjour',
-                iconBg: 'bg-teal-50 text-teal-500',
-                speakText:
-                  'Votre séjour à Nice : arrivée le mercredi 8 avril, départ le jeudi 9 avril. 1 nuit dans la Villa Azur.',
-              },
-              {
-                icon: Star,
-                label: 'Avis',
-                iconBg: 'bg-amber-50 text-amber-500',
-                speakText:
-                  'Vous pouvez laisser votre avis à la fin du séjour. Votre retour est très important pour Isabelle et les futurs voyageurs.',
-              },
-              {
-                icon: AlertTriangle,
-                label: 'Support',
-                iconBg: 'bg-slate-50 text-slate-500',
-                speakText:
-                  "Pour le support technique, contactez l'équipe Maellis via le bouton WhatsApp ou par email. Nous répondons sous 15 minutes.",
-              },
-              {
-                icon: Settings,
-                label: 'Options',
-                iconBg: 'bg-gray-50 text-gray-500',
-                speakText:
-                  'Options du séjour : mode nuit, heures calmes, réglages du volume, préférences de langue. Tout est personnalisable.',
-              },
-            ].map((item) => (
+            {actionItems.map((item) => (
               <motion.button
                 key={item.label}
+                ref={item.isServices ? servicesRef : undefined}
                 variants={itemBounceIn as any}
                 onClick={() => handleSpeak(item.speakText)}
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.95 }}
-                className={`group flex flex-col items-center justify-center gap-3 p-6 bg-white rounded-3xl shadow-md border border-slate-100 hover:shadow-lg transition-shadow relative overflow-hidden`}
+                className={`group flex flex-col items-center justify-center gap-3 p-6 bg-white rounded-3xl shadow-md border border-slate-100 hover:shadow-lg transition-shadow relative overflow-hidden ${
+                  item.isServices && showServiceHighlight ? 'ring-2 ring-amber-400 z-30' : ''
+                }`}
               >
+                {/* Service highlight overlay */}
+                {item.isServices && <ServiceHighlight active={showServiceHighlight} />}
+
                 {/* SOS enhanced pulse */}
                 {item.pulse && (
                   <>
@@ -686,7 +1237,7 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
          ═══════════════════════════════════════════════════════ */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
         <GeminiVoiceOrb
-          systemPrompt="Tu es Maellis, la concierge virtuelle intelligente de la Villa Azur à Nice. Tu es poli, chaleureuse et professionnelle. Tu parles toujours en français. Tu aides Sophie, la voyageuse, avec son séjour : check-in, check-out, activités, restaurants, services, et urgences. Tu connais la villa et ses équipements. Tu es concis mais chaleureuse. L'hôte est Isabelle."
+          systemPrompt="Tu es Maellis, la concierge virtuelle intelligente de la Villa Azur à Nice. Tu es poli, chaleureuse et professionnelle. Tu parles toujours en français. Tu aides Sophie, la voyageuse, avec son séjour : check-in, check-out, activités, restaurants, services, et urgences. Tu connais la villa et ses équipements. Tu es concis mais chaleureuse. L'hôte est Isabelle. Tu peux proposer des services payants (ménage, chef, transfert) et des late check-outs quand le calendrier le permet."
           voice="Charon"
         />
       </div>
