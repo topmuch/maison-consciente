@@ -55,4 +55,4 @@ server.log
 /maison-consciente-ref/
 
 # Skills directory
-/skills/
+/skills/.env

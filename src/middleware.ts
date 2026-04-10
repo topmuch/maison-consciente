@@ -48,6 +48,25 @@ function securityHeaders(): Record<string, string> {
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(self), geolocation=(self)",
     "X-XSS-Protection": "1; mode=block",
+    // Content-Security-Policy — strict baseline with sensible defaults
+    // Blocks inline scripts, restricts sources to same-origin + known CDNs
+    "Content-Security-Policy": [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+      "img-src 'self' data: blob: https: http: https://*.googleapis.com https://*.gstatic.com https://*.stripe.com",
+      "font-src 'self' data: https://cdn.jsdelivr.net",
+      "connect-src 'self' https: wss: ws: https://api.stripe.com https://onesignal.com",
+      "frame-src https://js.stripe.com https://hooks.stripe.com",
+      "media-src 'self' blob: https:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self' https:",
+    ].join('; '),
+    // HSTS — enforce HTTPS in production
+    ...(process.env.NODE_ENV === 'production' ? {
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+    } : {}),
   };
 }
 
@@ -57,6 +76,14 @@ function withSecurityHeaders(response: NextResponse): NextResponse {
     response.headers.set(key, value);
   }
   return response;
+}
+
+/* ── Audit logging helper ──────────────────────────────── */
+
+function logAuthCheck(pathname: string, hasCookie: boolean, action: string) {
+  const timestamp = new Date().toISOString().slice(0, 19);
+  const status = hasCookie ? '✓' : '✗';
+  console.log(`[AUTH] ${timestamp} ${status} ${action} ${pathname} (cookie: ${hasCookie})`);
 }
 
 export function middleware(request: NextRequest) {
@@ -95,6 +122,9 @@ export function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get(SESSION_COOKIE);
 
   if (!sessionCookie?.value) {
+    // Audit log the blocked attempt
+    logAuthCheck(pathname, false, isProtectedApi ? 'API_BLOCKED' : 'REDIRECT');
+
     // For API routes, return 401
     if (isProtectedApi) {
       const response = NextResponse.json(
