@@ -13,6 +13,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { prisma } from '@/lib/db';
+import { getAuthUser } from '@/lib/server-auth';
 import {
   parseVoiceCommand,
   stripWakeWord,
@@ -84,6 +85,10 @@ export async function executeVoiceCommand(
   entities: Record<string, string>,
 ): Promise<VoiceActionResult> {
   try {
+    const auth = await getAuthUser();
+    if (householdId !== auth.householdId) {
+      return { success: false, message: 'Foyer invalide' };
+    }
     // Reconstruct command text from intent + entities
     const entityStr = Object.entries(entities)
       .filter(([, v]) => v)
@@ -134,6 +139,10 @@ export async function processVoiceCommand(
   householdId: string,
   text: string,
 ): Promise<VoiceActionResponse> {
+  const auth = await getAuthUser();
+  if (householdId !== auth.householdId) {
+    return { message: 'Foyer invalide', actionType: 'auth_error' };
+  }
   // Strip wake word if present
   let processedText = text;
   for (const name of ASSISTANT_NAMES) {

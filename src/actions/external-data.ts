@@ -8,6 +8,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { prisma } from '@/lib/db';
+import { getOptionalAuthUser } from '@/lib/server-auth';
 import { RSS_SOURCES, JOKES, QUOTES, FUN_FACTS } from '@/lib/constants';
 import { fetchAllFeeds, formatArticlesForTTS } from '@/lib/rss-parser';
 import { getHoroscope, formatHoroscopeForTTS, getHoroscopeFallback } from '@/lib/horoscope-parser';
@@ -62,6 +63,10 @@ export async function fetchNewsForTablet(
   householdId: string,
 ): Promise<ActionResult<{ articles: Array<{ title: string; source: string; category: string; link: string }>; tts: string }>> {
   try {
+    const auth = await getOptionalAuthUser();
+    if (auth && householdId !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
+    }
     const hh = await getHouseholdSettings(householdId);
     if (!hh) {
       return { success: false, error: 'Maison non trouvée.' };
@@ -114,6 +119,22 @@ export async function fetchWeatherForTablet(
   tts: string;
 }>> {
   try {
+    const auth = await getOptionalAuthUser();
+    if (auth && householdId !== auth.householdId) {
+      return {
+        success: true,
+        data: {
+          temperature: 0,
+          description: 'service désactivé',
+          wind: 0,
+          maxTemp: 0,
+          minTemp: 0,
+          rainProb: 0,
+          tts: 'Foyer invalide.',
+        },
+      };
+    }
+
     const hh = await getHouseholdSettings(householdId);
     if (!hh) {
       return { success: false, error: 'Maison non trouvée.' };
@@ -209,6 +230,10 @@ export async function fetchHoroscopeForTablet(
   sign: string,
 ): Promise<ActionResult<{ sign: string; tts: string }>> {
   try {
+    const auth = await getOptionalAuthUser();
+    if (auth && householdId !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
+    }
     const hh = await getHouseholdSettings(householdId);
     if (!hh) {
       return { success: false, error: 'Maison non trouvée.' };

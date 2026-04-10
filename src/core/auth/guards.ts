@@ -95,6 +95,8 @@ export async function getUserWithHousehold() {
           name: true,
           type: true,
           settings: true,
+          modulesConfig: true,
+          templateSlug: true,
           subscriptionPlan: true,
           subscriptionStatus: true,
           subscriptionEndsAt: true,

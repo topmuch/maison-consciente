@@ -589,6 +589,9 @@ export default function TabletDisplayPage() {
           {/* Dynamic Background — phase & weather wallpapers */}
           <DynamicBackground weatherCondition={weather?.desc ?? ""} phase={timePhase.phase} />
 
+          {/* Event Overlay — upcoming calendar events notification */}
+          <EventOverlay token={token} />
+
           {/* Ambient glow orbs */}
           <div className="absolute inset-0 pointer-events-none z-0">
             <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-amber-500/[0.04] rounded-full blur-[140px]" />

@@ -1,6 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
+import { getAuthUser, getOptionalAuthUser } from '@/lib/server-auth';
 
 export interface ModuleConfig {
   roomService: { active: boolean; status: 'pending' | 'active' | 'inactive' };
@@ -28,6 +29,10 @@ function safeJsonParse<T>(value: unknown, fallback: T): T {
 
 export async function getModulesConfig(householdId: string): Promise<ModuleConfig> {
   try {
+    const auth = await getOptionalAuthUser();
+    if (auth && householdId !== auth.householdId) {
+      return { ...DEFAULT_MODULES };
+    }
     const household = await db.household.findUnique({
       where: { id: householdId },
       select: { modulesConfig: true },
@@ -44,6 +49,10 @@ export async function toggleModule(
   moduleName: keyof ModuleConfig,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await getAuthUser();
+    if (householdId !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
+    }
     const current = await getModulesConfig(householdId);
     const moduleConfig = current[moduleName];
 
@@ -71,6 +80,10 @@ export async function toggleModule(
 
 export async function getSubscriptionStatus(householdId: string) {
   try {
+    const auth = await getOptionalAuthUser();
+    if (auth && householdId !== auth.householdId) {
+      return { subscriptionPlan: 'free', subscriptionStatus: 'inactive', subscriptionEndsAt: null, stripeCustomerId: null };
+    }
     const household = await db.household.findUnique({
       where: { id: householdId },
       select: {

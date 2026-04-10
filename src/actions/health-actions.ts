@@ -1,6 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
+import { getAuthUser } from '@/lib/server-auth';
 
 /* ═══════════════════════════════════════════════════════
    MAISON CONSCIENTE — Health Server Actions
@@ -13,12 +14,18 @@ export async function getReminders(
   householdId?: string,
 ): Promise<ReminderRecord[]> {
   try {
+    const auth = await getAuthUser();
+    if (householdId && householdId !== auth.householdId) {
+      return [];
+    }
+    const effectiveHouseholdId = auth.householdId;
+
     const where: Record<string, unknown> = {};
     if (type && type !== 'all') {
       where.type = type;
     }
-    if (householdId) {
-      where.householdId = householdId;
+    if (effectiveHouseholdId) {
+      where.householdId = effectiveHouseholdId;
     }
 
     const reminders = await db.reminder.findMany({
@@ -51,6 +58,7 @@ export async function createReminder(input: {
   householdId?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await getAuthUser();
     if (!input.text || !input.triggerAt) {
       return { success: false, error: 'Champs requis manquants' };
     }
@@ -60,16 +68,7 @@ export async function createReminder(input: {
       return { success: false, error: 'Date invalide' };
     }
 
-    // Use provided householdId or fall back to first household
-    let householdId = input.householdId;
-    if (!householdId) {
-      const firstHousehold = await db.household.findFirst({
-        select: { id: true },
-        orderBy: { createdAt: 'asc' },
-      });
-      householdId = firstHousehold?.id;
-    }
-
+    const householdId = auth.householdId;
     if (!householdId) {
       return { success: false, error: 'Aucun foyer trouvé' };
     }
@@ -103,6 +102,7 @@ export async function updateReminder(
   },
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await getAuthUser();
     if (!id) {
       return { success: false, error: 'ID requis' };
     }
@@ -133,6 +133,7 @@ export async function deleteReminder(
   id: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await getAuthUser();
     if (!id) {
       return { success: false, error: 'ID requis' };
     }
@@ -151,6 +152,7 @@ export async function toggleReminderNotified(
   id: string,
 ): Promise<{ success: boolean }> {
   try {
+    const auth = await getAuthUser();
     const reminder = await db.reminder.findUnique({
       where: { id },
       select: { notified: true },

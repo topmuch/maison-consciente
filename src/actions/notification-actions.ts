@@ -11,6 +11,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { db } from '@/lib/db';
+import { getAuthUser } from '@/lib/server-auth';
 import {
   type NotificationType,
   type NotificationPrefs,
@@ -116,9 +117,15 @@ export async function updateNotificationPrefs(
   updates: Partial<NotificationPrefs>,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await getAuthUser();
     const household = await resolveByToken(token);
     if (!household) {
       return { success: false, error: 'Tablette non trouvée' };
+    }
+
+    // Validate householdId matches authenticated user
+    if (household.id !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
     }
 
     // Validate numeric constraints
@@ -163,9 +170,15 @@ export async function triggerProactiveNotification(
   payload: Record<string, string | number | boolean | null>,
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    const auth = await getAuthUser();
     const household = await resolveByToken(token);
     if (!household) {
       return { success: false, error: 'Tablette non trouvée' };
+    }
+
+    // Validate householdId matches authenticated user
+    if (household.id !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
     }
 
     if (!VALID_TYPES.has(type)) {

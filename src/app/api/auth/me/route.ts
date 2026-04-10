@@ -19,6 +19,8 @@ export async function GET() {
       );
     }
 
+    const household = userWithHousehold.household;
+
     return NextResponse.json({
       success: true,
       user: {
@@ -30,17 +32,18 @@ export async function GET() {
         preferences: parseJson(userWithHousehold.preferences, {}),
         householdId: userWithHousehold.householdId,
       },
-      household: userWithHousehold.household
+      household: household
         ? {
-            ...userWithHousehold.household,
+            ...household,
             settings: sanitizeHouseholdSettings(
-              parseJson<Record<string, unknown>>(userWithHousehold.household.settings, {})
+              parseJson<Record<string, unknown>>(household.settings, {})
             ),
-            subscriptionPlan: userWithHousehold.household.subscriptionPlan ?? "free",
-            subscriptionStatus: userWithHousehold.household.subscriptionStatus ?? "inactive",
-            subscriptionEndsAt: userWithHousehold.household.subscriptionEndsAt ?? null,
+            subscriptionPlan: household.subscriptionPlan ?? "free",
+            subscriptionStatus: household.subscriptionStatus ?? "inactive",
+            subscriptionEndsAt: household.subscriptionEndsAt ?? null,
           }
         : null,
+      onboardingCompleted: !!household?.modulesConfig,
     });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

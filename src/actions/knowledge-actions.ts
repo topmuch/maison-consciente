@@ -1,9 +1,14 @@
 'use server';
 
 import { db } from '@/lib/db';
+import { getAuthUser, getOptionalAuthUser } from '@/lib/server-auth';
 
 export async function getKnowledgeItems(householdId: string) {
   try {
+    const auth = await getOptionalAuthUser();
+    if (auth && householdId !== auth.householdId) {
+      return [];
+    }
     return await db.knowledgeBaseItem.findMany({
       where: { householdId, isActive: true },
       orderBy: [{ category: 'asc' }, { question: 'asc' }],
@@ -22,8 +27,12 @@ export async function createKnowledgeItem(input: {
   keywords?: string[];
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await getAuthUser();
     if (!input.question || !input.answer || !input.category || !input.householdId) {
       return { success: false, error: 'Champs requis manquants' };
+    }
+    if (input.householdId !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
     }
     await db.knowledgeBaseItem.create({
       data: {
@@ -51,6 +60,7 @@ export async function updateKnowledgeItem(id: string, updates: {
   isActive?: boolean;
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await getAuthUser();
     const data: Record<string, unknown> = {};
     if (updates.question !== undefined) data.question = updates.question;
     if (updates.answer !== undefined) data.answer = updates.answer;
@@ -68,6 +78,7 @@ export async function updateKnowledgeItem(id: string, updates: {
 
 export async function deleteKnowledgeItem(id: string): Promise<{ success: boolean }> {
   try {
+    const auth = await getAuthUser();
     await db.knowledgeBaseItem.delete({ where: { id } });
     return { success: true };
   } catch {
@@ -77,6 +88,10 @@ export async function deleteKnowledgeItem(id: string): Promise<{ success: boolea
 
 export async function getKnowledgeCategories(householdId: string): Promise<string[]> {
   try {
+    const auth = await getOptionalAuthUser();
+    if (auth && householdId !== auth.householdId) {
+      return [];
+    }
     const items = await db.knowledgeBaseItem.findMany({
       where: { householdId, isActive: true },
       select: { category: true },

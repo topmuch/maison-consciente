@@ -10,6 +10,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { db } from '@/lib/db';
+import { getAuthUser } from '@/lib/server-auth';
 
 /* ── Types ── */
 
@@ -245,6 +246,7 @@ export async function toggleGroceryDisplay(
   itemId: string,
 ): Promise<{ success: boolean; isBought?: boolean }> {
   try {
+    const auth = await getAuthUser();
     const household = await db.household.findUnique({
       where: { displayToken: token },
     });

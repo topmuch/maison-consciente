@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { getAuthUser } from '@/lib/server-auth';
 
 /* ═══════════════════════════════════════════════════════
    MAISON CONSCIENTE — Activity Server Actions
@@ -172,8 +173,12 @@ export async function getActivitiesDashboard(
   category?: string,
 ): Promise<SuccessResponse | ErrorResponse> {
   try {
+    const auth = await getAuthUser();
     if (!householdId) {
       return { success: false, error: 'householdId requis' };
+    }
+    if (householdId !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
     }
 
     const where: Record<string, unknown> = { householdId };
@@ -217,11 +222,16 @@ export async function createActivity(
   },
 ): Promise<SingleSuccessResponse | ErrorResponse> {
   try {
+    const auth = await getAuthUser();
     const parsed = createActivitySchema.safeParse(data);
 
     if (!parsed.success) {
       const firstError = parsed.error.issues[0]?.message ?? 'Données invalides';
       return { success: false, error: firstError };
+    }
+
+    if (parsed.data.householdId !== auth.householdId) {
+      return { success: false, error: 'Foyer invalide' };
     }
 
     const activity = await prisma.activity.create({
@@ -268,6 +278,7 @@ export async function updateActivity(
   }>,
 ): Promise<MutateResponse> {
   try {
+    const auth = await getAuthUser();
     if (!id) {
       return { success: false, error: 'ID requis' };
     }
@@ -312,6 +323,7 @@ export async function deleteActivity(
   id: string,
 ): Promise<MutateResponse> {
   try {
+    const auth = await getAuthUser();
     if (!id) {
       return { success: false, error: 'ID requis' };
     }
@@ -334,6 +346,7 @@ export async function togglePartnerStatus(
   id: string,
 ): Promise<MutateResponse> {
   try {
+    const auth = await getAuthUser();
     if (!id) {
       return { success: false, error: 'ID requis' };
     }
