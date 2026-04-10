@@ -168,10 +168,10 @@ export default function DemoPage() {
               Accueil
             </Link>
             <Link
-              href="/contact"
+              href="/connexion"
               className="px-4 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
             >
-              Contact
+              Connexion
             </Link>
           </div>
         </div>
@@ -555,7 +555,7 @@ export default function DemoPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="/?auth=register"
+                href="/connexion"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-[#020617] rounded-xl font-semibold shadow-[0_0_24px_rgba(245,158,11,0.2)] hover:shadow-[0_0_40px_rgba(245,158,11,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
                 Essai gratuit 14 jours <ChevronRight size={18} />
@@ -588,8 +588,8 @@ export default function DemoPage() {
               <Link href="/demo" className="text-xs text-[#f59e0b]/80 hover:text-[#f59e0b] transition-colors">
                 Démo
               </Link>
-              <Link href="/contact" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Contact
+              <Link href="/connexion" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
+                Connexion
               </Link>
             </div>
             <p className="text-xs text-[#475569]">

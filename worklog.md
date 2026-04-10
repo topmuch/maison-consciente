@@ -1632,3 +1632,22 @@ Stage Summary:
 - B4 security fix: 8 server action mutations now verify household ownership before modification
 - All 6 production blockers: ✅ RESOLVED
 - Updated module completion estimates: Dashboard 95%, Superadmin 95%, Onboarding 95%, PWA 80%
+
+---
+Task ID: routing-restructure
+Agent: Main
+Task: Create 3 public routes: / (landing), /demo (keep), /connexion (auth)
+
+Work Log:
+- Rewrote src/app/page.tsx: Full landing page with navbar, hero, "How it works", experiences grid, testimonials, CTA, footer
+- Created src/app/connexion/page.tsx: Wraps AuthPage with back link to homepage
+- Updated src/app/demo/page.tsx: Changed "Contact" links to "Connexion", updated CTA href from "/?auth=register" to "/connexion"
+- Verified middleware: Only /dashboard/* is protected; /, /demo, /connexion are all public
+- Dev server: GET / 200 (compiles cleanly)
+- ESLint: 0 errors
+
+Stage Summary:
+- / → Landing page (public homepage with gold luxury design)
+- /demo → Existing demo page (untouched, links updated to /connexion)
+- /connexion → Auth page (login/register with back button)
+- All 3 routes are public (no auth required)
