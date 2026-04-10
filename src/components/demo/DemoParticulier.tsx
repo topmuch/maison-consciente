@@ -26,7 +26,7 @@ import {
   QrCode,
 } from 'lucide-react';
 import { useMaellisVoice } from '@/hooks/useMaellisVoice';
-import { GeminiVoiceOrb } from '@/components/demo/GeminiVoiceOrb';
+import { AudioOrb } from '@/components/demo/AudioOrb';
 
 /* ═══════════════════════════════════════════════════════════════
    MOCK DATA
@@ -890,9 +890,8 @@ export function DemoParticulier({ onBack }: { onBack: () => void }) {
           8. GEMINI LIVE VOICE ORB (real-time AI conversation)
           ═══════════════════════════════════════════════════════════ */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <GeminiVoiceOrb
+        <AudioOrb
           systemPrompt="Tu es Maellis, l'assistant familial intelligent de la famille Martin. Tu es poli, chaleureux et professionnel. Tu parles toujours en français. Tu aides Paul et sa famille avec leur maison intelligente, leurs recettes, leurs courses, la santé, et le bien-être familial. Tu connais les membres : Paul (père), Marie (mère), Pierre (fils). Tu es concis mais chaleureux."
-          voice="Charon"
         />
       </div>
 

@@ -28,7 +28,7 @@ import {
   PartyPopper,
 } from 'lucide-react';
 import { useMaellisVoice } from '@/hooks/useMaellisVoice';
-import { GeminiVoiceOrb } from '@/components/demo/GeminiVoiceOrb';
+import { AudioOrb } from '@/components/demo/AudioOrb';
 
 /* ═══════════════════════════════════════════════════════════════
    MOCK DATA
@@ -1236,9 +1236,8 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
          7. GEMINI LIVE VOICE ORB (real-time AI conversation)
          ═══════════════════════════════════════════════════════ */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <GeminiVoiceOrb
+        <AudioOrb
           systemPrompt="Tu es Maellis, la concierge virtuelle intelligente de la Villa Azur à Nice. Tu es poli, chaleureuse et professionnelle. Tu parles toujours en français. Tu aides Sophie, la voyageuse, avec son séjour : check-in, check-out, activités, restaurants, services, et urgences. Tu connais la villa et ses équipements. Tu es concis mais chaleureuse. L'hôte est Isabelle. Tu peux proposer des services payants (ménage, chef, transfert) et des late check-outs quand le calendrier le permet."
-          voice="Charon"
         />
       </div>
 

@@ -2219,3 +2219,20 @@ Stage Summary:
 - Proxy now loads GEMINI API key from database (admin panel config) ✅
 - Voice assistant should no longer loop — key is available, state machine fixed
 - Files modified: useGeminiLive.ts, GeminiVoiceOrb.tsx, api-key route, .env symlink, DB seed
+---
+Task ID: 1
+Agent: Main Agent
+Task: Implement reliable audio mode for demo using ASR + LLM + TTS pipeline
+
+Work Log:
+- Created `/api/demo/voice` API route with full ASR → LLM → TTS pipeline using z-ai-web-dev-sdk
+- Created `useAudioAssistant` hook with microphone capture, WAV encoding, API call, and audio playback
+- Created `AudioOrb.tsx` component with push-to-talk UI (recording, processing, speaking states)
+- Replaced `GeminiVoiceOrb` with `AudioOrb` in DemoSelection, DemoParticulier, and DemoAirbnb
+- ESLint passes cleanly, all compilations successful
+
+Stage Summary:
+- Pipeline: Microphone → WAV (16kHz mono) → POST /api/demo/voice → ASR (z-ai-web-dev-sdk) → LLM (z-ai-web-dev-sdk) → TTS voice "jam" (z-ai-web-dev-sdk) → Play audio
+- New files: src/app/api/demo/voice/route.ts, src/hooks/useAudioAssistant.ts, src/components/demo/AudioOrb.tsx
+- Updated files: DemoSelection.tsx, DemoParticulier.tsx, DemoAirbnb.tsx (GeminiVoiceOrb → AudioOrb)
+- AudioOrb features: push-to-talk, text chat fallback, animated orb with state-dependent visuals

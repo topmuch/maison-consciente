@@ -15,7 +15,7 @@ import {
   Star,
   Sun,
 } from 'lucide-react';
-import { GeminiVoiceOrb } from '@/components/demo/GeminiVoiceOrb';
+import { AudioOrb } from '@/components/demo/AudioOrb';
 
 interface DemoSelectionProps {
   onSelectParticulier: () => void;
@@ -262,8 +262,7 @@ export function DemoSelection({ onSelectParticulier, onSelectAirbnb }: DemoSelec
           transition={{ duration: 0.8, delay: 0.3, ease: easeOut }}
           className="mb-10 sm:mb-14"
         >
-          <GeminiVoiceOrb
-            voice="Charon"
+          <AudioOrb
             systemPrompt="Tu es Maellis, l'assistant intelligent de Maison Consciente. Tu es poli, chaleureux et professionnel. Tu parles toujours en français. Tu accueilles les visiteurs et leur présentes les deux démonstrations disponibles : la démo Famille (tablette connectée pour la famille Martin avec santé, recettes, courses) et la démo Hôte Airbnb (Villa Azur à Nice avec QR code viral, activités locales, check-in). Tu es concis mais chaleureux. Si on te demande de choisir, guide-les vers la carte correspondante."
           />
         </motion.div>
