@@ -1651,3 +1651,134 @@ Stage Summary:
 - /demo → Existing demo page (untouched, links updated to /connexion)
 - /connexion → Auth page (login/register with back button)
 - All 3 routes are public (no auth required)
+
+---
+Task ID: 2
+Agent: Sub-agent (general-purpose)
+Task: Create Gemini Live Voice WebSocket proxy mini-service
+
+Work Log:
+- Created directory `mini-services/gemini-voice/` with 3 files:
+  - `package.json` — gemini-voice-proxy, ws ^8.x, @types/ws, @types/bun, `bun --hot index.ts`
+  - `tsconfig.json` — ES2022 target, bundler module resolution, strict mode
+  - `index.ts` — Full WebSocket proxy server (~280 lines)
+- index.ts implementation:
+  - WebSocket server on port 3004 using `ws` library
+  - API key from `process.env.GEMINI_API_KEY` (warns but starts without it)
+  - Default system prompt: Maellis, Maison Consciente assistant (French)
+  - Default voice: "Charon"
+  - Available voices: Aoede, Breeze, Charon, Dan, Fenrir, Kore, Leda, Orus, Puck, Zephyr, Sulafat, Nitro
+  - Connection flow: connected → setup → Gemini connect → setup_complete
+  - Client protocol: setup (JSON), text (JSON), interrupt (JSON), audio (binary PCM)
+  - Server protocol: connected, setup_complete, transcript, response, turn_complete, error, audio_activity
+  - Binary audio forwarding in both directions (client ↔ Gemini)
+  - Text message forwarding: `client_content.turns[].parts[].text`
+  - Interrupt forwarding: `client_content.turns[].parts[].interrupt = true`
+  - Parses Gemini `serverContent.modelTurn.parts[].text` → response messages
+  - Parses Gemini `inputTranscription.text` → transcript messages
+  - Parses Gemini `turnComplete` → turn_complete messages
+  - Parses Gemini `interruptionFeedback` → audio_activity messages
+  - Error handling: catches WS errors, sends error type to client
+  - Auto-reconnect on Gemini disconnect (up to 5 attempts, exponential backoff max 5s)
+  - Cleanup: closes Gemini WS on client disconnect
+  - All logs prefixed with `[Gemini Voice]`
+- Installed dependencies: ws@8.20.0, @types/ws@8.18.1, @types/bun@1.3.11
+- TypeScript type-check passes cleanly (`tsc --noEmit`)
+
+Stage Summary:
+- Mini-service: ✅ `mini-services/gemini-voice/` created and ready
+- Dependencies: ✅ Installed (3 packages)
+- TypeScript: ✅ 0 errors
+- Run command: `cd mini-services/gemini-voice && bun run dev`
+
+---
+Task ID: 3
+Agent: Sub-agent (general-purpose)
+Task: Create useGeminiLive hook for Google Gemini Live voice interaction
+
+Work Log:
+- Read existing voice hooks (useMaellisVoice, useVoiceAssistant, useVoiceResponse, useVoiceCommand) to understand project patterns
+- Created `src/hooks/useGeminiLive.ts` — comprehensive React hook with:
+  - **WebSocket connection**: Connects to `ws(s)://host/?XTransformPort=3004` (auto ws/wss based on page protocol)
+  - **Setup message**: Sends `{type: "setup", voice, systemPrompt}` on connect
+  - **Reconnection**: Exponential backoff (1s → 2s → 4s, max 3 attempts)
+  - **Audio capture**: getUserMedia at 16kHz mono with echo cancellation + noise suppression; ScriptProcessorNode (bufferSize 4096) converts Float32 → Int16 PCM; sends binary frames in real-time via WebSocket
+  - **Audio playback**: StreamingAudioPlayer class manages a queue of Int16Array PCM chunks; converts to Float32, creates AudioBufferSourceNode, schedules with precise timing via nextPlayTime for gapless playback; uses requestAnimationFrame loop for continuous feeding
+  - **State machine**: idle → connecting → connected → listening → processing → speaking → connected; any → error; any → idle
+  - **Message handling**: Handles setup_complete, transcript, response, turn_complete, audio_activity, error; binary frames → audio playback queue
+  - **Fallback**: speak() and stop() use Web Speech API (SpeechSynthesisUtterance, fr-FR, Google/Microsoft voice preference)
+  - **Interrupt**: Stops audio capture, resets player, sends interrupt signal to server
+  - **Text input**: sendText() for text-based interaction mode
+  - **Cleanup**: Full cleanup on unmount — WebSocket close, audio streams stopped, AudioContext closed, player destroyed, SpeechSynthesis cancelled
+  - **SSR safety**: All browser API calls guarded with typeof checks
+  - **Circular dependency resolution**: Uses ref pattern (connectRef, handleMessageRef, stopAudioCaptureRef) to avoid useCallback circular deps
+
+Stage Summary:
+- File created: `src/hooks/useGeminiLive.ts` (~730 lines)
+- TypeScript: ✅ 0 errors
+- ESLint: ✅ 0 errors, 0 warnings
+- Exported types: VoiceState, GeminiLiveConfig, UseGeminiLiveReturn
+- Complements existing mini-service at `mini-services/gemini-voice/`
+
+---
+Task ID: 2
+Agent: subagent-17bbf498
+Task: Create Gemini Live Voice WebSocket proxy mini-service (port 3004)
+
+Work Log:
+- Created `mini-services/gemini-voice/` with package.json, tsconfig.json, index.ts
+- WebSocket server on port 3004 using `ws` library
+- Proxy protocol: client ↔ mini-service ↔ Google Gemini Live API
+- Supports setup (voice + system prompt), text messages, interrupt, binary audio
+- 12 prebuilt voices (Aoede, Breeze, Charon, Dan, Fenrir, Kore, Leda, Orus, Puck, Zephyr, Sulafat, Nitro)
+- Default voice: Charon, Default system prompt: Maellis persona (French)
+- Auto-reconnect with exponential backoff (max 5 attempts)
+- Full error handling and cleanup on disconnect
+
+Stage Summary:
+- Files created: 3 (package.json, tsconfig.json, index.ts — 450 lines)
+- Dependencies: ws@8.20.0, @types/ws, @types/bun
+- TypeScript: 0 errors
+- Server starts and listens on ws://localhost:3004
+
+---
+Task ID: 3
+Agent: subagent-26862988
+Task: Create useGeminiLive hook for real-time voice interaction
+
+Work Log:
+- Created `src/hooks/useGeminiLive.ts` (~739 lines)
+- WebSocket connection to mini-service via `ws(s)://host/?XTransformPort=3004`
+- Audio capture: getUserMedia → AudioContext(16kHz) → ScriptProcessorNode → Float32→Int16 PCM → WebSocket binary
+- Audio playback: StreamingAudioPlayer class with gapless scheduling via AudioBufferSourceNode
+- State machine: idle → connecting → connected → listening → processing → speaking → connected
+- Message handling: setup_complete, transcript, response, turn_complete, audio_activity, error
+- Fallback: speak()/stop() using Web Speech API (French Google/Microsoft voice)
+- Auto-reconnect with exponential backoff (max 3 attempts)
+- Full cleanup on unmount
+
+Stage Summary:
+- TypeScript: 0 errors, ESLint: 0 errors
+- Exported types: VoiceState, GeminiLiveConfig, UseGeminiLiveReturn
+- Hook interface: connect, disconnect, startListening, stopListening, sendText, interrupt, speak, stop
+
+---
+Task ID: 4-5-6
+Agent: Main
+Task: Create GeminiVoiceOrb component, integrate into DemoSelection, configure .env
+
+Work Log:
+- Created `src/components/demo/GeminiVoiceOrb.tsx` — Stunning push-to-talk orb with 7 visual states
+- Visual states: idle (amber glow), connecting (spinner), connected (green), listening (pulsing rings), processing (purple spinner), speaking (sound waves), error (red)
+- StatusBadge sub-component with animated state indicators
+- Integrated GeminiVoiceOrb into DemoSelection.tsx replacing old Web Speech API button
+- Added GEMINI_API_KEY to .env
+- Fixed sendText message type mismatch (text_input → text)
+- Started both services: Next.js (port 3000) + Gemini Voice (port 3004)
+- Verified: ESLint 0 errors, /demo returns HTTP 200
+
+Stage Summary:
+- New component: GeminiVoiceOrb with full state visualization
+- DemoSelection updated: Old voice button → Gemini Live voice orb
+- Architecture: Browser ↔ Caddy(:81) ↔ GeminiVoiceProxy(:3004) ↔ Google Gemini Live API
+- For production: Set GEMINI_API_KEY in .env to enable real voice conversations

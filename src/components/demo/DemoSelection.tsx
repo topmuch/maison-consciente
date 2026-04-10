@@ -6,7 +6,6 @@ import {
   Building2,
   ChevronRight,
   Sparkles,
-  Mic,
   QrCode,
   Shield,
   Utensils,
@@ -16,7 +15,7 @@ import {
   Star,
   Sun,
 } from 'lucide-react';
-import { useMaellisVoice } from '@/hooks/useMaellisVoice';
+import { GeminiVoiceOrb } from '@/components/demo/GeminiVoiceOrb';
 
 interface DemoSelectionProps {
   onSelectParticulier: () => void;
@@ -149,15 +148,11 @@ function DotPattern() {
    DEMO SELECTION — LUXE LUMINEUX ✦ WAHOO EDITION
    ═══════════════════════════════════════════════════════════════ */
 export function DemoSelection({ onSelectParticulier, onSelectAirbnb }: DemoSelectionProps) {
-  const { speak, isSpeaking } = useMaellisVoice();
-
   const handleSelectParticulier = () => {
-    speak('Bienvenue dans la démo Famille Martin. Découvrez votre assistant familial intelligent.');
     onSelectParticulier();
   };
 
   const handleSelectAirbnb = () => {
-    speak('Bienvenue dans la démo Villa Azur à Nice. Découvrez votre concierge de voyage virtuel.');
     onSelectAirbnb();
   };
 
@@ -260,120 +255,17 @@ export function DemoSelection({ onSelectParticulier, onSelectAirbnb }: DemoSelec
           </motion.p>
         </motion.div>
 
-        {/* ─── CENTRE DE COMMANDE MAELLIS — DRAMATIC VOICE BUTTON ─── */}
+        {/* ─── CENTRE DE COMMANDE MAELLIS — GEMINI LIVE VOICE ─── */}
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.3, ease: easeOut }}
           className="mb-10 sm:mb-14"
         >
-          <motion.button
-            onClick={() =>
-              speak(
-                "Bonjour ! Je suis Maellis, votre assistant intelligent. Choisissez une expérience pour me découvrir. Famille ou Hôte Airbnb ?",
-              )
-            }
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            className={`relative w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center border-4 border-white/90 transition-all duration-300 ${
-              isSpeaking
-                ? 'bg-gradient-to-br from-red-400 to-red-600'
-                : 'bg-gradient-to-br from-amber-400 via-orange-400 to-amber-500'
-            }`}
-            style={{
-              boxShadow: isSpeaking
-                ? '0 0 80px rgba(239, 68, 68, 0.35), 0 0 40px rgba(239, 68, 68, 0.2), 0 25px 70px rgba(239, 68, 68, 0.25)'
-                : '0 0 80px rgba(245, 158, 11, 0.35), 0 0 40px rgba(245, 158, 11, 0.2), 0 25px 70px rgba(245, 158, 11, 0.25)',
-            }}
-          >
-            {/* Triple Pulsing Rings */}
-            <motion.span
-              animate={{
-                scale: [1, 1.35, 1],
-                opacity: [0.4, 0, 0.4],
-              }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-              className={`absolute inset-0 rounded-full ${
-                isSpeaking
-                  ? 'bg-gradient-to-br from-red-400 to-red-600'
-                  : 'bg-gradient-to-br from-amber-400 to-orange-500'
-              }`}
-            />
-            <motion.span
-              animate={{
-                scale: [1, 1.6, 1],
-                opacity: [0.25, 0, 0.25],
-              }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
-              className={`absolute inset-0 rounded-full ${
-                isSpeaking
-                  ? 'bg-gradient-to-br from-red-400 to-red-600'
-                  : 'bg-gradient-to-br from-amber-400 to-orange-500'
-              }`}
-            />
-            <motion.span
-              animate={{
-                scale: [1, 1.9, 1],
-                opacity: [0.15, 0, 0.15],
-              }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
-              className={`absolute inset-0 rounded-full ${
-                isSpeaking
-                  ? 'bg-gradient-to-br from-red-300 to-red-500'
-                  : 'bg-gradient-to-br from-amber-300 to-orange-400'
-              }`}
-            />
-
-            {/* Inner content */}
-            <div className="relative z-10">
-              {isSpeaking ? (
-                <div className="flex items-end gap-1.5 h-12">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-2 bg-white rounded-full"
-                      animate={{ height: [8, 32, 8, 20, 8] }}
-                      transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        delay: i * 0.1,
-                      }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Mic className="w-14 h-14 sm:w-16 sm:h-16 text-white drop-shadow-lg" />
-              )}
-            </div>
-          </motion.button>
-
-          {/* Prominent label */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="text-center mt-5"
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200/60 shadow-sm">
-              {isSpeaking ? (
-                <>
-                  <motion.span
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 0.8, repeat: Infinity }}
-                    className="w-2 h-2 rounded-full bg-red-400"
-                  />
-                  <span className="text-sm font-semibold text-red-500">Maellis parle...</span>
-                </>
-              ) : (
-                <>
-                  <Mic className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="text-sm font-semibold text-amber-600">
-                    Centre de Commande — Appuyez pour parler
-                  </span>
-                </>
-              )}
-            </span>
-          </motion.p>
+          <GeminiVoiceOrb
+            voice="Charon"
+            systemPrompt="Tu es Maellis, l'assistant intelligent de Maison Consciente. Tu es poli, chaleureux et professionnel. Tu parles toujours en français. Tu accueilles les visiteurs et leur présentes les deux démonstrations disponibles : la démo Famille (tablette connectée pour la famille Martin avec santé, recettes, courses) et la démo Hôte Airbnb (Villa Azur à Nice avec QR code viral, activités locales, check-in). Tu es concis mais chaleureux. Si on te demande de choisir, guide-les vers la carte correspondante."
+          />
         </motion.div>
 
         {/* ─── TITLE WITH SPARKLE EFFECT ─── */}
