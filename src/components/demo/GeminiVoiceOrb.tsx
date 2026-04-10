@@ -442,7 +442,7 @@ export function GeminiVoiceOrb({
 
       {/* Response display */}
       <AnimatePresence>
-        {gemini.response && (gemini.state === 'speaking' || gemini.state === 'connected') && (
+        {gemini.response && (
           <motion.div
             variants={transcriptSlide}
             initial="initial"

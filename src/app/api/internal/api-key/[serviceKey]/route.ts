@@ -66,7 +66,7 @@ export async function GET(
     // ── Decrypt the API key ──
     const decrypted = decryptSecret(config.apiKey);
 
-    if (!decrypted || decrypted === config.apiKey) {
+    if (!decrypted) {
       return NextResponse.json(
         { error: 'Failed to decrypt API key' },
         { status: 500 },

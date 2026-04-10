@@ -2197,3 +2197,25 @@ Stage Summary:
 - Structure restored: / (landing) → /demo (both demos) → /connexion (login) → /dashboard/modules (marketplace)
 - New landing page is a clean SaaS design with white background, gold accents, responsive
 - Demo page at /demo works with both DemoParticulier and DemoAirbnb (via DemoSelection component)
+
+---
+Task ID: 1
+Agent: main
+Task: Fix Gemini assistant looping issue in demo
+
+Work Log:
+- Diagnosed root cause: API key unavailable to gemini-voice proxy (port 3004)
+- Found 3 issues: (1) ApiConfig table empty in DB, (2) Proxy CWD had no .env access, (3) Stale closure bug in handleMessage
+- Created symlink: mini-services/gemini-voice/.env → ../../.env (env fallback)
+- Seeded GEMINI API key into ApiConfig DB table (proper architecture)
+- Fixed stale closure: added stateRef pattern to useGeminiLive.ts handleMessage
+- Fixed turn_complete: response now stays visible for 3s before clearing
+- Added connection timeout guard (15s) in useGeminiLive.ts
+- Fixed API route decrypt check: removed incorrect `decrypted === config.apiKey` guard
+- Fixed GeminiVoiceOrb: response now shows in all states when response text exists
+- Restarted gemini-voice proxy — key now loads from DB
+
+Stage Summary:
+- Proxy now loads GEMINI API key from database (admin panel config) ✅
+- Voice assistant should no longer loop — key is available, state machine fixed
+- Files modified: useGeminiLive.ts, GeminiVoiceOrb.tsx, api-key route, .env symlink, DB seed

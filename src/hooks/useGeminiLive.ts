@@ -269,6 +269,9 @@ export function useGeminiLive(config?: GeminiLiveConfig): UseGeminiLiveReturn {
   const reconnectCountRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  // Use stateRef to avoid stale closures in handleMessage
+  const stateRef = useRef<VoiceState>(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   // Audio capture refs
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -320,13 +323,15 @@ export function useGeminiLive(config?: GeminiLiveConfig): UseGeminiLiveReturn {
   const handleMessage = useCallback((event: MessageEvent) => {
     if (!mountedRef.current) return;
 
+    const currentState = stateRef.current;
+
     // Binary data → audio playback
     if (event.data instanceof ArrayBuffer) {
       const int16 = new Int16Array(event.data);
       if (int16.length > 0) {
         playerRef.current?.enqueue(int16);
 
-        if (state !== 'speaking' && state !== 'processing') {
+        if (currentState !== 'speaking' && currentState !== 'processing') {
           setState('speaking');
         }
       }
@@ -345,7 +350,6 @@ export function useGeminiLive(config?: GeminiLiveConfig): UseGeminiLiveReturn {
 
         case 'transcript':
           setTranscript((prev) => {
-            // Append or replace based on whether this is interim or final
             return msg.isFinal ? msg.text : msg.text;
           });
           break;
@@ -355,15 +359,19 @@ export function useGeminiLive(config?: GeminiLiveConfig): UseGeminiLiveReturn {
           break;
 
         case 'turn_complete':
-          // Reset to connected state
-          setTranscript('');
-          setResponse('');
+          // Keep response visible for a moment, then clear
           setState('connected');
+          setTimeout(() => {
+            if (mountedRef.current) {
+              setTranscript('');
+              setResponse('');
+            }
+          }, 3000);
           break;
 
         case 'audio_activity':
           setIsSpeaking(msg.speaking === true);
-          if (msg.speaking === true && state !== 'speaking') {
+          if (msg.speaking === true && currentState !== 'speaking') {
             setState('speaking');
           }
           break;
@@ -376,15 +384,27 @@ export function useGeminiLive(config?: GeminiLiveConfig): UseGeminiLiveReturn {
           break;
 
         default:
-          // Ignore unknown message types
           break;
       }
     } catch {
       // Not JSON — ignore
     }
-  }, [state]);
+  }, []);
 
   useEffect(() => { handleMessageRef.current = handleMessage; }, [handleMessage]);
+
+  /* ─── Connection timeout guard ─── */
+  useEffect(() => {
+    if (state === 'connecting') {
+      const timer = setTimeout(() => {
+        if (mountedRef.current && stateRef.current === 'connecting') {
+          setError('Délai de connexion dépassé. Réessayez.');
+          setState('error');
+        }
+      }, 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
 
   /* ─── Audio capture cleanup (defined early for ref) ─── */
 
