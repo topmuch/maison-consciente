@@ -91,6 +91,34 @@ model Household {
   dailyChecks         DailyCheck[]
   stayReviewReports   StayReviewReport[]
   hostAlerts          HostAlert[]
+  guestProfiles       GuestProfile[]
+}
+
+/* ═══ GUEST PROFILE — Mémoire Voyageurs (Hospitalité) ═══ */
+model GuestProfile {
+  id             String   @id @default(uuid())
+  householdId    String
+  guestName      String                           // Nom complet (clé de recherche)
+  email          String?                          // Email si disponible
+  phone          String?                          // Téléphone si disponible
+  nationality     String?                          // Pays d'origine (pour Auto Language Adapt)
+  preferredLang  String   @default("fr-FR")       // Langue préférée
+  visitCount     Int      @default(1)              // Nombre de séjours
+  lastVisitAt    DateTime @default(now())
+  /* ═══ PRÉFÉRENCES ═══ */
+  temperature    String?                          // "froid", "tempéré", "chaud"
+  pillowType     String?                          // "dur", "moyen", "moelleux"
+  dietaryRestrictions String @default("[]")     // JSON array: ["végétarien", "sans gluten"]
+  musicGenre     String?                          // "jazz", "classique", etc.
+  knownInterests String   @default("[]")        // JSON array: ["yoga", "randonnée"]
+  notes          String?                          // Notes libres de l'hôte
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime  @updatedAt
+  household      Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, guestName])
+  @@index([nationality])
+  @@index([lastVisitAt(sort: Desc)])
 }
 
 /* ═══ CHECK-IN / CHECK-OUT DIGITAL (Hospitalité) ═══ */
