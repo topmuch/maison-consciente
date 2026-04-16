@@ -19,7 +19,8 @@ export type AppView =
   | 'billing'
   | 'local-guide'
   | 'hospitality-settings'
-  | 'hospitality-analytics';
+  | 'hospitality-analytics'
+  | 'smart-shop';
 
 interface AppState {
   currentView: AppView;

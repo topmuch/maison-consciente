@@ -99,6 +99,11 @@ model Household {
   familyMembers        FamilyMember[]
   geoFences            GeoFence[]
   locationLogs         LocationLog[]
+  /* ═══ SMART SHOP ═══ */
+  shoppingLists         ShoppingList[]
+  shoppingListItems     ShoppingListItem[]
+  partnerStores         PartnerStore[]
+  priceHistories         PriceHistory[]
 }
 
 /* ═══ GUEST PROFILE — Mémoire Voyageurs (Hospitalité) ═══ */
@@ -894,4 +899,88 @@ model HostAlert {
   @@index([householdId, createdAt(sort: Desc)])
   @@index([status])
   @@index([severity])
+}
+
+/* ═══ SMART SHOP — Liste de courses intelligente ═══ */
+model ShoppingList {
+  id              String   @id @default(uuid())
+  householdId     String
+  name            String   @default("Mes courses")
+  budgetCents     Int      @default(0)              // Budget en centimes (0 = pas de budget)
+  spentCents      Int      @default(0)              // Total des items cochés (achetés)
+  storeName       String?
+  status          String   @default("active")       // "active" | "completed" | "archived"
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  household       Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  items           ShoppingListItem[]
+
+  @@index([householdId, status])
+  @@index([householdId, startedAt(sort: Desc)])
+}
+
+/* ═══ SMART SHOP — Article de la liste de courses ═══ */
+model ShoppingListItem {
+  id              String   @id @default(uuid())
+  householdId     String
+  listId          String
+  barcode         String?
+  productName     String
+  brand           String?
+  priceCents      Int      @default(0)              // Prix unitaire en centimes
+  quantity        Int      @default(1)
+  unit            String   @default("pièce")        // "pièce" | "kg" | "litre" | "pack" | "boîte" | "sachet"
+  category        String?                           // "légumes" | "viande" | "hygiène" | "produits laitiers" | "boulangerie" | "boissons" | "surgelés" | "alimentaire" | "autre"
+  imageUrl        String?
+  isChecked       Boolean  @default(false)          // Coché = dans le panier / acheté
+  checkedAt       DateTime?                         // Quand l'item a été coché
+  suggestedBy     String   @default("user")         // "user" | "ai" | "recipe" | "voice" | "routine"
+  linkedStoreId   String?                           // Partenaire suggéré pour cet item
+  notes           String?                           // Notes libres (ex: "marque X uniquement")
+  scannedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  list            ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  household       Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  linkedStore     PartnerStore?  @relation(fields: [linkedStoreId], references: [id], onDelete: SetNull)
+
+  @@index([listId, checkedAt(sort: Desc)])
+  @@index([listId, isChecked])
+  @@index([householdId, barcode])
+  @@index([productName])
+}
+
+/* ═══ SMART SHOP — Magasin partenaire ═══ */
+model PartnerStore {
+  id                  String   @id @default(uuid())
+  householdId         String
+  name                String                          // "Carrefour", "Leclerc", "Maellis Market"
+  logo                String?                         // URL du logo
+  deliveryApiEndpoint String?                         // URL de l'API de commande (futur)
+  categoriesMapping   String   @default("{}")          // JSON: { "légumes": "fruits-legumes", "viande": "boucherie" }
+  deepLinkTemplate    String?                         // Template URL deep link: "https://...?q={items}"
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  household           Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  shoppingListItems   ShoppingListItem[]
+
+  @@index([householdId, isActive])
+}
+
+/* ═══ SMART SHOP — Historique de prix par barcode ═══ */
+model PriceHistory {
+  id           String   @id @default(uuid())
+  householdId  String
+  barcode      String
+  productName  String
+  priceCents   Int
+  storeName    String?
+  recordedAt   DateTime @default(now())
+  household    Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, barcode])
+  @@index([barcode, recordedAt(sort: Desc)])
 }

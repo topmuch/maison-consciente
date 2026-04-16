@@ -25,6 +25,7 @@ import {
   Key,
   Tablet,
   BarChart3,
+  ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -54,6 +55,7 @@ interface NavItem {
 const HOME_NAV_ITEMS: NavItem[] = [
   { label: 'Tableau de bord', view: 'dashboard', icon: LayoutDashboard },
   { label: 'Zones', view: 'zones', icon: MapPin },
+  { label: 'Smart Shop', view: 'smart-shop', icon: ShoppingCart },
   { label: 'Scanner', view: 'scan', icon: ScanLine },
   { label: 'Historique', view: 'interactions', icon: Clock },
   { label: 'Messages', view: 'messages', icon: MessageSquare, badge: 'unread' },

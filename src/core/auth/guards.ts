@@ -75,6 +75,36 @@ export async function requireHouseholdType(...types: HouseholdType[]) {
 }
 
 /**
+ * Requires a specific module to be active on the household.
+ * Reads Household.modulesConfig JSON to check activation.
+ * Throws "MODULE_NOT_ACTIVE" if module is not enabled.
+ */
+export async function requireModule(moduleId: string) {
+  const authResult = await requireHousehold();
+  const { householdId } = authResult;
+  const household = await db.household.findUnique({
+    where: { id: householdId },
+    select: { modulesConfig: true, subscriptionPlan: true, subscriptionStatus: true },
+  });
+  if (!household) throw new Error("NO_HOUSEHOLD");
+
+  const config = (household.modulesConfig || {}) as Record<string, Record<string, unknown>>;
+  const moduleConfig = config[moduleId];
+
+  // Check if module is active in config
+  if (!moduleConfig || moduleConfig.active !== true) {
+    // Also allow if subscription is "premium" or "enterprise" (all modules included)
+    const plan = household.subscriptionPlan as string | null;
+    if (plan === 'premium' || plan === 'enterprise') {
+      return { ...authResult, householdId, moduleId };
+    }
+    throw new Error("MODULE_NOT_ACTIVE");
+  }
+
+  return { ...authResult, householdId, moduleId };
+}
+
+/**
  * Gets the full user with household relation
  */
 export async function getUserWithHousehold() {

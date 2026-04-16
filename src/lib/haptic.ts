@@ -6,7 +6,7 @@
    100% local — no external dependencies.
    ═══════════════════════════════════════════════════════ */
 
-export type HapticPattern = "light" | "medium" | "heavy" | "success" | "error";
+export type HapticPattern = "light" | "medium" | "heavy" | "success" | "error" | "budget_warning" | "budget_critical";
 
 const PATTERNS: Record<HapticPattern, number | number[]> = {
   light: 10,
@@ -14,6 +14,8 @@ const PATTERNS: Record<HapticPattern, number | number[]> = {
   heavy: [30, 80, 30],
   success: [20, 30, 20],
   error: [100, 50, 100],
+  budget_warning: [15, 40, 15, 40, 15],
+  budget_critical: [100, 50, 100, 50, 200],
 };
 
 /**

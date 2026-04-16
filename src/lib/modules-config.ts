@@ -155,6 +155,25 @@ export const modules: MaellisModule[] = [
       { icon: 'Star', text: 'Benchmark vs moyenne Airbnb', included: true },
     ],
   },
+  {
+    id: 'smart_shop',
+    name: 'Smart Shop',
+    description: 'Scan de courses + suivi budget en temps reel',
+    price: 4.9,
+    priceYearly: 49,
+    popular: true,
+    badge: 'Nouveau',
+    accentColor: 'bg-emerald-500/20',
+    features: [
+      { icon: 'ScanBarcode', text: 'Scan code-barres avec prix auto (OpenFoodFacts)', included: true },
+      { icon: 'Wallet', text: 'Suivi budget en temps reel avec alertes', included: true },
+      { icon: 'BarChart3', text: 'Dashboard statistiques courses', included: true },
+      { icon: 'Lightbulb', text: 'Suggestions alternatives moins cheres', included: true },
+      { icon: 'Download', text: 'Export CSV/TXT des sessions', included: true },
+      { icon: 'Smartphone', text: 'Mode hors-ligne (IndexedDB)', included: true },
+      { icon: 'Vibrate', text: 'Alertes haptiques budget', included: true },
+    ],
+  },
 ];
 
 /* ── Bundles / Packs ── */

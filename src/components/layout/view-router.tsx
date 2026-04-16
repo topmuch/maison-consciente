@@ -79,6 +79,11 @@ const BarcodeScannerModal = dynamic(
   { ssr: false },
 );
 
+const SmartShopView = dynamic(
+  () => import('@/components/smart-shop/smart-shop').then(m => ({ default: m.SmartShop })),
+  { ssr: false, loading: () => <ViewLoader /> },
+);
+
 const AnalyticsPanel = dynamic(
   () => import('@/components/dashboard/analytics-panel').then(m => ({ default: m.AnalyticsPanel })),
   { ssr: false, loading: () => <ViewLoader /> },
@@ -224,6 +229,9 @@ export function ViewRouter() {
 
     case 'hospitality-analytics':
       return <HospitalityAnalytics />;
+
+    case 'smart-shop':
+      return <SmartShopView />;
 
     default:
       return <Dashboard />;
