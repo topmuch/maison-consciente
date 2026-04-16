@@ -5,9 +5,9 @@
    Full session validation happens in layout/api routes.
 
    Protected: /dashboard/*
-   Public: /, /demo/*, /contact, /display/*, /api/auth/*,
-           /api/health, /api/scan, /api/qrcode, /api/sse,
-           /api/display/*, /api/hospitality/*, /api/webhooks/*,
+   Public: /, /demo/*, /contact, /display/*, /guest/*,
+           /api/auth/*, /api/health, /api/scan, /api/qrcode, /api/sse,
+           /api/display/*, /api/hospitality/*, /api/guest/*, /api/webhooks/*,
            /api/cron/*
    ═══════════════════════════════════════════════════════ */
 
@@ -35,6 +35,8 @@ const PUBLIC_API_PATHS = [
   "/api/enrichment",
   "/api/internal", // Internal API for mini-services (key management)
   "/api/demo",     // Demo voice & chat APIs (no auth required for demos)
+  "/api/guest",    // Guest voice session & stream APIs (token-based auth)
+  "/api/location", // Family geolocation tracking (trackingToken-based auth)
 ];
 
 // Static assets

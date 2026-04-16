@@ -40,6 +40,7 @@
     "node_modules",
     "maison-consciente-ref",
     "examples",
-    "skills"
+    "skills",
+    "mini-services"
   ]
 }

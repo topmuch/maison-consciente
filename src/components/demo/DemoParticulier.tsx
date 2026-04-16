@@ -27,6 +27,79 @@ import {
 } from 'lucide-react';
 import { useMaellisVoice } from '@/hooks/useMaellisVoice';
 import { AudioOrb } from '@/components/demo/AudioOrb';
+import { VoiceInterface } from '@/components/demo/VoiceInterface';
+
+/* ═══════════════════════════════════════════════════════════════
+   Réponses simulées par mots-clés (Confort & Sécurité)
+   ═══════════════════════════════════════════════════════════════ */
+const FAMILY_KEYWORDS: Array<{ keywords: string[]; response: string }> = [
+  {
+    keywords: ['bonjour', 'salut', 'bonsoir', 'hello', 'coucou'],
+    response: "Bonjour Paul ! Prêt à contrôler la maison ? Il fait 20 degrés dans le salon. Marie a pris ses médicaments à 10h30. N'oubliez pas les courses !",
+  },
+  {
+    keywords: ['lumière', 'lumieres', 'allumer', 'éteindre', 'light'],
+    response: "J'ai allumé les lumières du salon. La température d'ambiance est de 20 degrés. Voulez-vous que je règle l'éclairage tamisé pour le soir ?",
+  },
+  {
+    keywords: ['température', 'chauffage', 'chaud', 'froid', 'clim'],
+    response: "Il fait actuellement 21 degrés dans le salon et 19 degrés dans les chambres. Le chauffage est en mode automatique. Voulez-vous ajuster ?",
+  },
+  {
+    keywords: ['recette', 'manger', 'dîner', 'déjeuner', 'repas', 'cuisine'],
+    response: '3 recettes sont suggérées pour ce soir : Ratatouille provençale, Quiche aux légumes du jardin, et Crème brûlée pour le dessert. Laquelle vous tente ?',
+  },
+  {
+    keywords: ['courses', 'listes', 'achat', 'supermarché'],
+    response: "Votre liste de courses contient 5 articles : lait, pain, œufs, fruits frais, et fromage. Le montant estimé est 23 euros 50. Voulez-vous que je commande en ligne ?",
+  },
+  {
+    keywords: ['médicament', 'santé', 'rappel', 'traitement'],
+    response: "Prochain rappel de médicaments : Marie à 18 heures. Il s'agit de son traitement quotidien. Je vous rappellerai automatiquement à 17h45.",
+  },
+  {
+    keywords: ['météo', 'temps', 'pluie', 'soleil'],
+    response: "Météo : 21 degrés et ciel dégagé aujourd'hui. Demain, 28 degrés avec nuages et averses possibles l'après-midi. Prévoyez un parapluie !",
+  },
+  {
+    keywords: ['musique', 'radio', 'ambiance', 'son', 'playlist'],
+    response: "L'ambiance forêt tropicale est en cours dans le salon. Radio France Inter est disponible. Je peux aussi lancer votre playlist détente préférée.",
+  },
+  {
+    keywords: ['marie', 'femme', 'épouse'],
+    response: "Marie a posté sur le mur familial à 10h30 que les médicaments ont été pris. Elle a aussi partagé une photo du jardin ce matin.",
+  },
+  {
+    keywords: ['pierre', 'fils', 'enfant'],
+    response: "Pierre est actuellement à l'école. Son bus est prévu à 16h30. Tout va bien !",
+  },
+  {
+    keywords: ['maison', 'contrôler', 'étage', 'pièce'],
+    response: "La maison est active ! Salon : 21 degrés, lumières allumées. Chambres : 19 degrés. Jardin : éclairage automatique à la tombée de la nuit.",
+  },
+  {
+    keywords: ['nuit', 'dormir', 'sommeil', 'bonne nuit'],
+    response: "Mode nuit activé. J'ai baissé le chauffage à 18 degrés, éteint les lumières non essentielles, et verrouillé les portes. Bonne nuit Paul !",
+  },
+  {
+    keywords: ['sécurité', 'alarme', 'caméra', 'porte'],
+    response: "Système de sécurité actif. Porte d'entrée verrouillée. Caméra de jardin en marche. Aucune alerte récente. Tout est calme.",
+  },
+  {
+    keywords: ['aide', 'help', 'que peux', 'fonction'],
+    response: 'Je peux contrôler les lumières, le chauffage, la musique, vous donner la météo, rappeler les médicaments, suggérer des recettes, et gérer les courses. Essayez de me demander quelque chose !',
+  },
+];
+
+function getFamilyResponse(text: string): string {
+  const lower = text.toLowerCase();
+  for (const entry of FAMILY_KEYWORDS) {
+    if (entry.keywords.some((kw) => lower.includes(kw))) {
+      return entry.response;
+    }
+  }
+  return "Je n'ai pas bien compris. Vous pouvez me demander la météo, les lumières, la température, les recettes, les courses, ou l'état de la maison. Essayez encore !";
+}
 
 /* ═══════════════════════════════════════════════════════════════
    MOCK DATA
@@ -199,6 +272,14 @@ export function DemoParticulier({ onBack }: { onBack: () => void }) {
       speak(text);
     },
     [speak],
+  );
+
+  /* ── Réponse simulée vocale par mots-clés ── */
+  const handleVoiceMessage = useCallback(
+    (text: string): string => {
+      return getFamilyResponse(text);
+    },
+    [],
   );
 
   /* ── Action Grid items ── */
@@ -896,7 +977,17 @@ export function DemoParticulier({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════
-          9. FOOTER (Golden divider + visible pulse)
+          9. VOICE INTERFACE (Web Speech API — démo vocale)
+          ═══════════════════════════════════════════════════════════ */}
+      <VoiceInterface
+        mode="particulier"
+        onUserMessage={handleVoiceMessage}
+        position="bottom"
+        welcomeText='Dites "Bonjour" ou appuyez sur le micro pour parler à Maellis !'
+      />
+
+      {/* ═══════════════════════════════════════════════════════════
+          10. FOOTER (Golden divider + visible pulse)
           ═══════════════════════════════════════════════════════════ */}
       <footer className="bg-white mt-auto">
         {/* Golden divider line */}

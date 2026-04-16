@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useMaellisVoice } from '@/hooks/useMaellisVoice';
 import { AudioOrb } from '@/components/demo/AudioOrb';
+import { VoiceInterface } from '@/components/demo/VoiceInterface';
 
 /* ═══════════════════════════════════════════════════════════════
    MOCK DATA
@@ -548,11 +549,80 @@ function ConfirmationToast({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   MAIN COMPONENT — LUXE LUMINEUX (MAXIMUM WAHOO)
+   Réponses simulées par mots-clés (Service & Upsell — Airbnb)
    ═══════════════════════════════════════════════════════════════ */
+const AIRBNB_KEYWORDS: Array<{ keywords: string[]; response: string }> = [
+  {
+    keywords: ['bonjour', 'salut', 'hello', 'bonsoir'],
+    response: "Bienvenue Sophie ! J'espère que votre installation s'est bien passée. Votre villa Azur est prête. Que puis-je faire pour vous ?",
+  },
+  {
+    keywords: ['check-out', 'checkout', 'départ', 'partir', 'quitter'],
+    response: "Souhaitez-vous un late check-out jusqu'à 14h pour seulement 20 euros ? Votre appartement est libre cet après-midi. Cliquez sur Services pour confirmer.",
+  },
+  {
+    keywords: ['service', 'services', 'ménage', 'chef', 'pressing', 'navette'],
+    response: 'Services disponibles : ménage express, chef à domicile avec cuisine traditionnelle, massage, et navette aéroport. Réservez via l\'onglet Services !',
+  },
+  {
+    keywords: ['wifi', 'wi-fi', 'internet', 'code', 'mot de passe'],
+    response: 'Le WiFi est Villa Azur Guest, mot de passe Bienvenue2026. Le code du portail est 4827.',
+  },
+  {
+    keywords: ['météo', 'temps', 'pluie', 'soleil'],
+    response: 'Météo à Nice : 24 degrés, ensoleillé. Temps parfait pour la promenade des Anglais ou le marché Cours Saleya.',
+  },
+  {
+    keywords: ['activité', 'activités', 'sortir', 'visite', 'tourisme'],
+    response: 'Découvrez Nice : la promenade des Anglais, le marché Cours Saleya, le château, le vieux Nice, et bien plus ! Consultez l\'onglet Activités.',
+  },
+  {
+    keywords: ['restaurant', 'manger', 'dîner', 'miam', 'faim'],
+    response: 'Je recommande Chez René Socca dans le vieux Nice pour la socca, et Le Bistrot du Port pour un dîner face à la mer. Réservation conseillée !',
+  },
+  {
+    keywords: ['urgence', 'sos', 'problème', 'help', 'aide', 'pompier'],
+    response: 'En cas d\'urgence : SAMU au 15, police au 17, pompiers au 18. Votre hôte Isabelle est joignable 24h sur 24 via WhatsApp.',
+  },
+  {
+    keywords: ['isabelle', 'hôte', 'propriétaire'],
+    response: 'Votre hôte Isabelle est disponible 24h sur 24 via WhatsApp. Elle habite à 5 minutes de la villa. N\'hésitez pas à la contacter !',
+  },
+  {
+    keywords: ['late checkout', 'prolonger', 'rester plus', '14h'],
+    response: 'Late check-out disponible ! Prolongez jusqu\'à 14h pour seulement 20 euros. Cliquez sur le bouton Services pour confirmer.',
+  },
+  {
+    keywords: ['transport', 'navette', 'aéroport', 'taxi', 'bus'],
+    response: 'Navette aéroport disponible sur demande, 35 euros par trajet. Le bus 99 dessert aussi l\'aéroport depuis la gare. Réservez via Services.',
+  },
+  {
+    keywords: ['merci', 'super', 'génial', 'parfait', 'bien'],
+    response: 'Avec plaisir Sophie ! Je suis là pour rendre votre séjour parfait. N\'hésitez pas si vous avez d\'autres questions !',
+  },
+];
+
+function getAirbnbResponse(text: string): string {
+  const lower = text.toLowerCase();
+  for (const entry of AIRBNB_KEYWORDS) {
+    if (entry.keywords.some((kw) => lower.includes(kw))) {
+      return entry.response;
+    }
+  }
+  return 'Je peux vous aider avec les services, la météo, les activités, le WiFi, ou les urgences. Essayez de me demander quelque chose !';
+}
+
 export function DemoAirbnb({ onBack }: { onBack: () => void }) {
   const { speak, isSpeaking } = useMaellisVoice();
   const handleSpeak = (text: string) => speak(text);
+
+  /* ── Réponse simulée vocale par mots-clés ── */
+  const handleVoiceMessage = useCallback(
+    (text: string): string => {
+      return getAirbnbResponse(text);
+    },
+    [],
+  );
 
   /* ── Simulation State ── */
   const [isSimulating, setIsSimulating] = useState(false);
@@ -1240,6 +1310,16 @@ export function DemoAirbnb({ onBack }: { onBack: () => void }) {
           systemPrompt="Tu es Maellis, la concierge virtuelle intelligente de la Villa Azur à Nice. Tu es poli, chaleureuse et professionnelle. Tu parles toujours en français. Tu aides Sophie, la voyageuse, avec son séjour : check-in, check-out, activités, restaurants, services, et urgences. Tu connais la villa et ses équipements. Tu es concis mais chaleureuse. L'hôte est Isabelle. Tu peux proposer des services payants (ménage, chef, transfert) et des late check-outs quand le calendrier le permet."
         />
       </div>
+
+      {/* ═══════════════════════════════════════════════════════
+         VOICE INTERFACE (Web Speech API — démo vocale)
+         ═══════════════════════════════════════════════════════ */}
+      <VoiceInterface
+        mode="airbnb"
+        onUserMessage={handleVoiceMessage}
+        position="bottom"
+        welcomeText={'Dites "Bonjour" ou appuyez sur le micro pour parler à Maellis !'}
+      />
 
       {/* ═══════════════════════════════════════════════════════
          8. FOOTER

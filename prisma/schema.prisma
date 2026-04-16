@@ -92,6 +92,13 @@ model Household {
   stayReviewReports   StayReviewReport[]
   hostAlerts          HostAlert[]
   guestProfiles       GuestProfile[]
+  /* ═══ CALENDRIER INTELLIGENT ═══ */
+  calendarSources      CalendarSource[]
+  syncedBookings       SyncedBooking[]
+  /* ═══ GÉOLOCALISATION FAMILLE ═══ */
+  familyMembers        FamilyMember[]
+  geoFences            GeoFence[]
+  locationLogs         LocationLog[]
 }
 
 /* ═══ GUEST PROFILE — Mémoire Voyageurs (Hospitalité) ═══ */
@@ -470,6 +477,61 @@ model Soundscape {
   @@index([isActive, householdId])
 }
 
+/* ═══ CALENDRIER INTELLIGENT — Source de synchronisation ═══ */
+model CalendarSource {
+  id            String           @id @default(uuid())
+  householdId   String
+  name          String                              // e.g. "Airbnb", "Booking.com", "Google Calendar"
+  type          String                              // "ical" | "airbnb" | "booking" | "google"
+  url           String?                             // iCal URL (pour type ical)
+  syncToken     String?                             // OAuth token (chiffré, pour types API)
+  syncSecret    String?                             // OAuth secret (chiffré, pour types API)
+  lastSyncAt    DateTime?
+  syncStatus    String           @default("idle")  // "idle" | "syncing" | "error"
+  lastError     String?
+  isActive      Boolean          @default(true)
+  autoSync      Boolean          @default(true)
+  syncInterval  Int              @default(60)       // minutes entre les syncs
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  calendarEvents SyncedBooking[]
+  household     Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, isActive])
+}
+
+/* ═══ CALENDRIER INTELLIGENT — Réservation synchronisée ═══ */
+model SyncedBooking {
+  id               String    @id @default(uuid())
+  householdId      String
+  calendarSourceId String
+  externalId       String                           // ID externe (Airbnb/Booking)
+  guestName        String
+  guestEmail       String?
+  guestPhone       String?
+  checkInDate      DateTime
+  checkOutDate     DateTime
+  numberOfGuests   Int?
+  source           String                           // "airbnb" | "booking" | "google" | "ical"
+  status           String    @default("confirmed")  // "confirmed" | "cancelled" | "completed" | "pending"
+  notes            String?
+  totalPrice       Float?
+  currency         String?
+  listingName      String?                          // Nom du logement sur la plateforme
+  lastSyncedAt     DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  calendarSource   CalendarSource @relation(fields: [calendarSourceId], references: [id], onDelete: Cascade)
+  household        Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, status])
+  @@index([householdId, checkInDate])
+  @@index([calendarSourceId, externalId])
+  @@unique([calendarSourceId, externalId])
+}
+
 /* ═══ CALENDRIER D'ÉVÉNEMENTS ═══ */
 model CalendarEvent {
   id          String   @id @default(uuid())
@@ -648,6 +710,88 @@ model SafeArrival {
 
   @@index([householdId, status])
   @@index([expectedBefore])
+}
+
+/* ═══ FAMILY MEMBER — Membre de la famille (Géolocalisation) ═══ */
+model FamilyMember {
+  id                String    @id @default(uuid())
+  householdId       String
+  userId            String?                           // Lien optionnel vers un User
+  name              String                            // Nom d'affichage
+  role              String    @default("Parent")       // "Parent" | "Child" | "Elderly" | "Other"
+  avatarColor       String    @default("#d4a853")      // Couleur d'avatar pour la carte
+  trackingToken     String    @unique                  // Token unique pour l'API mobile (UUID)
+  consentGiven      Boolean   @default(false)          // Consentement obligatoire pour activer le tracking
+  consentGivenAt    DateTime?                         // Date du consentement
+  consentRevokedAt  DateTime?                         // Date de révocation
+  isActive          Boolean   @default(true)           // Peut être désactivé instantanément
+  lastKnownLat      Float?                            // Dernière latitude connue
+  lastKnownLng      Float?                            // Dernière longitude connue
+  lastKnownAt       DateTime?                         // Timestamp de la dernière position
+  lastKnownAccuracy Float?                            // Précision GPS en mètres
+  currentGeoFenceId String?                           // Zone actuelle (si dans une GeoFence)
+  status            String    @default("offline")      // "home" | "away" | "school" | "work" | "offline" | "en_route"
+  batteryLevel      Int?                              // Niveau de batterie du téléphone (%)
+  expectedHomeBefore DateTime?                         // Heure prévue de retour à la maison
+  autoDeleteDays    Int       @default(7)              // Jours de rétention des logs (RGPD)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  locationLogs      LocationLog[]
+  household         Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, isActive])
+  @@index([trackingToken])
+  @@index([householdId, status])
+  @@index([lastKnownAt(sort: Desc)])
+}
+
+/* ═══ GEO FENCE — Zone géographique définie ═══ */
+model GeoFence {
+  id            String   @id @default(uuid())
+  householdId   String
+  name          String                            // "Maison", "École", "Travail", "Gym"
+  type          String   @default("home")          // "home" | "school" | "work" | "custom"
+  centerLat     Float                             // Latitude du centre
+  centerLng     Float                             // Longitude du centre
+  radiusMeters  Float    @default(200)              // Rayon en mètres (cercle)
+  address       String?                           // Adresse lisible
+  color         String   @default("#22c55e")      // Couleur d'affichage sur la carte
+  isActive      Boolean  @default(true)
+  notifyOnEntry Boolean  @default(true)            // Notification quand un membre entre
+  notifyOnExit  Boolean  @default(false)           // Notification quand un membre sort
+  haSceneOnEntry String?                           // Scène HA à déclencher à l'entrée (ex: "scene.welcome_home")
+  haSceneOnExit  String?                           // Scène HA à déclencher à la sortie
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  household     Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, isActive])
+  @@index([type])
+}
+
+/* ═══ LOCATION LOG — Historique sécurisé de localisation (RGPD) ═══ */
+model LocationLog {
+  id          String   @id @default(uuid())
+  memberId    String
+  householdId String
+  lat         Float                             // Latitude
+  lng         Float                             // Longitude
+  accuracy    Float?                            // Précision GPS en mètres
+  speed       Float?                            // Vitesse en m/s
+  heading     Float?                            // Direction en degrés
+  battery     Int?                              // Niveau de batterie (%)
+ event       String   @default("update")        // "update" | "enter" | "exit" | "idle"
+ geoFenceId  String?                           // Zone concernée (si enter/exit)
+ geoFenceName String?                           // Nom de la zone (snapshot au moment du log)
+ createdAt   DateTime @default(now())
+  expiresAt   DateTime                          // Date de suppression automatique (RGPD)
+  member      FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  household   Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, createdAt(sort: Desc)])
+  @@index([householdId, createdAt(sort: Desc)])
+  @@index([event])
+  @@index([expiresAt])
 }
 
 /* ═══ DAILY CHECK — Audit Quotidien Concierge (Hospitalité) ═══ */
