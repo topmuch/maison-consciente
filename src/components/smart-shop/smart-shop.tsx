@@ -25,12 +25,19 @@ import {
   FileText,
   FileSpreadsheet,
   TrendingUp,
+  TrendingDown,
   Loader2,
   StickyNote,
   ChefHat,
   AlertTriangle,
   Search,
   Zap,
+  Sparkles,
+  Bell,
+  BellRing,
+  Globe,
+  ExternalLink,
+  Minus,
 } from 'lucide-react';
 import BarcodeScannerModal from '@/components/shared/barcode-scanner-modal';
 import { CategoryChart } from '@/components/smart-shop/category-chart';
@@ -241,12 +248,23 @@ function ListItemRow({
   onToggle,
   onEdit,
   onDelete,
+  partnerStores,
 }: {
   item: ShoppingListItem;
   onToggle: (itemId: string) => void;
   onEdit: (item: ShoppingListItem) => void;
   onDelete: (itemId: string) => void;
+  partnerStores: Array<{ name: string; deepLinkTemplate: string | null }>;
 }) {
+  // Build deep link from first available partner store
+  const deepLink = (() => {
+    if (!item.linkedStore?.deepLinkTemplate) {
+      const store = partnerStores.find(s => s.deepLinkTemplate);
+      if (!store) return null;
+      return store.deepLinkTemplate!.replace('{query}', encodeURIComponent(item.productName));
+    }
+    return item.linkedStore.deepLinkTemplate.replace('{query}', encodeURIComponent(item.productName));
+  })();
   return (
     <motion.div
       layout
@@ -336,8 +354,22 @@ function ListItemRow({
         </span>
       )}
 
-      {/* Edit + Delete — visible on hover */}
+      {/* Price trend arrow for items with barcode */}
+      {item.barcode && !item.isChecked && (
+        <PriceTrendIndicator barcode={item.barcode} priceTrend={null} />
+      )}
+
+      {/* Edit + Delete + Deep-link — visible on hover */}
       <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        {deepLink && !item.isChecked && (
+          <button
+            onClick={(e) => { e.stopPropagation(); window.open(deepLink, '_blank', 'noopener'); triggerHaptic('light'); }}
+            className="p-1.5 rounded-lg text-[#64748b] hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+            title="Commander en ligne"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        )}
         <button
           onClick={() => onEdit(item)}
           className="p-1.5 rounded-lg text-[#64748b] hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
@@ -699,7 +731,224 @@ interface RecipeMatchData {
 }
 
 /* ═══════════════════════════════════════════════════════
-   PHASE 2 — RECIPE MATCHER MODAL
+   PHASE 3 — Types
+   ═══════════════════════════════════════════════════════ */
+
+interface PriceTrendData {
+  barcode: string;
+  prices: Array<{ priceCents: number; recordedAt: string }>;
+  trend: 'up' | 'down' | 'stable';
+  avgPriceCents: number;
+  minPriceCents: number;
+  maxPriceCents: number;
+}
+
+interface AISuggestion {
+  productName: string;
+  category: string;
+  reason: string;
+  confidence: number;
+}
+
+interface ExternalRecipeResult {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  area: string | null;
+  category: string | null;
+  tags: string[];
+  ingredients: string[];
+  instructions: string;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 3 — PRICE TREND INDICATOR
+   ═══════════════════════════════════════════════════════ */
+
+function PriceTrendIndicator({ barcode, priceTrend }: { barcode: string; priceTrend: PriceTrendData | null }) {
+  const [trend, setTrend] = useState<PriceTrendData | null>(priceTrend);
+  const [loading, setLoading] = useState(!priceTrend);
+
+  useEffect(() => {
+    if (priceTrend) { setTrend(priceTrend); setLoading(false); return; }
+    if (!barcode) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/smart-shop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'price-trend', barcode }),
+        });
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setTrend(data.trend || null);
+        }
+      } catch { /* silent */ }
+      finally { if (!cancelled) setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [barcode, priceTrend]);
+
+  if (loading) return <Loader2 className="w-3 h-3 text-[#475569] animate-spin shrink-0" />;
+  if (!trend || trend.trend === 'stable') return null;
+
+  const isUp = trend.trend === 'up';
+  return (
+    <span className="shrink-0 relative group/trend" title={`${isUp ? 'Prix en hausse' : 'Prix en baisse'} — moy. ${centsToEuro(trend.avgPriceCents)}`}>
+      {isUp
+        ? <TrendingUp className="w-3.5 h-3.5 text-red-400" />
+        : <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />
+      }
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded-lg bg-black/90 border border-white/[0.08] text-[9px] text-[#e2e8f0] whitespace-nowrap opacity-0 group-hover/trend:opacity-100 transition-opacity pointer-events-none z-10">
+        {trend.prices.length} relevés · moy. {centsToEuro(trend.avgPriceCents)}
+      </span>
+    </span>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 3 — AI SUGGESTIONS PANEL
+   ═══════════════════════════════════════════════════════ */
+
+function AISuggestionsPanel({
+  listId,
+  onAddItem,
+}: {
+  listId: string;
+  onAddItem: (data: {
+    productName: string;
+    priceCents: number;
+    quantity: number;
+    unit: string;
+    category: string;
+    suggestedBy: string;
+  }) => Promise<void>;
+}) {
+  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+
+  const fetchSuggestions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/smart-shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ai-suggestions', listId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSuggestions(data.suggestions || []);
+      }
+    } catch { /* silent */ }
+    finally { setLoading(false); }
+  }, [listId]);
+
+  const handleRefresh = useCallback(() => {
+    setCollapsed(false);
+    setAddedItems(new Set());
+    fetchSuggestions();
+  }, [fetchSuggestions]);
+
+  const handleAdd = useCallback(async (suggestion: AISuggestion) => {
+    setAddedItems(prev => new Set(prev).add(suggestion.productName));
+    try {
+      await onAddItem({
+        productName: suggestion.productName,
+        priceCents: 0,
+        quantity: 1,
+        unit: 'pièce',
+        category: suggestion.category || 'autre',
+        suggestedBy: 'ai',
+      });
+      triggerHaptic('success');
+      toast.success(`${suggestion.productName} ajouté (IA)`);
+    } catch {
+      setAddedItems(prev => { const n = new Set(prev); n.delete(suggestion.productName); return n; });
+    }
+  }, [onAddItem]);
+
+  return (
+    <div className="glass rounded-xl overflow-hidden inner-glow">
+      <button
+        onClick={() => { if (collapsed) handleRefresh(); else setCollapsed(true); }}
+        className="w-full flex items-center justify-between p-3 hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-purple-500/10 rounded-lg">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          </div>
+          <span className="text-xs font-medium text-foreground">Suggestions IA</span>
+          {suggestions.length > 0 && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400 font-semibold">{suggestions.length}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {!collapsed && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => { e.stopPropagation(); handleRefresh(); }}
+              className="p-1 rounded text-[#64748b] hover:text-purple-400 transition-colors"
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="text-[9px]">Refresh</span>}
+            </motion.button>
+          )}
+          <motion.div animate={{ rotate: collapsed ? 0 : 180 }} transition={{ duration: 0.2 }}>
+            <ChevronRight className="w-3.5 h-3.5 text-[#64748b]" />
+          </motion.div>
+        </div>
+      </button>
+      <AnimatePresence initial={false}>
+        {!collapsed && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+            <div className="px-3 pb-3 max-h-56 overflow-y-auto scrollbar-luxe">
+              {loading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                  <span className="ml-2 text-[10px] text-[#64748b]">Analyse en cours...</span>
+                </div>
+              ) : suggestions.length === 0 ? (
+                <div className="text-center py-4">
+                  <Sparkles className="w-5 h-5 text-[#475569] mx-auto mb-1.5" />
+                  <p className="text-xs text-[#64748b]">Aucune suggestion disponible</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {suggestions.map((s, i) => (
+                    <motion.div key={s.productName} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.03] transition-colors group"
+                    >
+                      <span className="text-sm shrink-0">{getCategoryIcon(s.category)}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs text-[#e2e8f0] truncate block">{s.productName}</span>
+                        <span className="text-[9px] text-[#64748b] truncate block">{s.reason}</span>
+                      </div>
+                      <span className="text-[9px] px-1 py-0.5 rounded bg-purple-500/10 text-purple-400 shrink-0">{Math.round(s.confidence * 100)}%</span>
+                      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                        onClick={() => handleAdd(s)} disabled={addedItems.has(s.productName)}
+                        className="p-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 disabled:opacity-30 transition-colors shrink-0"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 2 — RECIPE MATCHER MODAL (enhanced with External tab)
    ═══════════════════════════════════════════════════════ */
 
 function RecipeMatcherModal({
@@ -711,15 +960,17 @@ function RecipeMatcherModal({
   onClose: () => void;
   onInjected: () => void;
 }) {
+  const [recipeTab, setRecipeTab] = useState<'local' | 'external'>('local');
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<RecipeResult[]>([]);
+  const [externalResults, setExternalResults] = useState<ExternalRecipeResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeResult | null>(null);
   const [matchData, setMatchData] = useState<RecipeMatchData | null>(null);
   const [matching, setMatching] = useState(false);
   const [injecting, setInjecting] = useState(false);
 
-  // Search recipes
+  // Search local recipes
   const handleSearch = useCallback(async () => {
     setSearching(true);
     try {
@@ -739,32 +990,71 @@ function RecipeMatcherModal({
     }
   }, [query]);
 
-  // Auto-search on mount (show all recipes)
-  useEffect(() => {
-    const doSearch = async () => {
-      setSearching(true);
-      try {
-        const res = await fetch('/api/smart-shop', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'recipe-search', query: '' }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setSearchResults(data.recipes || []);
-        }
-      } catch {
-        toast.error('Erreur lors de la recherche');
-      } finally {
-        setSearching(false);
+  // Search external recipes (TheMealDB)
+  const handleExternalSearch = useCallback(async () => {
+    setSearching(true);
+    try {
+      const res = await fetch('/api/smart-shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'recipe-external', query: query.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setExternalResults(data.recipes || []);
       }
-    };
-    doSearch();
-  }, []);
+    } catch {
+      toast.error('Erreur lors de la recherche externe');
+    } finally {
+      setSearching(false);
+    }
+  }, [query]);
 
-  // Match recipe against list
+  // Combined search based on active tab
+  const handleSearchAll = useCallback(() => {
+    if (recipeTab === 'external') handleExternalSearch();
+    else handleSearch();
+  }, [recipeTab, handleSearch, handleExternalSearch]);
+
+  // Auto-search on mount
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]);
+
+  // Match recipe against list (works for both local & external)
   const handleMatch = useCallback(async (recipe: RecipeResult) => {
     setSelectedRecipe(recipe);
+    setMatching(true);
+    try {
+      const res = await fetch('/api/smart-shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'recipe-match',
+          listId,
+          recipeId: recipe.id,
+          ingredients: recipe.ingredients,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMatchData(data.match || null);
+        triggerHaptic('medium');
+      }
+    } catch {
+      toast.error('Erreur lors du matching');
+    } finally {
+      setMatching(false);
+    }
+  }, [listId]);
+
+  // Match external recipe
+  const handleMatchExternal = useCallback(async (recipe: ExternalRecipeResult) => {
+    setSelectedRecipe({
+      id: recipe.id, title: recipe.title, description: recipe.description,
+      difficulty: '', prepTimeMin: 0, cookTimeMin: 0, servings: 0,
+      ingredients: recipe.ingredients, steps: [], tags: recipe.tags || [],
+    });
     setMatching(true);
     try {
       const res = await fetch('/api/smart-shop', {
@@ -868,24 +1158,42 @@ function RecipeMatcherModal({
           </button>
         </div>
 
+        {/* Tab switcher: Locales / Externes */}
+        {!selectedRecipe && (
+          <div className="flex items-center gap-2 px-5 pt-4 shrink-0">
+            <button
+              onClick={() => setRecipeTab('local')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${recipeTab === 'local' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-white/[0.04] text-[#64748b] border border-white/[0.06] hover:border-white/[0.12]'}`}
+            >
+              <ChefHat className="w-3 h-3" /> Locales
+            </button>
+            <button
+              onClick={() => { setRecipeTab('external'); if (externalResults.length === 0) handleExternalSearch(); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${recipeTab === 'external' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-white/[0.04] text-[#64748b] border border-white/[0.06] hover:border-white/[0.12]'}`}
+            >
+              <Globe className="w-3 h-3" /> Externes
+            </button>
+          </div>
+        )}
+
         {/* Search bar */}
         {!selectedRecipe && (
-          <div className="px-5 pt-4 shrink-0">
+          <div className="px-5 pt-3 shrink-0">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Rechercher une recette..."
+                  placeholder={recipeTab === 'external' ? 'Rechercher sur TheMealDB...' : 'Rechercher une recette...'}
                   className="w-full bg-black/30 border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-sm text-foreground placeholder-[#475569] focus:outline-none focus:border-amber-500/30 transition-colors"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchAll()}
                 />
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleSearch}
+                onClick={handleSearchAll}
                 disabled={searching}
                 className="p-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 transition-colors shrink-0"
               >
@@ -902,7 +1210,7 @@ function RecipeMatcherModal({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-5 scrollbar-luxe">
           {/* Recipe results list */}
-          {!selectedRecipe && (
+          {!selectedRecipe && recipeTab === 'local' && (
             <div className="space-y-2">
               {searchResults.length === 0 && !searching && (
                 <div className="text-center py-8">
@@ -941,6 +1249,59 @@ function RecipeMatcherModal({
                         </span>
                         <span className="text-[9px] text-amber-400/70">
                           {recipe.ingredients.length} ingrédients
+                        </span>
+                      </div>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-2 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors shrink-0 opacity-0 group-hover:opacity-100"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* External recipe results (TheMealDB) */}
+          {!selectedRecipe && recipeTab === 'external' && (
+            <div className="space-y-2">
+              {externalResults.length === 0 && !searching && (
+                <div className="text-center py-8">
+                  <Globe className="w-8 h-8 text-[#475569] mx-auto mb-2" />
+                  <p className="text-xs text-[#64748b]">
+                    Aucune recette externe trouvée
+                  </p>
+                </div>
+              )}
+              {externalResults.map((recipe) => (
+                <motion.div
+                  key={recipe.id}
+                  whileHover={{ scale: 1.005 }}
+                  className="group p-3 rounded-xl border border-white/[0.06] hover:border-amber-500/20 bg-black/20 hover:bg-black/30 transition-all cursor-pointer"
+                  onClick={() => handleMatchExternal(recipe)}
+                >
+                  <div className="flex items-start gap-3">
+                    {recipe.imageUrl && (
+                      <img src={recipe.imageUrl} alt={recipe.title} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {recipe.title}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {(recipe.area || recipe.category) && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
+                            {[recipe.area, recipe.category].filter(Boolean).join(' · ')}
+                          </span>
+                        )}
+                        <span className="text-[9px] text-amber-400/70">
+                          {recipe.ingredients.length} ingrédients
+                        </span>
+                        <span className="text-[9px] text-purple-400/70 flex items-center gap-0.5">
+                          <Globe className="w-2.5 h-2.5" /> TheMealDB
                         </span>
                       </div>
                     </div>
@@ -1305,6 +1666,8 @@ export function SmartShop() {
     updateItemLocal,
     toggleItemLocal,
     recalcBudgetPercent,
+    partnerStores,
+    setPartnerStores,
   } = useSmartShopStore();
 
   // ─── Local state ───
@@ -1380,12 +1743,30 @@ export function SmartShop() {
   }, [activeList]);
 
   // ─────────────────────────────────────────────────────
+  // FETCH PARTNER STORES (Phase 3)
+  // ─────────────────────────────────────────────────────
+  const fetchPartnerStores = useCallback(async () => {
+    try {
+      const res = await fetch('/api/smart-shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get-partner-stores' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPartnerStores(data.stores || []);
+      }
+    } catch { /* silent */ }
+  }, [setPartnerStores]);
+
+  // ─────────────────────────────────────────────────────
   // INITIAL LOAD
   // ─────────────────────────────────────────────────────
   useEffect(() => {
     fetchLists();
     fetchStats();
-  }, [fetchLists, fetchStats]);
+    fetchPartnerStores();
+  }, [fetchLists, fetchStats, fetchPartnerStores]);
 
   // Fetch stock alerts when active list changes
   useEffect(() => {
@@ -1418,6 +1799,69 @@ export function SmartShop() {
     },
     [setActiveList, setLoading]
   );
+
+  // ─────────────────────────────────────────────────────
+  // PHASE 3 STATE
+  // ─────────────────────────────────────────────────────
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const sseRef = useRef<EventSource | null>(null);
+
+  // ─────────────────────────────────────────────────────
+  // SSE REAL-TIME LISTENER (Phase 3)
+  // ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const connectSSE = () => {
+      if (sseRef.current) return;
+      const es = new EventSource('/api/smart-shop/sse');
+      es.addEventListener('smart-shop-update', (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.listId && activeList?.id === data.listId) {
+            if (data.action === 'item-added' || data.action === 'item-toggled' || data.action === 'item-deleted' || data.action === 'recipe-injected') {
+              loadList(activeList.id);
+              fetchStockAlerts();
+            }
+          }
+          if (data.action === 'budget-warning') {
+            toast.warning(data.message || 'Alerte budget');
+            triggerHaptic('error');
+          }
+        } catch { /* silent */ }
+      });
+      es.onerror = () => { es.close(); sseRef.current = null; };
+      sseRef.current = es;
+    };
+    connectSSE();
+    return () => { if (sseRef.current) { sseRef.current.close(); sseRef.current = null; } };
+  }, [activeList?.id, loadList, fetchStockAlerts]);
+
+  // ─────────────────────────────────────────────────────
+  // PUSH NOTIFICATIONS (Phase 3)
+  // ─────────────────────────────────────────────────────
+  const handleTogglePush = useCallback(async () => {
+    if (!activeList) return;
+    setPushLoading(true);
+    try {
+      await fetch('/api/smart-shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'push-stock-alerts', listId: activeList.id }),
+      });
+      await fetch('/api/smart-shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'push-budget-check', listId: activeList.id }),
+      });
+      setPushEnabled(!pushEnabled);
+      triggerHaptic('medium');
+      toast.success(pushEnabled ? 'Notifications désactivées' : 'Notifications activées');
+    } catch {
+      toast.error('Erreur lors de la gestion des notifications');
+    } finally {
+      setPushLoading(false);
+    }
+  }, [activeList, pushEnabled]);
 
   // ─────────────────────────────────────────────────────
   // BUDGET ALERTS (haptic)
@@ -1939,6 +2383,18 @@ export function SmartShop() {
                     </span>
                   )}
                 </div>
+
+                {/* Phase 3 — Push notification toggle */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleTogglePush}
+                  disabled={pushLoading}
+                  className={`p-2 rounded-lg transition-colors ${pushEnabled ? 'bg-purple-500/20 text-purple-400' : 'bg-white/[0.04] text-[#94a3b8] hover:text-purple-400'}`}
+                  title={pushEnabled ? 'Notifications activées' : 'Activer les notifications'}
+                >
+                  {pushLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : pushEnabled ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -2044,6 +2500,14 @@ export function SmartShop() {
               />
             )}
 
+            {/* ─── Phase 3 — AI Suggestions Panel ─── */}
+            {activeList.status === 'active' && (
+              <AISuggestionsPanel
+                listId={activeList.id}
+                onAddItem={handleAddItem}
+              />
+            )}
+
             {/* ─── Items grouped by category ─── */}
             {isLoading ? (
               <div className="glass rounded-xl p-8 inner-glow flex items-center justify-center">
@@ -2098,6 +2562,7 @@ export function SmartShop() {
                                   onToggle={handleToggleItem}
                                   onEdit={handleEditItem}
                                   onDelete={handleDeleteItem}
+                                  partnerStores={partnerStores.map(s => ({ name: s.name, deepLinkTemplate: s.deepLinkTemplate }))}
                                 />
                               ))}
                             </AnimatePresence>
