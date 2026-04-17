@@ -25,7 +25,7 @@ import {
   Sparkles,
   QrCode,
 } from 'lucide-react';
-import { useMaellisVoice } from '@/hooks/useMaellisVoice';
+import { useMaellisVoice, type VoiceProfile } from '@/hooks/useMaellisVoice';
 import { AudioOrb } from '@/components/demo/AudioOrb';
 import { VoiceInterface } from '@/components/demo/VoiceInterface';
 
@@ -265,7 +265,8 @@ function QRCodeFamily() {
    MAIN COMPONENT — LUXE LUMINEUX (ENHANCED WAHOO)
    ═══════════════════════════════════════════════════════════════ */
 export function DemoParticulier({ onBack }: { onBack: () => void }) {
-  const { speak, isSpeaking } = useMaellisVoice();
+  const voiceProfile: VoiceProfile = 'particulier';
+  const { speak, isSpeaking } = useMaellisVoice({ voiceProfile });
 
   const handleSpeak = useCallback(
     (text: string) => {

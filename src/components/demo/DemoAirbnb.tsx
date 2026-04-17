@@ -27,7 +27,7 @@ import {
   CreditCard,
   PartyPopper,
 } from 'lucide-react';
-import { useMaellisVoice } from '@/hooks/useMaellisVoice';
+import { useMaellisVoice, type VoiceProfile } from '@/hooks/useMaellisVoice';
 import { AudioOrb } from '@/components/demo/AudioOrb';
 import { VoiceInterface } from '@/components/demo/VoiceInterface';
 
@@ -613,7 +613,8 @@ function getAirbnbResponse(text: string): string {
 }
 
 export function DemoAirbnb({ onBack }: { onBack: () => void }) {
-  const { speak, isSpeaking } = useMaellisVoice();
+  const voiceProfile: VoiceProfile = 'airbnb';
+  const { speak, isSpeaking } = useMaellisVoice({ voiceProfile });
   const handleSpeak = (text: string) => speak(text);
 
   /* ── Réponse simulée vocale par mots-clés ── */

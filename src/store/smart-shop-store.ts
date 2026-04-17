@@ -33,7 +33,7 @@ export interface ShoppingListItem {
   scannedAt: string;
   createdAt: string;
   updatedAt: string;
-  linkedStore?: { id: string; name: string; logo: string | null } | null;
+  linkedStore?: { id: string; name: string; logo: string | null; deepLinkTemplate?: string | null } | null;
 }
 
 export interface ShoppingList {

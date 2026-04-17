@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Keyboard, X, Volume2, AlertCircle } from 'lucide-react';
-import { useMaellisVoice, type VoiceState } from '@/hooks/useMaellisVoice';
+import { useMaellisVoice, type VoiceState, type VoiceProfile } from '@/hooks/useMaellisVoice';
 
 /* ═══════════════════════════════════════════════════════════════
    VOICE INTERFACE — Interface vocale Maellis
@@ -75,6 +75,9 @@ export function VoiceInterface({
   const [keyboardInput, setKeyboardInput] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Map mode to voice profile
+  const voiceProfile: VoiceProfile = mode === 'airbnb' ? 'airbnb' : mode === 'particulier' ? 'particulier' : 'default';
+
   const {
     voiceState,
     transcript,
@@ -94,6 +97,7 @@ export function VoiceInterface({
   } = useMaellisVoice({
     lang: 'fr-FR',
     autoRestart: false,
+    voiceProfile,
     onTranscript: (text, isFinal) => {
       if (!isFinal) return;
       // Déclencher la réponse simulée

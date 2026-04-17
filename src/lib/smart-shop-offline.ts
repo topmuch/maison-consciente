@@ -176,7 +176,7 @@ class SmartShopOffline {
         const res = await fetch('/api/smart-shop', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'create-session', ...session.data }),
+          body: JSON.stringify({ action: 'create-list', name: session.data.name, budgetCents: session.data.budgetCents, storeName: session.data.storeName }),
         });
         if (res.ok) {
           await this.markSessionSynced(session.id);
@@ -196,7 +196,7 @@ class SmartShopOffline {
         const res = await fetch('/api/smart-shop', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'add-scanned-item', sessionId: item.sessionId, ...item.data }),
+          body: JSON.stringify({ action: 'add-item', listId: item.sessionId, productName: item.data.productName, brand: item.data.brand, priceCents: item.data.priceCents, quantity: item.data.quantity, category: item.data.category, barcode: item.data.barcode }),
         });
         if (res.ok) {
           await this.markItemSynced(item.id);

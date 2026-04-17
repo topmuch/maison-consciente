@@ -11,6 +11,9 @@ export async function GET() {
     }
 
     const connectionId = crypto.randomUUID();
+    if (!sseManager) {
+      return new Response('SSE non disponible', { status: 503 });
+    }
     const stream = sseManager.createStream(connectionId, user.householdId as string);
 
     return new Response(stream, {

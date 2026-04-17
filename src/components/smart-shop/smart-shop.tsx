@@ -38,6 +38,8 @@ import {
   Globe,
   ExternalLink,
   Minus,
+  Tag,
+  Truck,
 } from 'lucide-react';
 import BarcodeScannerModal from '@/components/shared/barcode-scanner-modal';
 import { CategoryChart } from '@/components/smart-shop/category-chart';
@@ -73,6 +75,8 @@ function getSuggestedByStyle(suggestedBy: string | null | undefined): string {
       return 'bg-blue-500/20 text-blue-400';
     case 'recipe':
       return 'bg-green-500/20 text-green-400';
+    case 'promo':
+      return 'bg-rose-500/20 text-rose-400';
     default:
       return 'bg-white/[0.06] text-[#94a3b8]';
   }
@@ -1649,6 +1653,371 @@ function StockAlertsPanel({
 }
 
 /* ═══════════════════════════════════════════════════════
+   PROMO PANEL — Promotions simplifiées
+   ═══════════════════════════════════════════════════════ */
+
+interface PromoItem {
+  id: string;
+  emoji: string;
+  productName: string;
+  discountPercent: number;
+  storeName: string;
+  priceCents: number;
+  category: string;
+  expiresAt: string;
+}
+
+const MOCK_PROMOS: PromoItem[] = [
+  { id: 'promo-1', emoji: '🥛', productName: 'Lait Bio Demi-écrémé 1L', discountPercent: 20, storeName: 'Carrefour Bio', priceCents: 119, category: 'produits-laitiers', expiresAt: '2025-08-15' },
+  { id: 'promo-2', emoji: '🍝', productName: 'Pâtes Barilla Penne Rigate 500g', discountPercent: 30, storeName: 'Intermarché', priceCents: 89, category: 'épicerie', expiresAt: '2025-08-10' },
+  { id: 'promo-3', emoji: '🧀', productName: 'Comté AOP 12 mois 200g', discountPercent: 15, storeName: 'Leclerc', priceCents: 349, category: 'crémerie', expiresAt: '2025-08-20' },
+  { id: 'promo-4', emoji: '🍞', productName: 'Pain au Levain Artisanal', discountPercent: 25, storeName: 'Boulangerie Paul', priceCents: 199, category: 'boulangerie', expiresAt: '2025-08-08' },
+  { id: 'promo-5', emoji: '🫒', productName: 'Huile d\'Olive Extra Vierge 750ml', discountPercent: 20, storeName: 'Auchan', priceCents: 499, category: 'huile-vinaigre', expiresAt: '2025-08-18' },
+  { id: 'promo-6', emoji: '🍓', productName: 'Fraises Gariguette 500g', discountPercent: 40, storeName: 'Monoprix', priceCents: 299, category: 'fruits-légumes', expiresAt: '2025-08-06' },
+];
+
+function PromoPanel({
+  onAddItem,
+}: {
+  onAddItem: (data: {
+    productName: string;
+    priceCents: number;
+    quantity: number;
+    unit: string;
+    category: string;
+    suggestedBy: string;
+  }) => Promise<void>;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+
+  const handleAddPromo = useCallback(async (promo: PromoItem) => {
+    setAddedItems(prev => new Set(prev).add(promo.id));
+    try {
+      await onAddItem({
+        productName: promo.productName,
+        priceCents: promo.priceCents,
+        quantity: 1,
+        unit: 'pièce',
+        category: promo.category,
+        suggestedBy: 'promo',
+      });
+      triggerHaptic('success');
+      toast.success(`${promo.productName} ajouté depuis promo`);
+    } catch {
+      setAddedItems(prev => { const n = new Set(prev); n.delete(promo.id); return n; });
+      toast.error("Erreur lors de l'ajout");
+    }
+  }, [onAddItem]);
+
+  return (
+    <div className="glass rounded-xl overflow-hidden inner-glow">
+      {/* Header */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="w-full flex items-center justify-between p-3 hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-rose-500/10 rounded-lg">
+            <Tag className="w-3.5 h-3.5 text-rose-400" />
+          </div>
+          <span className="text-xs font-medium text-foreground">
+            Promotions du moment
+          </span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-semibold">
+            {MOCK_PROMOS.length}
+          </span>
+        </div>
+        <motion.div
+          animate={{ rotate: collapsed ? 0 : 180 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronRight className="w-3.5 h-3.5 text-[#64748b]" />
+        </motion.div>
+      </button>
+
+      {/* Content */}
+      <AnimatePresence initial={false}>
+        {!collapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3 pb-3 max-h-64 overflow-y-auto scrollbar-luxe">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {MOCK_PROMOS.map((promo, i) => (
+                  <motion.div
+                    key={promo.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="relative flex items-start gap-2 p-2.5 rounded-xl bg-black/20 border border-white/[0.06] hover:border-rose-500/20 transition-colors"
+                  >
+                    {/* Discount badge */}
+                    <span className="absolute top-1.5 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400">
+                      -{promo.discountPercent}%
+                    </span>
+
+                    {/* Product emoji */}
+                    <span className="text-xl shrink-0 mt-0.5">{promo.emoji}</span>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 pr-10">
+                      <p className="text-xs font-medium text-[#e2e8f0] truncate leading-tight">
+                        {promo.productName}
+                      </p>
+                      <p className="text-[9px] text-[#64748b] mt-0.5 truncate">
+                        {promo.storeName}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] text-amber-400 font-semibold">
+                          {centsToEuro(promo.priceCents)}
+                        </span>
+                        <span className="text-[9px] text-[#475569]">
+                          → {centsToEuro(promo.priceCents)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Add button */}
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleAddPromo(promo)}
+                      disabled={addedItems.has(promo.id)}
+                      className="absolute bottom-1.5 right-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 disabled:opacity-30 transition-colors text-[9px] font-medium"
+                    >
+                      {addedItems.has(promo.id) ? '✓ Ajouté' : 'Ajouter'}
+                    </motion.button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOCK CHECKOUT MODAL — Checkout simulé
+   ═══════════════════════════════════════════════════════ */
+
+const MOCK_PARTNER_STORES = [
+  'Carrefour Market Centre-ville',
+  'Intermarché La Chapelle',
+  'Leclerc Saint-Denis',
+  'Monoprix République',
+  'Auchan La Défense',
+];
+
+const DELIVERY_SLOTS = [
+  'Aujourd\'hui 17h-19h',
+  'Demain 9h-11h',
+  'Demain 14h-16h',
+];
+
+function MockCheckoutModal({
+  activeList,
+  onClose,
+  onComplete,
+}: {
+  activeList: ShoppingList;
+  onClose: () => void;
+  onComplete: () => void;
+}) {
+  const [selectedStore, setSelectedStore] = useState(MOCK_PARTNER_STORES[0]);
+  const [selectedSlot, setSelectedSlot] = useState(DELIVERY_SLOTS[0]);
+  const [address, setAddress] = useState('');
+  const [sending, setSending] = useState(false);
+
+  // Items non cochés (à commander)
+  const uncheckedItems = activeList.items.filter(i => !i.isChecked);
+  const totalCents = uncheckedItems.reduce((sum, i) => sum + (i.priceCents * i.quantity), 0);
+
+  const handleConfirm = useCallback(async () => {
+    setSending(true);
+    // Simulation d'envoi (2 secondes)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setSending(false);
+    toast.success(`Commande envoyée vers ${selectedStore} — livraison estimée ${selectedSlot}`);
+    triggerHaptic('success');
+    // Marquer la liste comme terminée
+    onComplete();
+    onClose();
+  }, [selectedStore, selectedSlot, onComplete, onClose]);
+
+  const inputCls =
+    'w-full bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder-[#475569] focus:outline-none focus:border-amber-500/30 transition-colors';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="glass rounded-2xl w-full max-w-md border border-white/[0.08] max-h-[90vh] overflow-hidden"
+      >
+        {/* Mode démo banner */}
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center gap-2">
+          <Zap className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-[10px] font-medium text-amber-400 uppercase tracking-wider">
+            Mode démo — Simulation de commande
+          </span>
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-500/10 rounded-xl">
+              <Truck className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-serif font-semibold text-amber-50">
+                Confirmer la commande
+              </h3>
+              <p className="text-[10px] text-[#64748b]">{activeList.name}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-lg text-[#64748b] hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content — scrollable */}
+        <div className="px-5 pb-5 overflow-y-auto max-h-[60vh] scrollbar-luxe space-y-4">
+          {/* Order summary */}
+          <div>
+            <p className="text-xs font-medium text-[#94a3b8] mb-2">
+              Résumé ({uncheckedItems.length} article{uncheckedItems.length !== 1 ? 's' : ''})
+            </p>
+            <div className="bg-black/20 rounded-xl border border-white/[0.06] divide-y divide-white/[0.04]">
+              {uncheckedItems.length === 0 ? (
+                <div className="p-4 text-center">
+                  <p className="text-xs text-[#64748b]">Aucun article à commander</p>
+                  <p className="text-[10px] text-[#475569] mt-0.5">Cochez les articles que vous ne voulez pas commander</p>
+                </div>
+              ) : (
+                uncheckedItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between px-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-sm shrink-0">{getCategoryIcon(item.category)}</span>
+                      <span className="text-xs text-[#e2e8f0] truncate">{item.productName}</span>
+                      {item.quantity > 1 && (
+                        <span className="text-[9px] text-[#64748b] bg-white/[0.04] px-1 py-0.5 rounded shrink-0">
+                          ×{item.quantity}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-amber-400 font-medium shrink-0 ml-2">
+                      {item.priceCents > 0 ? centsToEuro(item.priceCents * item.quantity) : '—'}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+            {/* Total */}
+            {totalCents > 0 && (
+              <div className="flex items-center justify-between mt-2 px-1">
+                <span className="text-sm font-medium text-[#94a3b8]">Total estimé</span>
+                <span className="text-sm font-semibold text-amber-400">{centsToEuro(totalCents)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Delivery form */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-[#64748b] mb-1 block">Magasin partenaire</label>
+              <select
+                value={selectedStore}
+                onChange={(e) => setSelectedStore(e.target.value)}
+                className="w-full bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-amber-500/30 appearance-none cursor-pointer"
+              >
+                {MOCK_PARTNER_STORES.map((s) => (
+                  <option key={s} value={s} className="bg-[#0a0a0f]">{s}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs text-[#64748b] mb-1 block">Créneau de livraison</label>
+              <div className="flex flex-col gap-1.5">
+                {DELIVERY_SLOTS.map((slot) => (
+                  <button
+                    key={slot}
+                    onClick={() => setSelectedSlot(slot)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors text-left ${
+                      selectedSlot === slot
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                        : 'bg-black/20 border-white/[0.06] text-[#94a3b8] hover:border-white/[0.12]'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      selectedSlot === slot ? 'border-emerald-400' : 'border-white/[0.12]'
+                    }`}>
+                      {selectedSlot === slot && <div className="w-2 h-2 rounded-full bg-emerald-400" />}
+                    </div>
+                    <span className="text-xs font-medium">{slot}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-[#64748b] mb-1 block">Adresse de livraison</label>
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="12 Rue de la Paix, 75002 Paris"
+                className={inputCls}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Footer — Confirm button */}
+        <div className="p-5 pt-3 border-t border-white/[0.06] shrink-0">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleConfirm}
+            disabled={sending || uncheckedItems.length === 0}
+            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:from-emerald-600/40 disabled:to-emerald-500/40 text-white py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+          >
+            {sending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Envoi en cours...
+              </>
+            ) : (
+              <>
+                <Truck className="w-4 h-4" />
+                Confirmer la commande
+              </>
+            )}
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
    MAIN SMART SHOP COMPONENT
    ═══════════════════════════════════════════════════════ */
 
@@ -1680,6 +2049,8 @@ export function SmartShop() {
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [stockAlerts, setStockAlerts] = useState<StockAlertItem[]>([]);
   const [stockAlertsLoading, setStockAlertsLoading] = useState(false);
+  const [showPromos, setShowPromos] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   // ─── Refs ───
   const prevBudgetPercent = useRef(budgetPercent);
@@ -1819,7 +2190,7 @@ export function SmartShop() {
           const data = JSON.parse(event.data);
           if (data.listId && activeList?.id === data.listId) {
             if (data.action === 'item-added' || data.action === 'item-toggled' || data.action === 'item-deleted' || data.action === 'recipe-injected') {
-              loadList(activeList.id);
+              loadList(activeList!.id);
               fetchStockAlerts();
             }
           }
@@ -2384,6 +2755,28 @@ export function SmartShop() {
                   )}
                 </div>
 
+                {/* Promos button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowPromos(!showPromos)}
+                  className={`p-2 rounded-lg transition-colors ${showPromos ? 'bg-rose-500/20 text-rose-400' : 'bg-white/[0.04] text-[#94a3b8] hover:text-rose-400'}`}
+                  title="Promotions"
+                >
+                  <Tag className="w-4 h-4" />
+                </motion.button>
+
+                {/* Checkout button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowCheckout(true)}
+                  className={`p-2 rounded-lg transition-colors bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20`}
+                  title="Commander"
+                >
+                  <Truck className="w-4 h-4" />
+                </motion.button>
+
                 {/* Phase 3 — Push notification toggle */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -2498,6 +2891,11 @@ export function SmartShop() {
                 onAddItem={handleAddItem}
                 alertCount={stockAlerts.length}
               />
+            )}
+
+            {/* ─── Promo Panel (active lists only) ─── */}
+            {showPromos && activeList.status === 'active' && (
+              <PromoPanel onAddItem={handleAddItem} />
             )}
 
             {/* ─── Phase 3 — AI Suggestions Panel ─── */}
@@ -2678,6 +3076,17 @@ export function SmartShop() {
               loadList(activeList.id);
               fetchStockAlerts();
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Mock checkout modal */}
+      <AnimatePresence>
+        {showCheckout && activeList && (
+          <MockCheckoutModal
+            activeList={activeList}
+            onClose={() => setShowCheckout(false)}
+            onComplete={handleCompleteList}
           />
         )}
       </AnimatePresence>

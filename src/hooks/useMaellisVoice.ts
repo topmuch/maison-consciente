@@ -20,19 +20,58 @@ export interface VoiceCapabilities {
   ttsSupported: boolean;
 }
 
+/* ── Voice Profile Presets ── */
+export type VoiceProfile = 'particulier' | 'airbnb' | 'default';
+
+export interface VoiceProfileConfig {
+  /** Pitch: lower = warmer, higher = brighter */
+  pitch: number;
+  /** Rate: lower = slower, higher = faster */
+  rate: number;
+  /** Voice name preference (substring match) */
+  voicePreference: string[];
+  /** Description */
+  description: string;
+}
+
+const VOICE_PROFILES: Record<VoiceProfile, VoiceProfileConfig> = {
+  default: {
+    pitch: 1.0,
+    rate: 1.05,
+    voicePreference: ['Google', 'Microsoft'],
+    description: 'Voix neutre',
+  },
+  particulier: {
+    pitch: 0.9,   // Plus grave = plus chaleureux
+    rate: 0.95,   // Plus lent = plus doux
+    voicePreference: ['Google', 'Microsoft'],
+    description: 'Voix chaleureuse et familiale',
+  },
+  airbnb: {
+    pitch: 1.1,   // Plus aigu = plus dynamique
+    rate: 1.1,    // Plus rapide = plus pro
+    voicePreference: ['Microsoft', 'Google'],
+    description: 'Voix professionnelle et dynamique',
+  },
+};
+
 export function useMaellisVoice(
   options: {
     lang?: string;
     onTranscript?: (text: string, isFinal: boolean) => void;
     autoRestart?: boolean;
     maxSilenceMs?: number;
+    voiceProfile?: VoiceProfile;
   } = {}
 ) {
   const {
     lang = "fr-FR",
     onTranscript,
     autoRestart = true,
+    voiceProfile = 'default',
   } = options;
+
+  const profile = VOICE_PROFILES[voiceProfile] || VOICE_PROFILES.default;
 
   /* ── State ── */
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
@@ -287,25 +326,32 @@ export function useMaellisVoice(
 
       const utterance = new SpeechSynthesisUtterance(text);
 
-      // Configuration
+      // Configuration — use profile defaults, allow overrides
       utterance.lang = lang;
-      utterance.rate = speakOptions?.rate ?? 1.05;
-      utterance.pitch = speakOptions?.pitch ?? 1.0;
+      utterance.rate = speakOptions?.rate ?? profile.rate;
+      utterance.pitch = speakOptions?.pitch ?? profile.pitch;
       utterance.volume = 1.0;
 
-      // Sélectionner une voix française naturelle
+      // Sélectionner une voix selon le profil
       const voices = voicesRef.current;
-      const frenchVoice =
-        voices.find(
-          (v) =>
-            v.lang.includes("fr") &&
-            (v.name.includes("Google") || v.name.includes("Microsoft"))
-        ) ||
-        voices.find((v) => v.lang.includes("fr")) ||
-        voices.find((v) => v.lang.startsWith("fr"));
+      let selectedVoice: SpeechSynthesisVoice | undefined;
 
-      if (frenchVoice) {
-        utterance.voice = frenchVoice;
+      for (const preferred of profile.voicePreference) {
+        selectedVoice = voices.find(
+          (v) => v.lang.includes("fr") && v.name.includes(preferred)
+        );
+        if (selectedVoice) break;
+      }
+      // Fallback: any French voice
+      if (!selectedVoice) {
+        selectedVoice = voices.find((v) => v.lang.includes("fr"));
+      }
+      if (!selectedVoice) {
+        selectedVoice = voices.find((v) => v.lang.startsWith("fr"));
+      }
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
       }
 
       utterance.onstart = () => {
@@ -328,7 +374,7 @@ export function useMaellisVoice(
       setLastResponse(text);
       setError(null);
     },
-    [lang]
+    [lang, profile]
   );
 
   /* ── Arrêter la parole ── */
