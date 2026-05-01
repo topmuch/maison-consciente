@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -51,7 +52,7 @@ prompt
 
 server.log
 
-# Database files (use PostgreSQL in production)
+# Database files (SQLite)
 /db/
 *.db
 *.db-journal
