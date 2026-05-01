@@ -1,0 +1,86 @@
+# ═══════════════════════════════════════════════════════
+# Dockerignore — Exclude from build context
+# ═══════════════════════════════════════════════════════
+
+# Version control
+.git
+.gitignore
+
+# Dependencies (installed fresh in container)
+node_modules
+
+# Build cache
+.next
+out
+dist
+build
+
+# Environment files (set via Coolify UI)
+.env
+.env.*
+!.env.example
+
+# Database files (use PostgreSQL in prod)
+db/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+dev.log
+server.log
+
+# Skills directory (not needed for production)
+skills/
+
+# Development / sandbox artifacts
+.claude
+.z-ai-config
+.claudeignore
+agent-ctx/
+worklog.md
+maison-consciente-ref/
+download/
+test/
+prompt/
+local-*
+
+# Mini-services (deployed separately)
+mini-services/
+
+# Docker
+Dockerfile
+docker-compose.yml
+compose.yml
+.dockerignore
+
+# Caddy (Coolify handles reverse proxy)
+Caddyfile
+
+# Shell scripts (dev-only)
+daemon.js
+dev-runner.sh
+dev-watchdog.sh
+keep-dev-alive.sh
+restart-dev.sh
+run-dev.sh
+start-dev.sh
+start-server.sh
+watchdog.sh
+
+# IDE / OS
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Misc
+*.pem
+*.md
+!prisma/
+nixpacks.toml
+project-page.json

@@ -1,0 +1,31 @@
+# ═══════════════════════════════════════════════════════
+# Nixpacks config — Alternative to Dockerfile for Coolify
+# 
+# If you use Coolify's "Nixpacks" buildpack instead of a 
+# custom Dockerfile, this file controls the build process.
+# ═══════════════════════════════════════════════════════
+
+[phases.setup]
+nixPkgs = ["...", "postgresql"]
+
+[phases.install]
+# Install all deps including devDependencies for build
+cmds = ["npm install"]
+
+[phases.build]
+# Generate Prisma client, then build Next.js
+cmds = [
+  "npx prisma generate",
+  "npm run build"
+]
+
+[phases.start]
+# Copy static assets into standalone, then run
+cmds = [
+  "cp -r .next/static .next/standalone/.next/ 2>/dev/null || true",
+  "cp -r public .next/standalone/ 2>/dev/null || true",
+  "node .next/standalone/server.js"
+]
+
+[start]
+cmd = "node .next/standalone/server.js"

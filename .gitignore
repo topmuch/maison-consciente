@@ -51,6 +51,13 @@ prompt
 
 server.log
 
+# Database files (use PostgreSQL in production)
+/db/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
 # Reference project (excluded from builds and indexing)
 /maison-consciente-ref/
 

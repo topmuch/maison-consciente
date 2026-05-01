@@ -310,3 +310,32 @@ Stage Summary:
 - Database schema pushed and Prisma client generated
 - Dev server functional: Next.js 16 + Turbopack on port 3000
 - Known issue: server process needs periodic keep-alive requests to stay running in sandbox environment
+
+---
+Task ID: coolify-deploy
+Agent: Main Agent
+Task: Prepare project for Coolify deployment (Docker + PostgreSQL)
+
+Work Log:
+- Analyzed full project for deployment readiness (40+ checks)
+- Created Dockerfile (3-stage multi-stage: deps → builder → runner, node:20-alpine, standalone output)
+- Created .dockerignore (excludes skills/, db/, node_modules/, .git/, mini-services/, dev scripts)
+- Created compose.yml (Coolify-compatible, PostgreSQL 16, health checks, all env vars)
+- Created nixpacks.toml (alternative Nixpacks buildpack for Coolify)
+- Created docker-entrypoint.sh (DB wait loop, prisma db push, prisma generate, server start)
+- Created .env.example (documents all 30+ env vars with comments and generation commands)
+- Updated prisma/schema.prisma: changed provider from sqlite to postgresql
+- Updated .gitignore: added db/ and *.db patterns
+- Updated package.json:
+  - build: added prisma generate before next build
+  - start: switched from bun to node for Docker compatibility
+  - Added scripts: start:docker, db:migrate:deploy, db:seed, postinstall
+  - Added postinstall hook for prisma generate
+
+Stage Summary:
+- Project is Coolify-ready with Dockerfile + compose.yml
+- PostgreSQL is now the default database provider
+- Auto-migration on container start via docker-entrypoint.sh
+- Health check endpoint /api/health configured for Coolify monitoring
+- All required env vars documented in .env.example
+- Two deployment options: custom Dockerfile (recommended) or Nixpacks buildpack
