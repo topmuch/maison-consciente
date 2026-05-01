@@ -40,4 +40,5 @@ EXPOSE 3000
 
 # Démarrage depuis le dossier standalone
 WORKDIR /app/.next/standalone
-CMD sh -c "mkdir -p /app/data && export DATABASE_URL=file:/app/data/custom.db && export PORT=${PORT:-3000} && export HOSTNAME=0.0.0.0 && npx prisma db push --skip-generate 2>/dev/null || true && chmod +x docker-entrypoint.sh && ./docker-entrypoint.sh"
+RUN chmod +x docker-entrypoint.sh
+CMD ["sh", "./docker-entrypoint.sh"]
