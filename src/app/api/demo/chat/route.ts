@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build conversation for Gemini REST API
-    const contents = [];
+    const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
 
     // Add history (last 6 messages for context)
     for (const msg of history.slice(-6)) {
