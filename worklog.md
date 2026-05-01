@@ -286,3 +286,27 @@ Stage Summary:
 - Phase 3.6 SSE Real-time: backend complete (SSE endpoint + broadcast in 4 mutations)
 - NOTE: UI integration for all 6 features requires changes in smart-shop.tsx (2300+ lines)
 - NOTE: UI changes were planned but the session reached context limits before implementation
+
+---
+Task ID: clone-setup
+Agent: Main Agent
+Task: Clone maison-consciente repo, install dependencies, set up database, launch dev server
+
+Work Log:
+- Cloned https://github.com/topmuch/maison-consciente to /home/z/my-project
+- Fixed Prisma schema syntax errors (missing brackets in relation fields: [householdId], [memberId])
+- Installed 1142 packages via bun install (Next.js 16, Turbopack, all deps)
+- Ran prisma db push successfully (SQLite, all 40+ tables created)
+- Generated Prisma Client
+- Renamed middleware.ts to proxy.ts for Next.js 16 compatibility, then reverted (middleware deprecation warning only)
+- Launched dev server: `bun run dev` on port 3000
+- Page compiles successfully: GET / 200 in ~4.5s (65,778 bytes HTML)
+- Landing page renders correctly with all sections (Maellis branding, features, pricing)
+- Dev server runs via Caddy gateway on port 81 for external access
+
+Stage Summary:
+- Repository cloned and set up successfully
+- All dependencies installed
+- Database schema pushed and Prisma client generated
+- Dev server functional: Next.js 16 + Turbopack on port 3000
+- Known issue: server process needs periodic keep-alive requests to stay running in sandbox environment
