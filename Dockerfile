@@ -30,6 +30,8 @@ RUN cp -r prisma .next/standalone/prisma && \
     cp -r node_modules/.prisma .next/standalone/node_modules/.prisma && \
     cp -r node_modules/@prisma .next/standalone/node_modules/@prisma && \
     cp -r node_modules/prisma .next/standalone/node_modules/prisma && \
+    cp -r node_modules/argon2 .next/standalone/node_modules/argon2 && \
+    cp seed-superadmin.js .next/standalone/seed-superadmin.js && \
     cp docker-entrypoint.sh .next/standalone/docker-entrypoint.sh
 
 EXPOSE 3000

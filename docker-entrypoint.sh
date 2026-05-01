@@ -19,6 +19,11 @@ echo "📦 Syncing database schema..."
 npx prisma db push --skip-generate 2>/dev/null || true
 echo "✅ Database ready"
 
+# Créer le SuperAdmin si il n'existe pas
+echo "🔑 Seeding SuperAdmin..."
+node seed-superadmin.js 2>/dev/null || true
+echo "✅ Seed complete"
+
 # Lancer le serveur Next.js
 echo "🌐 Starting on port ${PORT}..."
 exec node server.js
