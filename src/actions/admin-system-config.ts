@@ -631,28 +631,18 @@ export async function sendTestEmail(
     const { generateEmailTemplate } = await import('@/lib/email-template');
 
     const html = generateEmailTemplate({
-      title: 'Email de Test — Maison Consciente',
+      subject: 'Email de Test — Maison Consciente',
       preheader: 'Configuration SMTP vérifiée avec succès',
-      content: [
-        {
-          type: 'info',
-          title: 'Configuration SMTP réussie !',
-          body: 'Votre serveur SMTP est correctement configuré. Cet email de test a été envoyé avec succès depuis le panneau d\'administration.',
-        },
-        {
-          type: 'list',
-          title: 'Détails de la connexion',
-          items: [
-            `Envoyé par : ${admin.email}`,
-            `Destinataire : ${toEmail}`,
-            `Date : ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}`,
-          ],
-        },
-      ],
-      cta: {
-        label: 'Retour au panneau',
-        url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
-      },
+      content: `<p style="color:#16a34a;font-weight:600;">✅ Configuration SMTP réussie !</p>
+<p>Votre serveur SMTP est correctement configuré. Cet email de test a été envoyé avec succès depuis le panneau d'administration.</p>
+<p><strong>Détails de la connexion :</strong></p>
+<ul>
+  <li>Envoyé par : ${admin.email}</li>
+  <li>Destinataire : ${toEmail}</li>
+  <li>Date : ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}</li>
+</ul>`,
+      ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
+      ctaText: 'Retour au panneau',
     });
 
     const result = await sendMail({
