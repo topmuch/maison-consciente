@@ -500,7 +500,7 @@ export interface RecipeSearchResult {
 /**
  * Search local recipes by query. Used by the Recipe Matcher UI.
  */
-export function searchLocalRecipes(query: string, limit = 6): RecipeSearchResult[] {
+export async function searchLocalRecipes(query: string, limit = 6): Promise<RecipeSearchResult[]> {
   const results = searchRecipes(query, limit);
   return results.map(r => ({
     id: r.recipe.id,
@@ -520,7 +520,7 @@ export function searchLocalRecipes(query: string, limit = 6): RecipeSearchResult
 /**
  * Get all available local recipes (for browse mode).
  */
-export function getAllLocalRecipes(): RecipeSearchResult[] {
+export async function getAllLocalRecipes(): Promise<RecipeSearchResult[]> {
   return LOCAL_RECIPES.map(r => ({
     id: r.id,
     title: r.title,
