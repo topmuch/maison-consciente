@@ -86,7 +86,7 @@ const PREFERENCE_KEYWORDS: Record<string, { key: keyof StoredGuestPreferences; v
   plume:       { key: 'pillowType', value: 'plume' },
   mousse:      { key: 'pillowType', value: 'mousse' },
   // Music
-  musique:     { key: 'musicGenre', value: null },  // detected separately
+  musique:     { key: 'musicGenre', value: '' },  // detected separately
   jazz:        { key: 'musicGenre', value: 'jazz' },
   classique:   { key: 'musicGenre', value: 'classique' },
   rock:        { key: 'musicGenre', value: 'rock' },
@@ -349,7 +349,7 @@ export async function updateGuestPreference(
 
   await db.household.update({
     where: { id: householdId },
-    data: { userPreferences: prefs as Prisma.JsonValue },
+    data: { userPreferences: prefs as Prisma.InputJsonValue },
   });
 }
 

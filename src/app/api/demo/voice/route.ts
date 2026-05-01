@@ -19,10 +19,10 @@ async function transcribeAudio(base64Audio: string): Promise<string> {
 async function generateResponse(userText: string, history: Array<{ role: string; content: string }>): Promise<string> {
   const zai = await ZAI.create();
 
-  const messages: Array<{ role: string; content: string }> = [
+  const messages: Array<{ role: 'user' | 'system' | 'assistant'; content: string }> = [
     { role: 'assistant', content: MAELLIS_SYSTEM_PROMPT },
     ...history.slice(-6).map(m => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
+      role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
       content: m.content,
     })),
     { role: 'user', content: userText },

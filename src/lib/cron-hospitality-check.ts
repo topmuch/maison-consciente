@@ -24,6 +24,7 @@ interface ActiveStay {
   checkInAt: Date;
   checkOutAt: Date | null;
   status: string;
+  notes: string | null;
 }
 
 interface HouseholdModules {
@@ -175,6 +176,7 @@ export async function runHospitalityCron(): Promise<CronResult> {
         checkInAt: true,
         checkOutAt: true,
         status: true,
+        notes: true,
       },
     });
 
