@@ -82,9 +82,20 @@ export async function POST(request: NextRequest) {
     // Audit log: new user registration
     logActionSync({ userId: user.id, householdId: household.id, action: "register", details: `New user: ${name} (${email})`, status: "success", request });
 
-    // ── Server-side redirect with cookie ──
-    const dashboardUrl = new URL("/dashboard", request.url);
-    const response = NextResponse.redirect(dashboardUrl, 302);
+    // ── Réponse JSON avec cookie + sessionId en fallback ──
+    const response = NextResponse.json({
+      success: true,
+      sessionId: session.id,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        avatar: user.avatar,
+        householdId: user.householdId,
+      },
+      householdName: household.name,
+    }, { status: 201 });
 
     const sessionCookie = auth.createSessionCookie(session.id);
     response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);

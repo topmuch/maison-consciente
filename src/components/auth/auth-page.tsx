@@ -177,19 +177,26 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
 
-      // Le serveur retourne un 302 redirect vers /dashboard en cas de succès.
-      // fetch suit automatiquement le redirect. Si redirected === true, c'est
-      // que le login a réussi — le cookie a été posé par le serveur.
-      if (res.redirected) {
-        toast.success('Bienvenue !');
-        window.location.href = res.url;
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Erreur de connexion');
         return;
       }
 
-      // Sinon, c'est une erreur (401, 400, 429, 500…)
-      const data = await res.json();
-      toast.error(data.error || 'Erreur de connexion');
-    } catch {
+      // Fallback: set le cookie manuellement si le navigateur ne l'a pas fait
+      // (peut arriver avec certains proxies ou config cookie restrictive)
+      if (data.sessionId) {
+        document.cookie = `mc-session=${data.sessionId}; path=/; SameSite=Lax`;
+      }
+
+      toast.success('Bienvenue !');
+      // Petit délai pour laisser le navigateur enregistrer le cookie
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 300);
+      return;
+    } catch (err) {
+      console.error('[LOGIN] Fetch error:', err);
       toast.error('Erreur de connexion au serveur');
     } finally {
       setIsLoading(false);
@@ -213,17 +220,24 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         }),
       });
 
-      // Le serveur retourne un 302 redirect vers /dashboard en cas de succès.
-      if (res.redirected) {
-        toast.success('Compte créé avec succès !');
-        window.location.href = res.url;
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Erreur lors de l'inscription");
         return;
       }
 
-      // Sinon, c'est une erreur
-      const data = await res.json();
-      toast.error(data.error || "Erreur lors de l'inscription");
-    } catch {
+      // Fallback: set le cookie manuellement
+      if (data.sessionId) {
+        document.cookie = `mc-session=${data.sessionId}; path=/; SameSite=Lax`;
+      }
+
+      toast.success('Compte créé avec succès !');
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 300);
+      return;
+    } catch (err) {
+      console.error('[REGISTER] Fetch error:', err);
       toast.error('Erreur de connexion au serveur');
     } finally {
       setIsLoading(false);

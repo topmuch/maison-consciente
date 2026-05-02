@@ -112,8 +112,12 @@ export const auth = new Lucia(new CustomPrismaAdapter(db), {
     name: "mc-session",
     expires: false,
     attributes: {
-      secure: process.env.NODE_ENV === "production",
+      // secure: false par défaut pour fonctionner même sans HTTPS
+      // (Coolify proxy interne HTTP → le cookie serait rejeté avec secure:true)
+      // TODO: activer secure:true quand HTTPS est garanti de bout en bout
+      secure: false,
       sameSite: "lax",
+      path: "/",
     },
   },
   getUserAttributes: (attributes) => ({
