@@ -197,9 +197,10 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         avatar: data.user.avatar,
         householdName: data.householdName,
       } as any);
-      setView('dashboard');
       toast.success('Bienvenue !');
-      router.push('/dashboard');
+      // Use full page navigation to ensure the cookie is sent on the next request
+      window.location.href = '/dashboard';
+      return; // Don't continue — the page will unload
     } catch {
       toast.error('Erreur de connexion au serveur');
     } finally {
