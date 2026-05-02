@@ -23,6 +23,7 @@ import {
   Zap,
   Menu,
   X,
+  ScanLine,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -35,21 +36,31 @@ import { ThemeToggle } from '@/components/home/ThemeToggle';
    Modern SaaS design — warm amber/gold palette
    ═══════════════════════════════════════════════════════ */
 
+/* ── Noise texture SVG data URI ── */
+const NOISE_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")`;
+
+/* ── Grid pattern background ── */
+const GRID_BG = `linear-gradient(to right, rgba(180,131,70,0.04) 1px, transparent 1px),
+                 linear-gradient(to bottom, rgba(180,131,70,0.04) 1px, transparent 1px)`;
+
 /* ── Animation helpers ── */
 const easeOut = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
+  whileInView: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
+  viewport: { once: true, amount: 0.2 },
 };
 
 const stagger = {
-  animate: { transition: { staggerChildren: 0.1 } },
+  initial: { opacity: 0 },
+  whileInView: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  viewport: { once: true, amount: 0.2 },
 };
 
 const staggerItem = {
   initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOut } },
+  whileInView: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOut } },
 };
 
 /* ═══ NAVBAR ═══ */
@@ -155,10 +166,38 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 sm:pt-36 pb-16 sm:pb-24 bg-gradient-to-b from-amber-50 via-orange-50/50 to-background">
-      {/* Subtle background orbs */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-amber-200/20 dark:bg-amber-500/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[400px] bg-rose-200/10 dark:bg-rose-500/5 rounded-full blur-[120px] pointer-events-none" />
+    <section className="relative overflow-hidden pt-28 sm:pt-36 pb-16 sm:pb-24">
+      {/* Dramatic multi-layer gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50/60 to-background dark:from-amber-950/30 dark:via-amber-900/15 dark:to-background" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+
+      {/* Subtle grid pattern overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: GRID_BG,
+          backgroundSize: '64px 64px',
+          maskImage: 'linear-gradient(to bottom, black 30%, transparent 90%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent 90%)',
+        }}
+      />
+
+      {/* Noise/grain texture overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none mix-blend-overlay dark:mix-blend-soft-light"
+        style={{
+          backgroundImage: NOISE_TEXTURE,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '256px 256px',
+          opacity: 0.6,
+        }}
+      />
+
+      {/* Background orbs — warm & dramatic */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-amber-200/25 dark:bg-amber-500/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-20 right-0 w-[400px] h-[400px] bg-yellow-200/15 dark:bg-yellow-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[300px] bg-rose-200/10 dark:bg-rose-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-10 right-1/4 w-[300px] h-[300px] bg-orange-200/10 dark:bg-orange-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
         <motion.div
@@ -198,7 +237,7 @@ function Hero() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/demo">
-              <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-8 h-12 shadow-md shadow-amber-500/25 text-base">
+              <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-8 h-12 shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30 text-base transition-all duration-300">
                 Découvrir les démos
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -253,13 +292,16 @@ function DualAudience() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+        <motion.div variants={stagger} initial="initial" whileInView="animate" viewport={{ once: true, amount: 0.15 }}
+          className="grid md:grid-cols-2 gap-6 lg:gap-8">
           {/* Particulier Card */}
-          <motion.div variants={staggerItem} initial="initial" animate="animate">
+          <motion.div variants={staggerItem}>
             <Link href="/demo" className="group block">
-              <Card className="relative overflow-hidden border-border bg-card hover:border-amber-300 dark:hover:border-amber-600 transition-all duration-300 hover:shadow-lg h-full py-0">
-                <div className="p-8 sm:p-10">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <Card className="relative overflow-hidden border-border bg-card hover:border-amber-300 dark:hover:border-amber-600 transition-all duration-500 hover:shadow-xl hover:shadow-amber-500/5 hover:-translate-y-1 h-full py-0">
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 via-transparent to-amber-500/0 group-hover:from-amber-500/5 group-hover:to-amber-500/5 transition-all duration-500 pointer-events-none rounded-lg" />
+                <div className="relative p-8 sm:p-10">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-md group-hover:shadow-amber-500/10 transition-all duration-500">
                     <Home className="w-7 h-7 text-amber-500 dark:text-amber-400" />
                   </div>
 
@@ -271,13 +313,13 @@ function DualAudience() {
 
                   <div className="flex flex-wrap gap-2 mb-6">
                     {['Santé', 'Recettes', 'Courses', 'Coffre-fort', 'Voix IA'].map((tag) => (
-                      <span key={tag} className="px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-medium border border-amber-100 dark:border-amber-800/40">
+                      <span key={tag} className="px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-medium border border-amber-100 dark:border-amber-800/40 group-hover:border-amber-200 dark:group-hover:border-amber-700 transition-colors duration-300">
                         {tag}
                       </span>
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm font-semibold text-amber-500 dark:text-amber-400 group-hover:gap-3 transition-all">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-amber-500 dark:text-amber-400 group-hover:gap-3 transition-all duration-300">
                     <span>Essayer la démo famille</span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
@@ -287,11 +329,13 @@ function DualAudience() {
           </motion.div>
 
           {/* Airbnb Card */}
-          <motion.div variants={staggerItem} initial="initial" animate="animate" transition={{ delay: 0.15 }}>
+          <motion.div variants={staggerItem}>
             <Link href="/demo" className="group block">
-              <Card className="relative overflow-hidden border-border bg-card hover:border-emerald-300 dark:hover:border-emerald-600 transition-all duration-300 hover:shadow-lg h-full py-0">
-                <div className="p-8 sm:p-10">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <Card className="relative overflow-hidden border-border bg-card hover:border-emerald-300 dark:hover:border-emerald-600 transition-all duration-500 hover:shadow-xl hover:shadow-emerald-500/5 hover:-translate-y-1 h-full py-0">
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-transparent to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-emerald-500/5 transition-all duration-500 pointer-events-none rounded-lg" />
+                <div className="relative p-8 sm:p-10">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-md group-hover:shadow-emerald-500/10 transition-all duration-500">
                     <Building2 className="w-7 h-7 text-emerald-500 dark:text-emerald-400" />
                   </div>
 
@@ -303,13 +347,13 @@ function DualAudience() {
 
                   <div className="flex flex-wrap gap-2 mb-6">
                     {['Check-in QR', 'Audit 22h', 'Sauvetage avis', 'Upsell IA', '7 langues'].map((tag) => (
-                      <span key={tag} className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-100 dark:border-emerald-800/40">
+                      <span key={tag} className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-100 dark:border-emerald-800/40 group-hover:border-emerald-200 dark:group-hover:border-emerald-700 transition-colors duration-300">
                         {tag}
                       </span>
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-500 dark:text-emerald-400 group-hover:gap-3 transition-all">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-500 dark:text-emerald-400 group-hover:gap-3 transition-all duration-300">
                     <span>Essayer la démo Airbnb</span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
@@ -317,7 +361,7 @@ function DualAudience() {
               </Card>
             </Link>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -380,11 +424,11 @@ function Features() {
           </p>
         </motion.div>
 
-        <motion.div variants={stagger} initial="initial" animate="animate"
+        <motion.div variants={stagger} initial="initial" whileInView="animate" viewport={{ once: true, amount: 0.1 }}
           className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map((f) => (
             <motion.div key={f.title} variants={staggerItem}>
-              <Card className="h-full border-border bg-card hover:border-border hover:shadow-md transition-all duration-300 p-6 py-0">
+              <Card className="h-full border-border bg-card hover:border-amber-200 dark:hover:border-amber-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 p-6 py-0">
                 <div className={`w-11 h-11 rounded-xl ${f.color} flex items-center justify-center mb-4`}>
                   <f.icon className="w-5 h-5" />
                 </div>
@@ -399,11 +443,86 @@ function Features() {
   );
 }
 
+/* ═══ HOW IT WORKS ═══ */
+
+function HowItWorks() {
+  const steps = [
+    {
+      icon: ScanLine,
+      step: '01',
+      title: 'Scannez un QR Code',
+      desc: 'Votre voyageur scanne le QR code dans le logement. En 2 secondes, il accède au guide digital multilingue et à l\'assistant IA.',
+    },
+    {
+      icon: Brain,
+      step: '02',
+      title: 'Recevez des suggestions IA',
+      desc: 'L\'IA Gemini analyse les demandes en temps réel et propose des réponses intelligentes, des recommandations et des upsells contextuels.',
+    },
+    {
+      icon: Sparkles,
+      step: '03',
+      title: 'Vivez l\'expérience connectée',
+      desc: 'Profitez d\'une conciergerie 24h/24 : audit quotidien, appels automatiques, mémoire voyageurs et satisfaction maximale.',
+    },
+  ];
+
+  return (
+    <section className="py-16 sm:py-24 bg-muted/50 relative overflow-hidden">
+      {/* Subtle background decoration */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-200/10 dark:bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+        <motion.div {...fadeUp} className="text-center mb-14">
+          <Badge variant="outline" className="border-amber-200 dark:border-amber-700 text-amber-600 dark:text-amber-400 mb-4 bg-background">
+            <Clock className="w-3 h-3 mr-1" /> Simple et rapide
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            Comment ça marche
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Trois étapes suffisent pour transformer l&apos;expérience de vos voyageurs et simplifier votre quotidien.
+          </p>
+        </motion.div>
+
+        <motion.div variants={stagger} initial="initial" whileInView="animate" viewport={{ once: true, amount: 0.15 }}
+          className="grid md:grid-cols-3 gap-8 lg:gap-12">
+          {steps.map((s, i) => (
+            <motion.div key={s.step} variants={staggerItem} className="relative text-center group">
+              {/* Connector line (desktop only) */}
+              {i < steps.length - 1 && (
+                <div className="hidden md:block absolute top-10 left-[calc(50%+40px)] w-[calc(100%-80px)] h-px">
+                  <div className="w-full h-full bg-gradient-to-r from-amber-300 dark:from-amber-700 via-amber-200 dark:via-amber-800 to-transparent" />
+                  <ArrowRight className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-amber-300 dark:text-amber-700 -mt-px" />
+                </div>
+              )}
+
+              {/* Step number + icon */}
+              <div className="relative inline-flex flex-col items-center mb-5">
+                <div className="w-20 h-20 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/40 flex items-center justify-center mb-3 group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-amber-500/10 transition-all duration-500 relative">
+                  <s.icon className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+                  {/* Step number badge */}
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    {s.step}
+                  </span>
+                </div>
+              </div>
+
+              <h3 className="text-lg font-bold text-foreground mb-2">{s.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">{s.desc}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 /* ═══ DEMO CTA ═══ */
 
 function DemoCTA() {
   return (
-    <section className="py-16 sm:py-24 bg-muted/50">
+    <section className="py-16 sm:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <motion.div {...fadeUp}>
           <div className="relative rounded-2xl border border-amber-200 dark:border-amber-800 bg-card p-[1px] overflow-hidden">
@@ -428,7 +547,7 @@ function DemoCTA() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/demo">
-                  <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-10 h-12 shadow-md shadow-amber-500/25 text-base">
+                  <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-10 h-12 shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30 text-base transition-all duration-300">
                     <Sparkles className="w-4 h-4 mr-2" />
                     Lancer les démos
                   </Button>
@@ -459,7 +578,7 @@ function DemoCTA() {
 
 function PricingPreview() {
   return (
-    <section className="py-16 sm:py-24">
+    <section className="py-16 sm:py-24 bg-muted/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <motion.div {...fadeUp} className="text-center mb-12">
           <Badge variant="outline" className="border-emerald-200 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 mb-4 bg-background">
@@ -470,71 +589,86 @@ function PricingPreview() {
           </h2>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+        <motion.div variants={stagger} initial="initial" whileInView="animate" viewport={{ once: true, amount: 0.1 }}
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
           {/* Free */}
-          <Card className="border-border bg-card p-6 py-0 hover:shadow-md transition-shadow">
-            <p className="text-sm font-semibold text-foreground mb-1">Base</p>
-            <p className="text-3xl font-bold text-foreground mb-1">0€</p>
-            <p className="text-xs text-muted-foreground mb-4">pour toujours</p>
-            <div className="space-y-2">
-              {['QR code digital', 'Guide logement', 'Tablette connectée'].map(f => (
-                <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Check className="w-3 h-3 text-emerald-500" />
-                  <span>{f}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <motion.div variants={staggerItem}>
+            <Card className="h-full border-border bg-card p-6 py-0 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <p className="text-sm font-semibold text-foreground mb-1">Base</p>
+              <p className="text-3xl font-bold text-foreground mb-1">0€</p>
+              <p className="text-xs text-muted-foreground mb-4">pour toujours</p>
+              <div className="space-y-2">
+                {['QR code digital', 'Guide logement', 'Tablette connectée'].map(f => (
+                  <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Check className="w-3 h-3 text-emerald-500" />
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
 
           {/* Sécurité */}
-          <Card className="border-border bg-card p-6 py-0 hover:shadow-md transition-shadow">
-            <p className="text-sm font-semibold text-foreground mb-1">Sécurité</p>
-            <p className="text-3xl font-bold text-foreground mb-1">6,90€</p>
-            <p className="text-xs text-muted-foreground mb-4">/mois</p>
-            <div className="space-y-2">
-              {['Safe Departure', 'Sauvetage avis', 'Analyse sentiment'].map(f => (
-                <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Check className="w-3 h-3 text-emerald-500" />
-                  <span>{f}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <motion.div variants={staggerItem}>
+            <Card className="h-full border-border bg-card p-6 py-0 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <p className="text-sm font-semibold text-foreground mb-1">Sécurité</p>
+              <p className="text-3xl font-bold text-foreground mb-1">6,90€</p>
+              <p className="text-xs text-muted-foreground mb-4">/mois</p>
+              <div className="space-y-2">
+                {['Safe Departure', 'Sauvetage avis', 'Analyse sentiment'].map(f => (
+                  <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Check className="w-3 h-3 text-emerald-500" />
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
 
           {/* Concierge */}
-          <Card className="border-border bg-card p-6 py-0 hover:shadow-md transition-shadow">
-            <p className="text-sm font-semibold text-foreground mb-1">Concierge</p>
-            <p className="text-3xl font-bold text-foreground mb-1">9,90€</p>
-            <p className="text-xs text-muted-foreground mb-4">/mois</p>
-            <div className="space-y-2">
-              {['Audit quotidien 22h', 'Daily Concierge', 'Analytics'].map(f => (
-                <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Check className="w-3 h-3 text-emerald-500" />
-                  <span>{f}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <motion.div variants={staggerItem}>
+            <Card className="h-full border-border bg-card p-6 py-0 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <p className="text-sm font-semibold text-foreground mb-1">Concierge</p>
+              <p className="text-3xl font-bold text-foreground mb-1">9,90€</p>
+              <p className="text-xs text-muted-foreground mb-4">/mois</p>
+              <div className="space-y-2">
+                {['Audit quotidien 22h', 'Daily Concierge', 'Analytics'].map(f => (
+                  <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Check className="w-3 h-3 text-emerald-500" />
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
 
-          {/* Global Host Pro */}
-          <Card className="relative border-amber-300 dark:border-amber-600 bg-card p-6 py-0 shadow-lg shadow-amber-100/50 dark:shadow-amber-900/20 hover:shadow-xl transition-shadow overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500" />
-            <Badge className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0 rounded-full mb-2">
-              Best Value
-            </Badge>
-            <p className="text-sm font-semibold text-foreground mb-1">Global Host Pro</p>
-            <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">29,90€</p>
-            <p className="text-xs text-muted-foreground mb-4">/mois — 7 modules inclus</p>
-            <div className="space-y-2">
-              {['Tous les modules', 'IA Gemini 2.0', 'Mémoire voyageurs', 'TTS Premium'].map(f => (
-                <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Check className="w-3 h-3 text-amber-500" />
-                  <span>{f}</span>
+          {/* Global Host Pro — Best Value with gold gradient border */}
+          <motion.div variants={staggerItem}>
+            <div className="relative h-full rounded-lg p-[1.5px] bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 shadow-xl shadow-amber-500/10 overflow-hidden">
+              {/* Animated shimmer sweep */}
+              <div className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none">
+                <div className="absolute -inset-full animate-[border-shimmer_4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent w-1/3" />
+              </div>
+              <Card className="relative h-full bg-card p-6 py-0 border-0 shadow-none overflow-visible rounded-[7px]">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 rounded-t-[7px]" />
+                <Badge className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0 rounded-full mb-2 shadow-sm shadow-amber-500/25">
+                  Best Value
+                </Badge>
+                <p className="text-sm font-semibold text-foreground mb-1">Global Host Pro</p>
+                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">29,90€</p>
+                <p className="text-xs text-muted-foreground mb-4">/mois — 7 modules inclus</p>
+                <div className="space-y-2">
+                  {['Tous les modules', 'IA Gemini 2.0', 'Mémoire voyageurs', 'TTS Premium'].map(f => (
+                    <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3 h-3 text-amber-500" />
+                      <span>{f}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </Card>
             </div>
-          </Card>
-        </div>
+          </motion.div>
+        </motion.div>
 
         <div className="text-center mt-8">
           <Link href="/pricing">
@@ -645,6 +779,7 @@ export default function LandingPage() {
         <Hero />
         <DualAudience />
         <Features />
+        <HowItWorks />
         <DemoCTA />
         <PricingPreview />
       </main>

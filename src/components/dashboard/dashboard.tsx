@@ -400,7 +400,9 @@ function MessagesWall({
             ))
           ) : (
             <div className="py-8 text-center">
-              <MessageSquare className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+              <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[var(--accent-primary)]/[0.06] border border-[var(--accent-primary)]/10 mb-3">
+                <MessageSquare className="w-5 h-5 text-[var(--accent-primary)]/50" />
+              </div>
               <p className="text-sm text-muted-foreground italic">
                 Aucun message. La maison est silencieuse.
               </p>
@@ -691,9 +693,9 @@ export function Dashboard() {
       label: 'Zones actives',
       value: stats?.activeZones ?? 0,
       icon: MapPin,
-      iconBg: 'bg-[#8b5cf6]/15',
-      iconColor: 'text-[#8b5cf6]',
-      glowClass: 'group-hover:shadow-[0_0_20px_oklch(0.60_0.22_280/12%)]',
+      iconBg: 'bg-[#b88a7a]/15',
+      iconColor: 'text-[#b88a7a]',
+      glowClass: 'group-hover:shadow-[0_0_20px_oklch(0.65_0.10_35/12%)]',
     },
     {
       label: 'Messages',
@@ -717,7 +719,7 @@ export function Dashboard() {
             <div
               className="absolute inset-0 rounded-2xl"
               style={{
-                background: 'linear-gradient(135deg, rgba(212,168,83,0.25) 0%, transparent 40%, transparent 60%, rgba(139,92,246,0.2) 100%)',
+                background: 'linear-gradient(135deg, rgba(212,168,83,0.25) 0%, transparent 40%, transparent 60%, rgba(184,138,122,0.2) 100%)',
                 backgroundSize: '200% 200%',
                 animation: 'gradient-shift 8s ease infinite',
               }}
@@ -846,7 +848,7 @@ export function Dashboard() {
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.25 }}>
           <button
             onClick={() => setView('messages')}
-            className="w-full rounded-xl p-4 flex flex-col items-center justify-center gap-2 bg-muted/30 border border-border hover:bg-muted transition-all duration-300 group cursor-pointer"
+            className="w-full rounded-xl p-4 flex flex-col items-center justify-center gap-2 bg-muted/30 border border-border hover:bg-[var(--accent-primary)]/[0.06] hover:border-[var(--accent-primary)]/20 transition-all duration-300 group cursor-pointer"
           >
             <MessageSquare className="w-6 h-6 text-muted-foreground group-hover:text-[var(--accent-primary)] transition-colors duration-300" />
             <span className="text-sm font-medium text-muted-foreground group-hover:text-[var(--accent-primary)] transition-colors duration-300">
