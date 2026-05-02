@@ -178,18 +178,31 @@ export async function verifyPassword(hash: string, password: string): Promise<bo
    SESSION HELPERS
    ═══════════════════════════════════════════════════════ */
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { cache } from "react";
 
 export const SESSION_COOKIE_NAME = "mc-session";
 
 /**
  * Récupère la session courante avec mise en cache React.
+ * Supports cookie + x-session-id header fallback.
  * Renouvelle automatiquement la session si elle est "fresh".
  */
 export const getSession = cache(async () => {
+  // Source 1: cookie
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
+  let sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
+
+  // Source 2: x-session-id header (fallback for iframe/proxy contexts)
+  if (!sessionId) {
+    try {
+      const headersList = await headers();
+      sessionId = headersList.get("x-session-id") || null;
+    } catch {
+      // headers() may not be available in all contexts
+    }
+  }
+
   if (!sessionId) return { session: null, user: null };
 
   const result = await auth.validateSession(sessionId);

@@ -3,19 +3,40 @@
    
    Évite de répéter la logique de session dans les Server Actions
    et les API Routes. Usage exclusif côté serveur (Node.js runtime).
+   
+   Supports 3 session sources:
+   1. Cookie (mc-session) — standard browser cookie
+   2. x-session-id header — fallback for iframe/proxy contexts
+   3. URL query param (?s=) — handled by middleware (sets cookie)
    ═══════════════════════════════════════════════════════ */
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { auth } from "@/core/auth/lucia";
 import { db } from "@/core/db";
+
+/**
+ * Récupère le sessionId depuis cookie ou x-session-id header.
+ */
+async function getSessionId(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get(auth.sessionCookieName)?.value;
+  if (sessionId) return sessionId;
+
+  // Fallback: check x-session-id header (for iframe/proxy contexts where cookies are blocked)
+  try {
+    const headersList = await headers();
+    return headersList.get("x-session-id") || null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Récupère l'utilisateur authentifié côté serveur.
  * Lance une erreur si non connecté ou sans foyer.
  */
 export async function getAuthUser() {
-  const cookieStore = await cookies();
-  const sessionId = cookieStore.get(auth.sessionCookieName)?.value;
+  const sessionId = await getSessionId();
 
   if (!sessionId) {
     throw new Error("UNAUTHORIZED");
@@ -51,9 +72,7 @@ export async function getAuthUser() {
  */
 export async function getOptionalAuthUser() {
   try {
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get(auth.sessionCookieName)?.value;
-
+    const sessionId = await getSessionId();
     if (!sessionId) return null;
 
     const { user, session } = await auth.validateSession(sessionId);

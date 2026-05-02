@@ -123,9 +123,31 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for session cookie
-  const sessionCookie = request.cookies.get(SESSION_COOKIE);
+  let sessionCookie = request.cookies.get(SESSION_COOKIE);
 
-  if (!sessionCookie?.value) {
+  // ── Fallback: session passed via ?s= query param (for iframe/proxy contexts) ──
+  const sessionParam = request.nextUrl.searchParams.get("s");
+  if (!sessionCookie?.value && sessionParam) {
+    const url = request.nextUrl.clone();
+    url.searchParams.delete("s");
+    // Preserve other query params like ?tab= for admin
+    const response = NextResponse.redirect(url);
+    response.cookies.set(SESSION_COOKIE, sessionParam, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+    });
+    logAuthCheck(pathname, true, 'SESSION_FROM_PARAM');
+    return withSecurityHeaders(response);
+  }
+
+  // ── Fallback: session passed via x-session-id header (for fetch calls without cookies) ──
+  const sessionHeader = request.headers.get("x-session-id");
+  const hasSession = sessionCookie?.value || sessionHeader;
+
+  if (!hasSession) {
     // Audit log the blocked attempt
     logAuthCheck(pathname, false, isProtectedApi ? 'API_BLOCKED' : 'REDIRECT');
 
@@ -142,6 +164,21 @@ export function middleware(request: NextRequest) {
     url.pathname = "/";
     url.searchParams.set("auth", "required");
     return withSecurityHeaders(NextResponse.redirect(url));
+  }
+
+  // If session comes from header but not cookie, forward it via a rewritten cookie
+  // so downstream API routes can read it normally
+  if (!sessionCookie?.value && sessionHeader) {
+    const response = NextResponse.next();
+    response.cookies.set(SESSION_COOKIE, sessionHeader, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 30 * 24 * 60 * 60,
+    });
+    logAuthCheck(pathname, true, 'SESSION_FROM_HEADER');
+    return withSecurityHeaders(response);
   }
 
   return withSecurityHeaders(NextResponse.next());

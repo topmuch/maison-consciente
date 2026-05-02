@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { TemplateProvider } from '@/components/themes/TemplateProvider';
+import { SessionSync } from '@/components/auth/session-sync';
 import { cn } from '@/lib/utils';
 
 /* ═══════════════════════════════════════════════════════
@@ -366,6 +367,7 @@ export function DashboardClientShell({
 
   return (
     <TemplateProvider initialSlug={initialTemplateSlug}>
+      <SessionSync />
       <div className="flex h-screen overflow-hidden bg-muted/50 transition-colors duration-200">
         {/* ─── Desktop Sidebar (hidden on mobile) ─── */}
         <aside className="hidden lg:flex lg:w-[260px] lg:flex-col lg:fixed lg:inset-y-0 border-r border-border bg-card transition-colors duration-200">

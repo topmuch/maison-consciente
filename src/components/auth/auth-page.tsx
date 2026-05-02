@@ -174,6 +174,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
 
@@ -183,16 +184,21 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         return;
       }
 
-      // Fallback: set le cookie manuellement si le navigateur ne l'a pas fait
-      // (peut arriver avec certains proxies ou config cookie restrictive)
+      // ── Session persistence: 3-layer fallback ──
+      // Layer 1: Server Set-Cookie (handled by browser automatically)
+      // Layer 2: document.cookie (fallback for restricted cookie contexts)
+      // Layer 3: localStorage + URL param (ultimate fallback for iframes/proxies)
       if (data.sessionId) {
-        document.cookie = `mc-session=${data.sessionId}; path=/; SameSite=Lax`;
+        // Layer 2: client-side cookie
+        document.cookie = `mc-session=${data.sessionId}; path=/; SameSite=Lax; max-age=${30*24*60*60}`;
+        // Layer 3: store in localStorage
+        try { localStorage.setItem('mc-session', data.sessionId); } catch {}
       }
 
       toast.success('Bienvenue !');
-      // Petit délai pour laisser le navigateur enregistrer le cookie
+      // Redirect with session in URL as fallback — middleware will set the cookie
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = `/dashboard?s=${data.sessionId}`;
       }, 300);
       return;
     } catch (err) {
@@ -212,6 +218,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: regName.trim(),
           email: regEmail.trim(),
@@ -226,14 +233,15 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         return;
       }
 
-      // Fallback: set le cookie manuellement
+      // ── Session persistence: 3-layer fallback (same as login) ──
       if (data.sessionId) {
-        document.cookie = `mc-session=${data.sessionId}; path=/; SameSite=Lax`;
+        document.cookie = `mc-session=${data.sessionId}; path=/; SameSite=Lax; max-age=${30*24*60*60}`;
+        try { localStorage.setItem('mc-session', data.sessionId); } catch {}
       }
 
       toast.success('Compte créé avec succès !');
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = `/dashboard?s=${data.sessionId}`;
       }, 300);
       return;
     } catch (err) {
