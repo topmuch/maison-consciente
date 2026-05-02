@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   ShieldAlert,
@@ -417,10 +418,21 @@ function LogsTab() {
 
 export function AdminDashboard() {
   const { user, setAuth } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab') as AdminTab | null;
+  const validTabs: AdminTab[] = ['overview', 'clients', 'subscriptions', 'payments', 'ai-config', 'users', 'logs', 'audit', 'apis', 'config', 'checklist'];
+  const initialTab = tabParam && validTabs.includes(tabParam) ? tabParam : 'overview';
+  const [activeTab, setActiveTab] = useState<AdminTab>(initialTab);
   const [initialStats, setInitialStats] = useState<EnhancedStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync tab from URL when searchParams change
+  useEffect(() => {
+    if (tabParam && validTabs.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const fetchInitialStats = useCallback(async () => {
     try {

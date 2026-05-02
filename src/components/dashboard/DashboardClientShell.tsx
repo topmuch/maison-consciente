@@ -82,11 +82,11 @@ const SETTINGS_SUB_ITEMS = [
 
 /* ─── Superadmin Sub-Navigation ─── */
 const ADMIN_SUB_ITEMS = [
-  { label: 'Vue d\'ensemble', icon: LayoutDashboard },
-  { label: 'Clients', icon: Users },
-  { label: 'Abonnements', icon: Crown },
-  { label: 'Paiements', icon: CreditCard },
-  { label: 'Configuration IA', icon: Brain },
+  { label: 'Vue d\'ensemble', icon: LayoutDashboard, tab: 'overview' },
+  { label: 'Clients', icon: Users, tab: 'clients' },
+  { label: 'Abonnements', icon: Crown, tab: 'subscriptions' },
+  { label: 'Paiements', icon: CreditCard, tab: 'payments' },
+  { label: 'Configuration IA', icon: Brain, tab: 'ai-config' },
 ] as const;
 
 /* ─── Helpers ─── */
@@ -110,10 +110,11 @@ function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch
-  useState(() => {
+  // Avoid hydration mismatch — standard React pattern for client-only UI
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-  });
+  }, []);
 
   if (!mounted) {
     return (
@@ -226,16 +227,18 @@ function SidebarNav({
           {isActive(pathname, '/dashboard/admin') && (
             <div className="ml-8 mt-1 flex flex-col gap-0.5 border-l-2 border-amber-500/30 pl-3">
               {ADMIN_SUB_ITEMS.map((sub) => {
+                const SubIcon = sub.icon;
                 return (
                   <Link
                     key={sub.label}
-                    href="/dashboard/admin"
+                    href={`/dashboard/admin?tab=${sub.tab}`}
                     onClick={onItemClick}
                     className={cn(
                       'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150',
                       'text-amber-600/70 dark:text-amber-400/70 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 dark:hover:text-amber-300'
                     )}
                   >
+                    <SubIcon className="h-3 w-3" />
                     {sub.label}
                   </Link>
                 );

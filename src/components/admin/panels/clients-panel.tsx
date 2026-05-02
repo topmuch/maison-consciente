@@ -125,7 +125,7 @@ export function ClientsPanel() {
       if (res.ok) {
         const data = await res.json();
         setClients(data.clients || []);
-        setTotal(data.total || 0);
+        setTotal(data.pagination?.total || data.total || 0);
       }
     } catch { /* silent */ } finally {
       setLoading(false);
