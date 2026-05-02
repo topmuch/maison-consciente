@@ -384,19 +384,19 @@ export function NotificationSettingsPanel() {
   /* ── Loading state ── */
   if (loading) {
     return (
-      <Card className="glass rounded-2xl inner-glow border-white/[0.06] overflow-hidden">
+      <Card className="glass rounded-2xl shadow-sm border-border overflow-hidden">
         <CardContent className="p-6">
           <div className="flex items-center gap-2.5 mb-6">
             <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center animate-pulse">
               <Bell className="w-4 h-4 text-[var(--accent-primary)]/50" />
             </div>
             <div>
-              <div className="h-4 w-48 bg-white/[0.06] rounded animate-pulse" />
-              <div className="h-3 w-32 bg-white/[0.04] rounded animate-pulse mt-1" />
+              <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+              <div className="h-3 w-32 bg-muted/50 rounded animate-pulse mt-1" />
             </div>
           </div>
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-14 bg-white/[0.03] rounded-xl mb-2 animate-pulse" />
+            <div key={i} className="h-14 bg-muted/30 rounded-xl mb-2 animate-pulse" />
           ))}
         </CardContent>
       </Card>
@@ -406,7 +406,7 @@ export function NotificationSettingsPanel() {
   if (!prefs) return null;
 
   return (
-    <Card className="glass rounded-2xl inner-glow border-white/[0.06] overflow-hidden">
+    <Card className="glass rounded-2xl shadow-sm border-border overflow-hidden">
       <CardContent className="p-6">
         {/* ── Header ── */}
         <motion.div
@@ -421,10 +421,10 @@ export function NotificationSettingsPanel() {
               <Bell className="w-4 h-4 text-[var(--accent-primary)]" />
             </div>
             <div>
-              <h2 className="font-serif font-semibold text-[#e2e8f0] text-sm">
+              <h2 className="font-serif font-semibold text-foreground text-sm">
                 Notifications vocales
               </h2>
-              <p className="text-[10px] text-[#475569]">
+              <p className="text-[10px] text-muted-foreground">
                 Moteur proactif de notifications
               </p>
             </div>
@@ -437,7 +437,7 @@ export function NotificationSettingsPanel() {
           </div>
         </motion.div>
 
-        <p className="text-[10px] text-[#475569] mb-5 ml-[42px] leading-relaxed">
+        <p className="text-[10px] text-muted-foreground mb-5 ml-[42px] leading-relaxed">
           Configurez quelles notifications vocales sont activées par catégorie.
           Les notifications sont diffusées automatiquement selon vos préférences.
         </p>
@@ -448,19 +448,19 @@ export function NotificationSettingsPanel() {
           initial="hidden"
           animate="visible"
           custom={0.5}
-          className="rounded-xl border border-white/[0.06] p-4 mb-5 bg-gradient-to-r from-[var(--accent-primary, #d4a853)]/5 to-transparent"
+          className="rounded-xl border border-border p-4 mb-5 bg-gradient-to-r from-[var(--accent-primary, #d4a853)]/5 to-transparent"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${push.isSubscribed ? 'bg-emerald-500/15' : 'bg-white/[0.06]'}`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${push.isSubscribed ? 'bg-emerald-500/15' : 'bg-muted'}`}>
                 {push.isSubscribed
                   ? <BellRing className="w-4 h-4 text-emerald-400" />
-                  : <BellOff className="w-4 h-4 text-[#64748b]" />
+                  : <BellOff className="w-4 h-4 text-muted-foreground" />
                 }
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-[#e2e8f0]">Notifications Push</p>
+                  <p className="text-sm font-medium text-foreground">Notifications Push</p>
                   {push.isSubscribed && (
                     <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium bg-emerald-500/15 text-emerald-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -468,7 +468,7 @@ export function NotificationSettingsPanel() {
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-[#475569]">
+                <p className="text-[10px] text-muted-foreground">
                   {push.isSubscribed
                     ? 'Recevez des notifications même hors de l\'application'
                     : 'Activez pour recevoir des alertes sur votre appareil'
@@ -509,13 +509,13 @@ export function NotificationSettingsPanel() {
                   toast.info('Notifications push désactivées');
                 }}
                 disabled={pushSubscribing}
-                className="text-[#64748b] hover:text-[#e2e8f0] hover:bg-white/[0.04] text-xs transition-all duration-300"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 text-xs transition-all duration-300"
               >
                 Désactiver
               </Button>
             )}
             {!push.isInitialized && (
-              <div className="flex items-center gap-1.5 text-[10px] text-[#64748b]">
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 Initialisation...
               </div>
@@ -541,27 +541,27 @@ export function NotificationSettingsPanel() {
                 initial="hidden"
                 animate="visible"
                 custom={idx + 1}
-                className="rounded-xl border border-white/[0.06] overflow-hidden transition-colors duration-300 hover:border-white/[0.12]"
+                className="rounded-xl border border-border overflow-hidden transition-colors duration-300 hover:border-border"
               >
                 {/* Category header row */}
                 <button
                   type="button"
                   onClick={() => toggleExpanded(cat.key)}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors duration-200"
+                  className="w-full flex items-center gap-3 p-3 hover:bg-muted/20 transition-colors duration-200"
                 >
                   <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center shrink-0">
                     <Icon className="w-4 h-4 text-[var(--accent-primary)]" />
                   </div>
                   <div className="flex-1 text-left min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-[#e2e8f0]">
+                      <span className="text-sm font-medium text-foreground">
                         {cat.emoji} {cat.label}
                       </span>
                       <span className="text-[9px] font-mono text-[var(--accent-primary)]/60 bg-[var(--accent-primary)]/5 px-1.5 py-0.5 rounded-full">
                         {enabledInCat}/{cat.items.length}
                       </span>
                     </div>
-                    <p className="text-[10px] text-[#475569] truncate">{cat.description}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{cat.description}</p>
                   </div>
                   {/* Category toggle (all on/off) */}
                   <div
@@ -574,7 +574,7 @@ export function NotificationSettingsPanel() {
                     <Switch
                       checked={allOn}
                       onCheckedChange={(val) => handleToggleCategory(cat.key, val)}
-                      className="data-[state=checked]:bg-[var(--accent-primary)] data-[state=unchecked]:bg-white/[0.08]"
+                      className="data-[state=checked]:bg-[var(--accent-primary)] data-[state=unchecked]:bg-muted"
                     />
                   </div>
                   <motion.div
@@ -582,7 +582,7 @@ export function NotificationSettingsPanel() {
                     transition={{ duration: 0.2 }}
                     className="shrink-0"
                   >
-                    <ChevronDown className="w-4 h-4 text-[#475569]" />
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
                   </motion.div>
                 </button>
 
@@ -602,20 +602,20 @@ export function NotificationSettingsPanel() {
                           return (
                             <div
                               key={item.key}
-                              className="flex items-center justify-between p-2.5 rounded-lg hover:bg-white/[0.03] transition-colors duration-200 group"
+                              className="flex items-center justify-between p-2.5 rounded-lg hover:bg-muted/30 transition-colors duration-200 group"
                             >
                               <div className="flex-1 min-w-0 mr-3">
-                                <p className={`text-xs font-medium transition-colors duration-200 ${isEnabled ? 'text-[#e2e8f0]' : 'text-[#475569]'}`}>
+                                <p className={`text-xs font-medium transition-colors duration-200 ${isEnabled ? 'text-foreground' : 'text-muted-foreground'}`}>
                                   {item.label}
                                 </p>
-                                <p className="text-[10px] text-[#475569] truncate">
+                                <p className="text-[10px] text-muted-foreground truncate">
                                   {item.description}
                                 </p>
                               </div>
                               <Switch
                                 checked={isEnabled}
                                 onCheckedChange={(val) => handleToggle(cat.key, item.key, val)}
-                                className="data-[state=checked]:bg-[var(--accent-primary)] data-[state=unchecked]:bg-white/[0.08] shrink-0"
+                                className="data-[state=checked]:bg-[var(--accent-primary)] data-[state=unchecked]:bg-muted shrink-0"
                               />
                             </div>
                           );
@@ -637,7 +637,7 @@ export function NotificationSettingsPanel() {
           initial="hidden"
           animate="visible"
           custom={12}
-          className="rounded-xl border border-white/[0.06] p-4"
+          className="rounded-xl border border-border p-4"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -645,14 +645,14 @@ export function NotificationSettingsPanel() {
                 <MoonStar className="w-4 h-4 text-[#6366f1]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-[#e2e8f0]">Heures de silence</p>
-                <p className="text-[10px] text-[#475569]">Aucune notification vocale pendant cette plage</p>
+                <p className="text-sm font-medium text-foreground">Heures de silence</p>
+                <p className="text-[10px] text-muted-foreground">Aucune notification vocale pendant cette plage</p>
               </div>
             </div>
             <Switch
               checked={prefs.quietHours.enabled}
               onCheckedChange={handleQuietHoursToggle}
-              className="data-[state=checked]:bg-[var(--accent-primary)] data-[state=unchecked]:bg-white/[0.08]"
+              className="data-[state=checked]:bg-[var(--accent-primary)] data-[state=unchecked]:bg-muted"
             />
           </div>
           {prefs.quietHours.enabled && (
@@ -662,29 +662,29 @@ export function NotificationSettingsPanel() {
               className="flex items-center gap-4 ml-11"
             >
               <div className="flex items-center gap-2">
-                <label className="text-[10px] text-[#64748b] uppercase tracking-wider">Début</label>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Début</label>
                 <Input
                   type="number"
                   min={0}
                   max={23}
                   value={prefs.quietHours.start}
                   onChange={(e) => handleQuietHoursChange('start', parseInt(e.target.value, 10) || 0)}
-                  className="w-16 h-8 text-center text-xs glass bg-white/[0.04] border-white/[0.08] text-[#e2e8f0] focus:border-[var(--accent-primary)]/40 transition-all duration-300"
+                  className="w-16 h-8 text-center text-xs glass bg-muted/50 border-border text-foreground focus:border-[var(--accent-primary)]/40 transition-all duration-300"
                 />
-                <span className="text-[10px] text-[#475569] font-mono">{formatHour(prefs.quietHours.start)}</span>
+                <span className="text-[10px] text-muted-foreground font-mono">{formatHour(prefs.quietHours.start)}</span>
               </div>
-              <span className="text-[#475569]">→</span>
+              <span className="text-muted-foreground">→</span>
               <div className="flex items-center gap-2">
-                <label className="text-[10px] text-[#64748b] uppercase tracking-wider">Fin</label>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Fin</label>
                 <Input
                   type="number"
                   min={0}
                   max={23}
                   value={prefs.quietHours.end}
                   onChange={(e) => handleQuietHoursChange('end', parseInt(e.target.value, 10) || 0)}
-                  className="w-16 h-8 text-center text-xs glass bg-white/[0.04] border-white/[0.08] text-[#e2e8f0] focus:border-[var(--accent-primary)]/40 transition-all duration-300"
+                  className="w-16 h-8 text-center text-xs glass bg-muted/50 border-border text-foreground focus:border-[var(--accent-primary)]/40 transition-all duration-300"
                 />
-                <span className="text-[10px] text-[#475569] font-mono">{formatHour(prefs.quietHours.end)}</span>
+                <span className="text-[10px] text-muted-foreground font-mono">{formatHour(prefs.quietHours.end)}</span>
               </div>
             </motion.div>
           )}
@@ -696,24 +696,24 @@ export function NotificationSettingsPanel() {
           initial="hidden"
           animate="visible"
           custom={13}
-          className="rounded-xl border border-white/[0.06] p-4 mt-2"
+          className="rounded-xl border border-border p-4 mt-2"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-lg bg-[#0ea5e9]/10 flex items-center justify-center">
               <Settings2 className="w-4 h-4 text-[#0ea5e9]" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#e2e8f0]">Fréquence</p>
-              <p className="text-[10px] text-[#475569]">Limitez le nombre de notifications par heure</p>
+              <p className="text-sm font-medium text-foreground">Fréquence</p>
+              <p className="text-[10px] text-muted-foreground">Limitez le nombre de notifications par heure</p>
             </div>
           </div>
           <div className="flex items-center gap-4 ml-11">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] text-[#64748b] uppercase tracking-wider">Max / heure</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Max / heure</span>
                 <span className="text-sm font-semibold text-[var(--accent-primary)] font-mono">{prefs.maxPerHour}</span>
               </div>
-              <div className="relative h-1.5 rounded-full bg-white/[0.06]">
+              <div className="relative h-1.5 rounded-full bg-muted">
                 <div
                   className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#0ea5e9]/60 to-[#0ea5e9]"
                   style={{ width: `${((prefs.maxPerHour - 1) / 9) * 100}%` }}
@@ -734,13 +734,13 @@ export function NotificationSettingsPanel() {
                 />
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-[9px] text-[#475569]">1</span>
-                <span className="text-[9px] text-[#475569]">10</span>
+                <span className="text-[9px] text-muted-foreground">1</span>
+                <span className="text-[9px] text-muted-foreground">10</span>
               </div>
             </div>
             <div className="shrink-0 text-right">
-              <span className="text-[10px] text-[#475569] block">Intervalle min.</span>
-              <span className="text-sm font-semibold text-[#e2e8f0] font-mono">{prefs.minIntervalMin} min</span>
+              <span className="text-[10px] text-muted-foreground block">Intervalle min.</span>
+              <span className="text-sm font-semibold text-foreground font-mono">{prefs.minIntervalMin} min</span>
             </div>
           </div>
         </motion.div>
@@ -760,8 +760,8 @@ export function NotificationSettingsPanel() {
               <Sparkles className="w-4 h-4 text-[#f59e0b]" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#e2e8f0]">Tester une notification</p>
-              <p className="text-[10px] text-[#475569]">Envoyez une notification test dans le journal</p>
+              <p className="text-sm font-medium text-foreground">Tester une notification</p>
+              <p className="text-[10px] text-muted-foreground">Envoyez une notification test dans le journal</p>
             </div>
           </div>
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
@@ -778,12 +778,12 @@ export function NotificationSettingsPanel() {
 
       {/* ── Test Notification Dialog ── */}
       <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
-        <DialogContent className="sm:max-w-lg glass-strong rounded-2xl border-white/[0.08] p-6">
+        <DialogContent className="sm:max-w-lg glass-strong rounded-2xl border-border p-6">
           <DialogHeader>
-            <DialogTitle className="font-serif text-lg text-[#e2e8f0]">
+            <DialogTitle className="font-serif text-lg text-foreground">
               🧪 Tester une notification
             </DialogTitle>
-            <DialogDescription className="text-[#64748b]">
+            <DialogDescription className="text-muted-foreground">
               Sélectionnez un type de notification pour l&apos;ajouter au journal.
               La notification sera disponible sur la tablette familiale.
             </DialogDescription>
@@ -792,7 +792,7 @@ export function NotificationSettingsPanel() {
           <div className="max-h-72 overflow-y-auto scrollbar-luxe space-y-2 py-2">
             {CATEGORIES_CONFIG.map((cat) => (
               <div key={cat.key}>
-                <p className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold mb-1.5 flex items-center gap-1.5">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-1.5 flex items-center gap-1.5">
                   <span>{cat.emoji}</span> {cat.label}
                 </p>
                 <div className="grid grid-cols-2 gap-1.5 mb-3">
@@ -809,7 +809,7 @@ export function NotificationSettingsPanel() {
                           flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all duration-200
                           ${isSelected
                             ? 'border-[var(--accent-primary)]/50 bg-[var(--accent-primary)]/10'
-                            : 'border-white/[0.06] hover:border-white/[0.15] hover:bg-white/[0.03]'
+                            : 'border-border hover:border-border hover:bg-muted/30'
                           }
                         `}
                       >
@@ -817,12 +817,12 @@ export function NotificationSettingsPanel() {
                           w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200
                           ${isSelected
                             ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]'
-                            : 'border-white/20'
+                            : 'border-border'
                           }
                         `}>
                           {isSelected && <Check className="w-2.5 h-2.5 text-[#0a0a12]" />}
                         </div>
-                        <span className={`text-[11px] font-medium truncate transition-colors duration-200 ${isSelected ? 'text-[var(--accent-primary)]' : 'text-[#94a3b8]'}`}>
+                        <span className={`text-[11px] font-medium truncate transition-colors duration-200 ${isSelected ? 'text-[var(--accent-primary)]' : 'text-muted-foreground'}`}>
                           {item.label}
                         </span>
                       </motion.button>
@@ -838,7 +838,7 @@ export function NotificationSettingsPanel() {
               variant="ghost"
               onClick={() => setShowTestDialog(false)}
               disabled={testing}
-              className="text-[#64748b] hover:text-[#e2e8f0] hover:bg-white/[0.04] transition-all duration-300"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300"
             >
               Annuler
             </Button>

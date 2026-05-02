@@ -195,10 +195,10 @@ function HeroSkeleton() {
   return (
     <div className="glass rounded-2xl p-8 relative overflow-hidden">
       <div className="flex items-center gap-4">
-        <Skeleton className="h-14 w-14 rounded-2xl bg-white/[0.06]" />
+        <Skeleton className="h-14 w-14 rounded-2xl bg-muted" />
         <div className="space-y-2">
-          <Skeleton className="h-8 w-64 bg-white/[0.06]" />
-          <Skeleton className="h-4 w-96 max-w-full bg-white/[0.06]" />
+          <Skeleton className="h-8 w-64 bg-muted" />
+          <Skeleton className="h-4 w-96 max-w-full bg-muted" />
         </div>
       </div>
     </div>
@@ -207,10 +207,10 @@ function HeroSkeleton() {
 
 function StatCardSkeleton() {
   return (
-    <div className="glass rounded-xl p-5 inner-glow">
-      <Skeleton className="h-11 w-11 rounded-xl bg-white/[0.06] mb-4" />
-      <Skeleton className="h-3.5 w-28 bg-white/[0.06] mb-1.5" />
-      <Skeleton className="h-9 w-16 bg-white/[0.06] font-serif" />
+    <div className="glass rounded-xl p-5 shadow-sm">
+      <Skeleton className="h-11 w-11 rounded-xl bg-muted mb-4" />
+      <Skeleton className="h-3.5 w-28 bg-muted mb-1.5" />
+      <Skeleton className="h-9 w-16 bg-muted font-serif" />
     </div>
   );
 }
@@ -218,8 +218,8 @@ function StatCardSkeleton() {
 function ActivitySkeleton() {
   return (
     <div className="glass rounded-xl overflow-hidden">
-      <div className="p-5 pb-3 border-b border-white/[0.06]">
-        <Skeleton className="h-5 w-40 bg-white/[0.06]" />
+      <div className="p-5 pb-3 border-b border-border">
+        <Skeleton className="h-5 w-40 bg-muted" />
       </div>
       <div className="p-5 space-y-5">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -227,12 +227,12 @@ function ActivitySkeleton() {
             <Skeleton className="h-2 w-2 rounded-full bg-[var(--accent-primary)]/30 shrink-0 mt-2" />
             <div className="flex-1 space-y-1.5">
               <div className="flex items-center gap-2">
-                <Skeleton className="h-7 w-7 rounded-full bg-white/[0.06]" />
-                <Skeleton className="h-4 w-32 bg-white/[0.06]" />
+                <Skeleton className="h-7 w-7 rounded-full bg-muted" />
+                <Skeleton className="h-4 w-32 bg-muted" />
               </div>
-              <Skeleton className="h-3 w-48 bg-white/[0.06] ml-9" />
+              <Skeleton className="h-3 w-48 bg-muted ml-9" />
             </div>
-            <Skeleton className="h-3 w-14 bg-white/[0.06] shrink-0 mt-2" />
+            <Skeleton className="h-3 w-14 bg-muted shrink-0 mt-2" />
           </div>
         ))}
       </div>
@@ -258,13 +258,13 @@ function WeatherRitualCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-      className="glass rounded-xl p-5 inner-glow"
+      className="glass rounded-xl p-5 shadow-sm"
     >
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 bg-[var(--accent-primary)]/10 rounded-lg">
           <CloudSun className="text-[var(--accent-primary)] w-5 h-5" />
         </div>
-        <h2 className="text-lg font-serif text-amber-50">Rituel du Jour</h2>
+        <h2 className="text-lg font-serif text-foreground">Rituel du Jour</h2>
       </div>
 
       {/* Weather */}
@@ -276,16 +276,16 @@ function WeatherRitualCard({
               <span className="text-3xl font-light text-foreground">
                 {weather.temp}°C
               </span>
-              <span className="text-sm text-[oklch(0.60_0.02_260)]">
+              <span className="text-sm text-muted-foreground">
                 {weather.condition}
               </span>
             </div>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-xs text-[oklch(0.50_0.02_260)] flex items-center gap-1">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Droplets className="w-3 h-3" />
                 {weather.humidity}%
               </span>
-              <span className="text-xs text-[oklch(0.50_0.02_260)] flex items-center gap-1">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Wind className="w-3 h-3" />
                 {weather.windSpeed} km/h
               </span>
@@ -293,22 +293,22 @@ function WeatherRitualCard({
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 mb-4 text-[oklch(0.50_0.02_260)]">
+        <div className="flex items-center gap-2 mb-4 text-muted-foreground">
           <CloudSun className="w-4 h-4" />
           <span className="text-sm">Météo indisponible</span>
         </div>
       )}
 
       {/* Suggestion */}
-      <div className="border-t border-white/[0.06] pt-3">
-        <div className="bg-black/20 rounded-xl p-3">
+      <div className="border-t border-border pt-3">
+        <div className="bg-muted rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-            <span className="text-[10px] uppercase tracking-widest text-[oklch(0.50_0.02_260)] font-medium">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
               Conscience
             </span>
           </div>
-          <p className="text-sm text-[oklch(0.80_0.02_260)] italic leading-relaxed">
+          <p className="text-sm text-foreground/80 italic leading-relaxed">
             &ldquo;{suggestion.message}&rdquo;
           </p>
         </div>
@@ -316,7 +316,7 @@ function WeatherRitualCard({
 
       {/* Active presence badge */}
       {activeUsersCount > 0 && (
-        <div className="mt-3 flex items-center gap-2 text-xs text-[oklch(0.55_0.02_260)]">
+        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
           <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
           <span>
             {activeUsersCount} occupant{activeUsersCount > 1 ? 's' : ''} actif{activeUsersCount > 1 ? 's' : ''}
@@ -351,9 +351,9 @@ function MessagesWall({
   };
 
   return (
-    <div className="glass rounded-xl overflow-hidden inner-glow">
+    <div className="glass rounded-xl overflow-hidden shadow-sm">
       {/* Header */}
-      <div className="p-5 pb-4 border-b border-white/[0.06] flex items-center justify-between">
+      <div className="p-5 pb-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <MessageSquare className="w-5 h-5 text-[var(--accent-primary)]" />
           <h2 className="text-lg font-serif font-semibold tracking-tight">
@@ -361,7 +361,7 @@ function MessagesWall({
           </h2>
         </div>
         {messages.length > 0 && (
-          <span className="text-[10px] text-[oklch(0.45_0.02_260)] font-mono">
+          <span className="text-[10px] text-muted-foreground/70 font-mono">
             {messages.length} message{messages.length > 1 ? 's' : ''}
           </span>
         )}
@@ -378,30 +378,30 @@ function MessagesWall({
                 initial="initial"
                 animate="animate"
                 transition={{ delay: i * 0.05, duration: 0.35 }}
-                className="bg-black/20 rounded-xl p-3 border-l-2 border-[var(--accent-primary)]/40 hover:border-[var(--accent-primary)]/70 transition-colors duration-300"
+                className="bg-muted rounded-xl p-3 border-l-2 border-[var(--accent-primary)]/40 hover:border-[var(--accent-primary)]/70 transition-colors duration-300"
               >
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Avatar className="h-6 w-6 ring-1 ring-white/[0.06]">
-                    <AvatarFallback className="text-[9px] font-medium bg-white/[0.06] text-[oklch(0.70_0.02_260)]">
+                  <Avatar className="h-6 w-6 ring-1 ring-border">
+                    <AvatarFallback className="text-[9px] font-medium bg-muted text-muted-foreground">
                       {getSenderInitial(msg)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-xs font-medium text-[oklch(0.80_0.02_260)]">
+                  <span className="text-xs font-medium text-foreground/80">
                     {msg.sender?.name || 'Anonyme'}
                   </span>
-                  <span className="text-[10px] text-[oklch(0.40_0.02_260)] font-mono ml-auto">
+                  <span className="text-[10px] text-muted-foreground/50 font-mono ml-auto">
                     {relativeTime(msg.createdAt)}
                   </span>
                 </div>
-                <p className="text-sm text-[oklch(0.75_0.02_260)] leading-relaxed">
+                <p className="text-sm text-foreground/70 leading-relaxed">
                   {msg.content}
                 </p>
               </motion.div>
             ))
           ) : (
             <div className="py-8 text-center">
-              <MessageSquare className="w-8 h-8 text-[oklch(0.30_0.02_260)] mx-auto mb-2" />
-              <p className="text-sm text-[oklch(0.50_0.02_260)] italic">
+              <MessageSquare className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground italic">
                 Aucun message. La maison est silencieuse.
               </p>
             </div>
@@ -410,13 +410,13 @@ function MessagesWall({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-white/[0.06]">
+      <div className="p-4 border-t border-border">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
             placeholder="Laisser une note..."
-            className="flex-1 bg-black/30 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-foreground placeholder-[oklch(0.40_0.02_260)] focus:outline-none focus:border-[var(--accent-primary)]/30 transition-colors duration-300"
+            className="flex-1 bg-muted border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[var(--accent-primary)]/30 transition-colors duration-300"
             disabled={sending}
           />
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -472,12 +472,12 @@ function AmbianceButton() {
           ${
             isPlaying
               ? 'bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary-dark)]/10 border border-[var(--accent-primary)]/30 shadow-[0_0_20px_var(--accent-primary-glow)]'
-              : 'bg-white/[0.03] border border-white/[0.08] hover:bg-[var(--accent-primary)]/[0.06] hover:border-[var(--accent-primary)]/20'
+              : 'bg-muted/30 border border-border hover:bg-[var(--accent-primary)]/[0.06] hover:border-[var(--accent-primary)]/20'
           }
         `}
       >
         <div className="relative">
-          <Music className={`w-6 h-6 transition-colors duration-300 ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-[oklch(0.55_0.02_260)] group-hover:text-[var(--accent-primary)]'}`} />
+          <Music className={`w-6 h-6 transition-colors duration-300 ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-muted-foreground group-hover:text-[var(--accent-primary)]'}`} />
           {isPlaying && (
             <motion.div
               className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[var(--accent-primary)]"
@@ -486,7 +486,7 @@ function AmbianceButton() {
             />
           )}
         </div>
-        <span className={`text-sm font-medium transition-colors duration-300 ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-[oklch(0.70_0.02_260)]'}`}>
+        <span className={`text-sm font-medium transition-colors duration-300 ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-muted-foreground'}`}>
           {isPlaying ? (currentTrack?.title || 'En lecture') : 'Lancer Ambiance'}
         </span>
         {isPlaying && (
@@ -513,25 +513,25 @@ function PresenceCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.05, duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-      className="glass rounded-xl p-5 inner-glow group hover:shadow-[0_0_20px_oklch(0.78_0.14_85/8%)] transition-shadow duration-500"
+      className="glass rounded-xl p-5 shadow-sm group hover:shadow-[0_0_20px_oklch(0.78_0.14_85/8%)] transition-shadow duration-500"
     >
       <div className="flex items-center gap-3 mb-3">
         <div className="p-2 bg-[var(--accent-primary)]/10 rounded-lg">
           <Users className="text-[var(--accent-primary)] w-5 h-5" />
         </div>
-        <h2 className="text-lg font-serif text-amber-50">Présence Active</h2>
+        <h2 className="text-lg font-serif text-foreground">Présence Active</h2>
       </div>
       <div className="text-4xl font-light text-foreground mb-1">{count}</div>
-      <p className="text-xs text-[oklch(0.50_0.02_260)]">
+      <p className="text-xs text-muted-foreground">
         occupant{count > 1 ? 's' : ''} détecté{count > 1 ? 's' : ''}
       </p>
 
       {/* Active user avatars */}
       {users.length > 0 && (
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/[0.06]">
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
           {users.slice(0, 4).map((u, i) => (
             <div key={u.id} className="relative" style={{ zIndex: 10 - i }}>
-              <Avatar className="h-7 w-7 ring-2 ring-[#0a0a12]">
+              <Avatar className="h-7 w-7 ring-2 ring-background">
                 <AvatarFallback className="text-[9px] font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
                   {getInitials(u.name || u.email)}
                 </AvatarFallback>
@@ -539,7 +539,7 @@ function PresenceCard({
             </div>
           ))}
           {users.length > 4 && (
-            <div className="h-7 w-7 rounded-full bg-white/[0.06] flex items-center justify-center text-[9px] text-[oklch(0.50_0.02_260)]">
+            <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[9px] text-muted-foreground">
               +{users.length - 4}
             </div>
           )}
@@ -712,7 +712,7 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* ═══ WELCOME HERO ═══ */}
       <motion.div custom={delays[0]} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="relative glass rounded-2xl p-6 md:p-8 inner-glow overflow-hidden">
+        <div className="relative glass rounded-2xl p-6 md:p-8 shadow-sm overflow-hidden">
           <div className="absolute inset-0 rounded-2xl opacity-40 pointer-events-none">
             <div
               className="absolute inset-0 rounded-2xl"
@@ -736,11 +736,11 @@ export function Dashboard() {
                   {getGreeting()}, {userName || 'Utilisateur'}
                 </span>
               </h1>
-              <p className="text-sm md:text-base text-[oklch(0.60_0.02_260)] mt-1.5 leading-relaxed">
+              <p className="text-sm md:text-base text-muted-foreground mt-1.5 leading-relaxed">
                 Bienvenue dans votre espace Maison Consciente. Voici un aperçu de votre activité.
               </p>
               {lastSync && (
-                <p className="text-[10px] text-[oklch(0.40_0.02_260)] mt-1 font-mono">
+                <p className="text-[10px] text-muted-foreground/50 mt-1 font-mono">
                   Conscience active • Dernière sync: {lastSync}
                 </p>
               )}
@@ -781,12 +781,12 @@ export function Dashboard() {
                   variants={scaleHover as any}
                   initial="rest"
                   whileHover="hover"
-                  className={`group glass rounded-xl p-5 inner-glow transition-shadow duration-500 relative ${stat.glowClass}`}
+                  className={`group glass rounded-xl p-5 shadow-sm transition-shadow duration-500 relative ${stat.glowClass}`}
                 >
                   <div className={`inline-flex items-center justify-center h-11 w-11 rounded-xl ${stat.iconBg}`}>
                     <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
                   </div>
-                  <p className="text-xs text-[oklch(0.60_0.02_260)] mt-4 tracking-wide uppercase font-medium">
+                  <p className="text-xs text-muted-foreground mt-4 tracking-wide uppercase font-medium">
                     {stat.label}
                   </p>
                   <p className="text-3xl font-serif font-bold mt-0.5 tracking-tight text-foreground">
@@ -846,10 +846,10 @@ export function Dashboard() {
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.25 }}>
           <button
             onClick={() => setView('messages')}
-            className="w-full rounded-xl p-4 flex flex-col items-center justify-center gap-2 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] transition-all duration-300 group cursor-pointer"
+            className="w-full rounded-xl p-4 flex flex-col items-center justify-center gap-2 bg-muted/30 border border-border hover:bg-muted transition-all duration-300 group cursor-pointer"
           >
-            <MessageSquare className="w-6 h-6 text-[oklch(0.55_0.02_260)] group-hover:text-[var(--accent-primary)] transition-colors duration-300" />
-            <span className="text-sm font-medium text-[oklch(0.70_0.02_260)] group-hover:text-[var(--accent-primary)] transition-colors duration-300">
+            <MessageSquare className="w-6 h-6 text-muted-foreground group-hover:text-[var(--accent-primary)] transition-colors duration-300" />
+            <span className="text-sm font-medium text-muted-foreground group-hover:text-[var(--accent-primary)] transition-colors duration-300">
               Nouvelle Note
             </span>
           </button>
@@ -896,8 +896,8 @@ export function Dashboard() {
           <ActivitySkeleton />
         ) : (
           <motion.div custom={delays[3]} variants={fadeUp} initial="hidden" animate="visible">
-            <div className="glass rounded-xl overflow-hidden inner-glow">
-              <div className="p-5 pb-4 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="glass rounded-xl overflow-hidden shadow-sm">
+              <div className="p-5 pb-4 border-b border-border flex items-center justify-between">
                 <h2 className="text-lg font-serif font-semibold tracking-tight">
                   Activité Récente
                 </h2>
@@ -926,7 +926,7 @@ export function Dashboard() {
                           initial={{ opacity: 0, x: -8 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: delays[3] + i * 0.06, duration: 0.4, ease: 'easeOut' }}
-                          className="group/item flex items-start gap-3 px-3 py-3 rounded-lg hover:bg-white/[0.03] transition-colors duration-300 cursor-default"
+                          className="group/item flex items-start gap-3 px-3 py-3 rounded-lg hover:bg-muted/30 transition-colors duration-300 cursor-default"
                         >
                           <div className="flex flex-col items-center pt-2.5 shrink-0">
                             <div
@@ -934,13 +934,13 @@ export function Dashboard() {
                               style={{ backgroundColor: zoneColor, color: zoneColor }}
                             />
                             {i < stats.recentActivity.slice(0, 10).length - 1 && (
-                              <div className="w-px flex-1 bg-white/[0.06] mt-2" />
+                              <div className="w-px flex-1 bg-muted mt-2" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
                             <div className="flex items-start gap-2.5 min-w-0">
-                              <Avatar className="h-7 w-7 mt-0.5 shrink-0 ring-1 ring-white/[0.08]">
-                                <AvatarFallback className="text-[10px] font-medium bg-white/[0.06] text-[oklch(0.70_0.02_260)]">
+                              <Avatar className="h-7 w-7 mt-0.5 shrink-0 ring-1 ring-border">
+                                <AvatarFallback className="text-[10px] font-medium bg-muted text-muted-foreground">
                                   {initials}
                                 </AvatarFallback>
                               </Avatar>
@@ -949,17 +949,17 @@ export function Dashboard() {
                                   <span className="font-medium text-foreground/90">{activity.user?.name || 'Utilisateur'}</span>
                                   {activity.zone?.name && (
                                     <>
-                                      <span className="text-[oklch(0.50_0.02_260)]"> · </span>
+                                      <span className="text-muted-foreground"> · </span>
                                       <span className="text-[var(--accent-primary)]/80 font-medium">{activity.zone.name}</span>
                                     </>
                                   )}
                                 </p>
                                 {contextStr && (
-                                  <p className="text-xs text-[oklch(0.50_0.02_260)] mt-0.5 truncate">{contextStr}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{contextStr}</p>
                                 )}
                               </div>
                             </div>
-                            <span className="text-[10px] text-[oklch(0.45_0.02_260)] whitespace-nowrap shrink-0 mt-1 font-mono tracking-wide">
+                            <span className="text-[10px] text-muted-foreground/70 whitespace-nowrap shrink-0 mt-1 font-mono tracking-wide">
                               {relativeTime(activity.createdAt)}
                             </span>
                           </div>
@@ -973,8 +973,8 @@ export function Dashboard() {
                   <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-[var(--accent-primary)]/[0.06] border border-[var(--accent-primary)]/10 mb-4">
                     <Clock className="w-6 h-6 text-[var(--accent-primary)]/50" />
                   </div>
-                  <p className="text-sm font-medium text-[oklch(0.60_0.02_260)]">Aucune activité récente</p>
-                  <p className="text-xs text-[oklch(0.45_0.02_260)] mt-1.5 max-w-[240px] mx-auto leading-relaxed">
+                  <p className="text-sm font-medium text-muted-foreground">Aucune activité récente</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1.5 max-w-[240px] mx-auto leading-relaxed">
                     Commencez par scanner un QR code pour voir votre activité apparaître ici.
                   </p>
                   <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="mt-5 inline-block">
@@ -1005,14 +1005,14 @@ export function Dashboard() {
           </motion.div>
         ) : (
           <div className="glass rounded-xl overflow-hidden">
-            <div className="p-5 border-b border-white/[0.06]">
-              <Skeleton className="h-5 w-40 bg-white/[0.06]" />
+            <div className="p-5 border-b border-border">
+              <Skeleton className="h-5 w-40 bg-muted" />
             </div>
             <div className="p-5 space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-24 bg-white/[0.06]" />
-                  <Skeleton className="h-3 w-full bg-white/[0.06]" />
+                  <Skeleton className="h-4 w-24 bg-muted" />
+                  <Skeleton className="h-3 w-full bg-muted" />
                 </div>
               ))}
             </div>
@@ -1022,8 +1022,8 @@ export function Dashboard() {
 
       {/* ═══ TIPS SECTION ═══ */}
       <motion.div custom={delays[5]} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="glass rounded-xl overflow-hidden inner-glow">
-          <div className="p-5 pb-4 border-b border-white/[0.06]">
+        <div className="glass rounded-xl overflow-hidden shadow-sm">
+          <div className="p-5 pb-4 border-b border-border">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-serif font-semibold tracking-tight flex items-center gap-2.5">
                 <div className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/15 to-[#c77d5a]/10 border border-[var(--accent-primary)]/10">
@@ -1032,7 +1032,7 @@ export function Dashboard() {
                 Conseils de la Maison
               </h2>
             </div>
-            <p className="text-xs text-[oklch(0.50_0.02_260)] mt-1.5 ml-[38px]">
+            <p className="text-xs text-muted-foreground mt-1.5 ml-[38px]">
               Astuces pour votre maison consciente
             </p>
           </div>
@@ -1049,7 +1049,7 @@ export function Dashboard() {
                     duration: 0.4,
                     ease: 'easeOut',
                   }}
-                  className="group/tip p-3 rounded-lg glass hover:bg-white/[0.04] transition-colors duration-300 cursor-default"
+                  className="group/tip p-3 rounded-lg glass hover:bg-muted transition-colors duration-300 cursor-default"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-lg mt-0.5 shrink-0 filter drop-shadow-[0_0_4px_oklch(0.78_0.14_85/20%)]">
@@ -1057,7 +1057,7 @@ export function Dashboard() {
                     </span>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground/90 leading-snug">{tip.title}</p>
-                      <p className="text-xs text-[oklch(0.50_0.02_260)] mt-1 leading-relaxed">{tip.desc}</p>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{tip.desc}</p>
                     </div>
                   </div>
                 </motion.div>

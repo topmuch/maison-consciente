@@ -126,10 +126,10 @@ export default function SettingsPage() {
           <Settings className="w-6 h-6 text-amber-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-serif font-bold text-[var(--text-primary, #f8fafc)]">
+          <h1 className="text-2xl font-serif font-bold text-foreground">
             Paramètres
           </h1>
-          <p className="text-sm text-[var(--text-secondary, #94a3b8)]">
+          <p className="text-sm text-muted-foreground">
             Configurez votre foyer et vos préférences
           </p>
         </div>
@@ -142,25 +142,25 @@ export default function SettingsPage() {
         animate="visible"
         custom={0.1}
       >
-        <Card className="rounded-2xl border-[var(--border, rgba(212,168,83,0.15))] bg-[var(--bg-card, #1e293b)] overflow-hidden">
+        <Card className="rounded-2xl border-border bg-card overflow-hidden">
           <CardContent className="p-5">
             {loading ? (
               <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-[var(--accent, #d4a853)] animate-spin" />
-                <span className="text-sm text-[var(--text-secondary, #94a3b8)]">Chargement...</span>
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                <span className="text-sm text-muted-foreground">Chargement...</span>
               </div>
             ) : household ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[var(--accent, #d4a853)]/15 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center">
                     {household.type === 'hospitality' ? (
-                      <Building2 className="w-6 h-6 text-[var(--accent, #d4a853)]" />
+                      <Building2 className="w-6 h-6 text-primary" />
                     ) : (
-                      <Home className="w-6 h-6 text-[var(--accent, #d4a853)]" />
+                      <Home className="w-6 h-6 text-primary" />
                     )}
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-[var(--text-primary, #f8fafc)]">
+                    <h3 className="text-base font-semibold text-foreground">
                       {household.name}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
@@ -172,7 +172,7 @@ export default function SettingsPage() {
                       )}>
                         {household.type === 'hospitality' ? 'Hospitalité' : 'Maison'}
                       </span>
-                      <span className="text-[10px] text-[var(--text-secondary, #94a3b8)]">
+                      <span className="text-[10px] text-muted-foreground">
                         {household.templateSlug}
                       </span>
                     </div>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
 
       {/* Quick Links */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0.2}>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-secondary, #94a3b8)] mb-4 flex items-center gap-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
           <Settings className="w-4 h-4" />
           Réglages rapides
         </h2>
@@ -201,20 +201,20 @@ export default function SettingsPage() {
               custom={0.3 + idx * 0.08}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className="flex items-center gap-4 p-4 rounded-xl border border-[var(--border, rgba(212,168,83,0.15))] bg-[var(--bg-card, #1e293b)] hover:border-[var(--accent, #d4a853)]/30 transition-all duration-300 group"
+              className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-all duration-300 group"
             >
               <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center border shrink-0', link.color)}>
                 {link.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[var(--text-primary, #f8fafc)]">
+                <p className="text-sm font-medium text-foreground">
                   {link.label}
                 </p>
-                <p className="text-[11px] text-[var(--text-secondary, #94a3b8)] mt-0.5 truncate">
+                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                   {link.description}
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-[var(--text-secondary, #94a3b8)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
             </motion.a>
           ))}
         </div>
@@ -222,7 +222,7 @@ export default function SettingsPage() {
 
       {/* Template Selector */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0.6}>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-secondary, #94a3b8)] mb-4 flex items-center gap-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
           <Palette className="w-4 h-4" />
           Thème visuel
         </h2>
@@ -231,7 +231,7 @@ export default function SettingsPage() {
 
       {/* Notification Settings */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0.8}>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-secondary, #94a3b8)] mb-4 flex items-center gap-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
           <Bell className="w-4 h-4" />
           Notifications
         </h2>
