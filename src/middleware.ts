@@ -37,6 +37,7 @@ const PUBLIC_API_PATHS = [
   "/api/demo",     // Demo voice & chat APIs (no auth required for demos)
   "/api/guest",    // Guest voice session & stream APIs (token-based auth)
   "/api/location", // Family geolocation tracking (trackingToken-based auth)
+  "/api/seed-admin", // Internal: auto-seed superadmin at container startup
 ];
 
 // Static assets
