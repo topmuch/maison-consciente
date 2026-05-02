@@ -240,3 +240,96 @@ Replaced all hardcoded dark-mode-only hex colors with semantic Tailwind tokens f
 ```
 All 6 errors are **pre-existing** in unrelated files (ThemeToggle.tsx, useMaellisVoice.ts).
 **Zero new lint errors** introduced by this task.
+
+---
+
+## Task 6: Superadmin API Routes — Stats, Clients, Subscriptions, AI Config
+
+**Agent**: full-stack-developer
+**Files modified/created**:
+1. `/src/app/api/admin/stats/route.ts` (ENHANCED)
+2. `/src/app/api/admin/clients/route.ts` (NEW)
+3. `/src/app/api/admin/subscriptions/route.ts` (NEW)
+4. `/src/app/api/admin/ai-config/route.ts` (NEW)
+
+### 1. Enhanced Stats (`/api/admin/stats`)
+**Before**: Returned only `totalHouseholds`, `totalUsers`, `totalZones`, `totalInteractions`.
+
+**After**: Returns comprehensive dashboard data:
+- `totalInvoices`, `paidInvoices`, `pastDueInvoices` (invoice counts)
+- `totalRevenueCents` (aggregate of all paid invoices)
+- `activeSubscriptions` (households with active/trialing status)
+- `subscriptionBreakdown` (counts per plan: free, starter, comfort, prestige, pro)
+- `recentActivity` (last 10 UserLog entries with user/household relations)
+- `monthlyGrowth` (last 6 months of new household registrations, formatted in French)
+
+All queries run in parallel via `Promise.all` for performance.
+
+### 2. Clients (`/api/admin/clients`)
+GET endpoint with:
+- **Pagination**: `page`, `limit` (max 100) query params
+- **Search**: `search` param filters by household name, contactEmail, or user email (using OR + contains)
+- **Filtering**: `type` (home/hospitality), `subscriptionPlan` (free/starter/comfort/prestige/pro), `subscriptionStatus` (active/trialing/past_due/canceled/inactive)
+- **Sorting**: `sortBy` (createdAt/name/subscriptionPlan/subscriptionStatus) + `sortOrder` (asc/desc)
+- **Response**: Each client includes `memberCount`, `zoneCount`, and `lastActivity` (latest UserLog timestamp)
+- **Pagination metadata**: `page`, `limit`, `total`, `totalPages`
+
+### 3. Subscriptions (`/api/admin/subscriptions`)
+**GET**: Returns hardcoded plan definitions merged with real DB counts:
+- 4 plans: Gratuit (free, 0€), Starter (19€), Confort (49€), Prestige (99€)
+- Each plan includes `features` array, `description`, `priceFormatted`, and `counts` object (total, active, trialing, past_due, canceled, inactive)
+
+**PUT**: Manages subscription changes for a household:
+- `action: "upgrade"` — validates plan is higher tier, sets status to active, extends 1 month
+- `action: "downgrade"` — validates plan is lower tier, sets status to active, extends 1 month
+- `action: "cancel"` — sets status to canceled, resets plan to free
+- `action: "extend"` — extends subscription by `months` param (default 1, max 24)
+- All mutations create audit UserLog entries
+- Returns updated household state
+
+### 4. AI Config (`/api/admin/ai-config`)
+**GET**: Returns AI configuration from `SystemConfig` (category "ai") merged with defaults:
+- 6 config keys: `ai_model` (gemini-2.0-flash), `ai_temperature` (0.7), `ai_max_tokens` (4096), `ai_system_prompt`, `ai_voice_enabled` (true), `ai_language` (fr-FR)
+- Each entry includes `value`, `defaultValue`, `label`, `description`, `type`, `isCustomized` flag, `systemConfigId`
+- Also returns AI-related `ApiConfig` entries (GOOGLE_AI, OPENAI, ANTHROPIC, RETELL) with status info
+
+**PUT**: Updates a single AI config value:
+- Validates key is a known AI config key
+- Type validation for number and boolean fields
+- Upserts into `SystemConfig` (creates if missing, updates if exists)
+- Creates audit UserLog entry with previous/new value tracking
+
+### Common Patterns
+- All routes use `await requireRole("superadmin")` for auth
+- All routes use `import { db } from "@/core/db"`
+- Consistent error handling: 401 UNAUTHORIZED, 403 FORBIDDEN, 500 internal errors
+- Consistent response format: `{ success: true, ...data }` or `{ success: false, error: "message" }`
+- French error messages throughout
+
+### Lint Results
+```
+✖ 6 problems (6 errors, 0 warnings)
+```
+All 6 errors are **pre-existing** in unrelated files (daemon.js, seed-superadmin.js, ThemeToggle.tsx, useMaellisVoice.ts).
+**Zero new lint errors** introduced by this task.
+
+---
+Task ID: 7
+Agent: main
+Task: Build complete superadmin dashboard with all modules
+
+Work Log:
+- Traversed entire project structure: prisma schema, auth system, dashboard layout, sidebar, existing admin components
+- Created 4 new API routes: clients, subscriptions, ai-config, enhanced stats
+- Created 5 new frontend panel components: overview, clients, subscriptions, payments, ai-config
+- Rewrote admin-dashboard.tsx as main orchestrator with 11-tab navigation
+- Updated DashboardClientShell sidebar with superadmin sub-navigation
+- All components use amber/gold luxury theme with semantic tokens
+- Zero new lint errors introduced
+
+Stage Summary:
+- Complete superadmin dashboard with modules: Vue d'ensemble, Clients, Abonnements, Paiements, Configuration IA, Utilisateurs, Logs, Sécurité, APIs, Paramètres, Lancement
+- New API routes: /api/admin/clients, /api/admin/subscriptions, /api/admin/ai-config
+- Enhanced /api/admin/stats with revenue, subscription breakdown, monthly growth
+- All existing admin panels preserved and integrated (ApiConfigPanel, SecurityAuditPanel, SystemConfigPanel, DeploymentChecklist)
+- Sidebar shows superadmin sub-navigation with gold accent styling

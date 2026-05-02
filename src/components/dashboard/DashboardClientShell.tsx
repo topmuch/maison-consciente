@@ -11,6 +11,7 @@ import {
   Grid3X3,
   Settings,
   User,
+  Users,
   Briefcase,
   Search,
   Bell,
@@ -22,6 +23,8 @@ import {
   Home,
   Sparkles,
   Crown,
+  CreditCard,
+  Brain,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -74,6 +77,15 @@ const SETTINGS_SUB_ITEMS = [
   { label: 'Santé', href: '/dashboard/settings/health' },
   { label: 'Connaissances', href: '/dashboard/settings/knowledge' },
   { label: 'Activités', href: '/dashboard/settings/activities' },
+] as const;
+
+/* ─── Superadmin Sub-Navigation ─── */
+const ADMIN_SUB_ITEMS = [
+  { label: 'Vue d\'ensemble', icon: LayoutDashboard },
+  { label: 'Clients', icon: Users },
+  { label: 'Abonnements', icon: Crown },
+  { label: 'Paiements', icon: CreditCard },
+  { label: 'Configuration IA', icon: Brain },
 ] as const;
 
 /* ─── Helpers ─── */
@@ -206,8 +218,29 @@ function SidebarNav({
             )}
           >
             <Crown className={cn('h-5 w-5 shrink-0', isActive(pathname, '/dashboard/admin') && 'text-amber-600 dark:text-amber-400')} />
-            <span>Administration</span>
+            <span>Superadmin</span>
           </Link>
+
+          {/* Admin sub-navigation — shown when on admin page */}
+          {isActive(pathname, '/dashboard/admin') && (
+            <div className="ml-8 mt-1 flex flex-col gap-0.5 border-l-2 border-amber-500/30 pl-3">
+              {ADMIN_SUB_ITEMS.map((sub) => {
+                return (
+                  <Link
+                    key={sub.label}
+                    href="/dashboard/admin"
+                    onClick={onItemClick}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150',
+                      'text-amber-600/70 dark:text-amber-400/70 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 dark:hover:text-amber-300'
+                    )}
+                  >
+                    {sub.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
     </nav>
