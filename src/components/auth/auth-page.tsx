@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Diamond, Mail, Lock, User, Eye, EyeOff, Home, Hotel } from 'lucide-react';
@@ -108,6 +109,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
 
   const { setAuth } = useAuthStore();
   const { setView } = useAppStore();
+  const router = useRouter();
 
   const handleTabChange = (value: string) => {
     if (value === activeTab) return;
@@ -197,6 +199,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
       } as any);
       setView('dashboard');
       toast.success('Bienvenue !');
+      router.push('/dashboard');
     } catch {
       toast.error('Erreur de connexion au serveur');
     } finally {
@@ -238,6 +241,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
       setView('dashboard');
       toast.success('Compte créé avec succès !');
       onRegisterSuccess?.(regHouseholdType);
+      router.push('/dashboard');
     } catch {
       toast.error('Erreur de connexion au serveur');
     } finally {
