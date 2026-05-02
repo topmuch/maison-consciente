@@ -3,6 +3,10 @@
    
    Routes d'authentification (Login, Register, Logout, Session)
    Utilise Lucia Auth v3 + Argon2id pour le hashage.
+   
+   LOGIN retourne un redirect serveur (302) vers /dashboard
+   pour garantir que le cookie de session est bien envoyé
+   avec la requête suivante.
    ═══════════════════════════════════════════════════════ */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -14,6 +18,10 @@ import { logActionSync } from "@/lib/audit";
 
 /* ═══════════════════════════════════════════════════════
    POST /api/auth/login
+
+   En cas de succès → 302 redirect vers /dashboard avec cookie.
+   Le navigateur suit le redirect nativement, le cookie est
+   déjà dans le jar quand la page dashboard se charge.
    ═══════════════════════════════════════════════════════ */
 
 export async function POST(request: NextRequest) {
@@ -55,7 +63,7 @@ export async function POST(request: NextRequest) {
         avatar: true,
         passwordHash: true,
         householdId: true,
-        household: { select: { name: true } },
+        household: { select: { name: true, type: true } },
       },
     });
 
@@ -80,25 +88,17 @@ export async function POST(request: NextRequest) {
     // Créer la session Lucia
     const session = await auth.createSession(user.id, {});
 
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        avatar: user.avatar,
-        householdId: user.householdId,
-      },
-      householdName: user.household?.name || null,
-    });
-
-    // Définir le cookie de session
-    const sessionCookie = auth.createSessionCookie(session.id);
-    response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-
     // Audit log: successful login
     logActionSync({ userId: user.id, householdId: user.householdId ?? undefined, action: "login", details: `Login from ${ip}`, status: "success", request });
+
+    // ── Server-side redirect with cookie ──
+    // Le cookie est posé sur la réponse 302, le navigateur le stocke
+    // avant de suivre la redirection vers /dashboard.
+    const dashboardUrl = new URL("/dashboard", request.url);
+    const response = NextResponse.redirect(dashboardUrl, 302);
+
+    const sessionCookie = auth.createSessionCookie(session.id);
+    response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
 
     return response;
   } catch (error) {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Diamond, Mail, Lock, User, Eye, EyeOff, Home, Hotel } from 'lucide-react';
@@ -10,8 +9,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useAuthStore } from '@/store/auth-store';
-import { useAppStore } from '@/store/app-store';
 
 /* ─── Animation Variants ─── */
 const cardVariants = {
@@ -107,10 +104,6 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
 
-  const { setAuth } = useAuthStore();
-  const { setView } = useAppStore();
-  const router = useRouter();
-
   const handleTabChange = (value: string) => {
     if (value === activeTab) return;
     setDirection(value === 'register' ? 1 : -1);
@@ -183,24 +176,19 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || 'Erreur de connexion');
+
+      // Le serveur retourne un 302 redirect vers /dashboard en cas de succès.
+      // fetch suit automatiquement le redirect. Si redirected === true, c'est
+      // que le login a réussi — le cookie a été posé par le serveur.
+      if (res.redirected) {
+        toast.success('Bienvenue !');
+        window.location.href = res.url;
         return;
       }
-      setAuth({
-        userId: data.user.id,
-        email: data.user.email,
-        householdId: data.user.householdId,
-        role: data.user.role,
-        name: data.user.name,
-        avatar: data.user.avatar,
-        householdName: data.householdName,
-      } as any);
-      toast.success('Bienvenue !');
-      // Use full page navigation to ensure the cookie is sent on the next request
-      window.location.href = '/dashboard';
-      return; // Don't continue — the page will unload
+
+      // Sinon, c'est une erreur (401, 400, 429, 500…)
+      const data = await res.json();
+      toast.error(data.error || 'Erreur de connexion');
     } catch {
       toast.error('Erreur de connexion au serveur');
     } finally {
@@ -224,25 +212,17 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
           householdType: regHouseholdType,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Erreur lors de l'inscription");
+
+      // Le serveur retourne un 302 redirect vers /dashboard en cas de succès.
+      if (res.redirected) {
+        toast.success('Compte créé avec succès !');
+        window.location.href = res.url;
         return;
       }
-      setAuth({
-        userId: data.user.id,
-        email: data.user.email,
-        householdId: data.user.householdId,
-        role: data.user.role,
-        name: data.user.name,
-        avatar: data.user.avatar,
-        householdName: data.householdName,
-        householdType: regHouseholdType,
-      } as any);
-      setView('dashboard');
-      toast.success('Compte créé avec succès !');
-      onRegisterSuccess?.(regHouseholdType);
-      router.push('/dashboard');
+
+      // Sinon, c'est une erreur
+      const data = await res.json();
+      toast.error(data.error || "Erreur lors de l'inscription");
     } catch {
       toast.error('Erreur de connexion au serveur');
     } finally {

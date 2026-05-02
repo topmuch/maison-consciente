@@ -79,28 +79,15 @@ export async function POST(request: NextRequest) {
     // Créer la session Lucia
     const session = await auth.createSession(user.id, {});
 
-    const response = NextResponse.json(
-      {
-        success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          avatar: user.avatar,
-          householdId: user.householdId,
-        },
-        householdName: household.name,
-      },
-      { status: 201 }
-    );
-
-    // Définir le cookie de session
-    const sessionCookie = auth.createSessionCookie(session.id);
-    response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-
     // Audit log: new user registration
     logActionSync({ userId: user.id, householdId: household.id, action: "register", details: `New user: ${name} (${email})`, status: "success", request });
+
+    // ── Server-side redirect with cookie ──
+    const dashboardUrl = new URL("/dashboard", request.url);
+    const response = NextResponse.redirect(dashboardUrl, 302);
+
+    const sessionCookie = auth.createSessionCookie(session.id);
+    response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
 
     return response;
   } catch (error) {
