@@ -122,21 +122,21 @@ const statCardConfig = [
     key: 'totalUsers',
     label: 'Utilisateurs',
     icon: Users,
-    iconBg: 'bg-[#c77d5a]/15',
-    iconColor: 'text-[#c77d5a]',
+    iconBg: 'bg-copper/15',
+    iconColor: 'text-copper',
   },
   {
     key: 'totalZones',
     label: 'Zones',
     icon: MapPin,
-    iconBg: 'bg-[#8b5cf6]/15',
-    iconColor: 'text-[#8b5cf6]',
+    iconBg: 'bg-amber-500/15',
+    iconColor: 'text-amber-500',
   },
   {
     key: 'totalInteractions',
     label: 'Interactions',
     icon: Activity,
-    iconBg: 'bg-gradient-to-br from-[var(--accent-primary)]/15 to-[#c77d5a]/15',
+    iconBg: 'bg-gradient-to-br from-[var(--accent-primary)]/15 to-copper/15',
     iconColor: 'text-[var(--accent-primary)]',
   },
 ] as const;
@@ -148,9 +148,9 @@ const statCardConfig = [
 function StatSkeleton() {
   return (
     <div className="glass rounded-xl p-5 inner-glow">
-      <Skeleton className="h-11 w-11 rounded-xl bg-white/[0.06] mb-4" />
-      <Skeleton className="h-3.5 w-28 bg-white/[0.06] mb-1.5" />
-      <Skeleton className="h-9 w-16 bg-white/[0.06]" />
+      <Skeleton className="h-11 w-11 rounded-xl bg-muted mb-4" />
+      <Skeleton className="h-3.5 w-28 bg-muted mb-1.5" />
+      <Skeleton className="h-9 w-16 bg-muted" />
     </div>
   );
 }
@@ -158,12 +158,12 @@ function StatSkeleton() {
 function HouseholdRowSkeleton() {
   return (
     <div className="flex items-center gap-4 p-4 rounded-xl glass">
-      <Skeleton className="h-10 w-10 rounded-xl bg-white/[0.06]" />
+      <Skeleton className="h-10 w-10 rounded-xl bg-muted" />
       <div className="flex-1 space-y-1.5">
-        <Skeleton className="h-4 w-40 bg-white/[0.06]" />
-        <Skeleton className="h-3 w-24 bg-white/[0.06]" />
+        <Skeleton className="h-4 w-40 bg-muted" />
+        <Skeleton className="h-3 w-24 bg-muted" />
       </div>
-      <Skeleton className="h-5 w-16 rounded-full bg-white/[0.06]" />
+      <Skeleton className="h-5 w-16 rounded-full bg-muted" />
     </div>
   );
 }
@@ -383,31 +383,31 @@ export function AdminDashboard() {
   /* ── Action badge colors ── */
   const getActionBadgeStyle = (action: string) => {
     switch (action) {
-      case 'login': return 'bg-[#22c55e]/10 text-[#22c55e]';
-      case 'scan': return 'bg-[#3b82f6]/10 text-[#3b82f6]';
-      case 'settings_update': return 'bg-[#8b5cf6]/10 text-[#8b5cf6]';
-      case 'vault_access': return 'bg-[#f87171]/10 text-[#f87171]';
+      case 'login': return 'bg-emerald-500/10 text-emerald-500';
+      case 'scan': return 'bg-blue-500/10 text-blue-500';
+      case 'settings_update': return 'bg-violet-500/10 text-violet-500';
+      case 'vault_access': return 'bg-red-500/10 text-red-500';
       case 'subscription_change': return 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]';
-      default: return 'bg-[#64748b]/10 text-[#64748b]';
+      default: return 'bg-muted/80 text-muted-foreground';
     }
   };
 
   const getRoleBadgeStyle = (role: string) => {
     switch (role) {
-      case 'superadmin': return 'bg-[#f87171]/10 text-[#f87171]';
+      case 'superadmin': return 'bg-red-500/10 text-red-500';
       case 'owner': return 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]';
-      case 'member': return 'bg-[#64748b]/10 text-[#64748b]';
-      default: return 'bg-[#64748b]/10 text-[#64748b]';
+      case 'member': return 'bg-muted/80 text-muted-foreground';
+      default: return 'bg-muted/80 text-muted-foreground';
     }
   };
 
   const getInvoiceStatusBadge = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-[#22c55e]/10 text-[#22c55e]';
-      case 'open': return 'bg-[#3b82f6]/10 text-[#3b82f6]';
-      case 'past_due': return 'bg-[#f87171]/10 text-[#f87171]';
-      case 'void': return 'bg-[#64748b]/10 text-[#475569]';
-      default: return 'bg-[#64748b]/10 text-[#64748b]';
+      case 'paid': return 'bg-emerald-500/10 text-emerald-500';
+      case 'open': return 'bg-blue-500/10 text-blue-500';
+      case 'past_due': return 'bg-red-500/10 text-red-500';
+      case 'void': return 'bg-muted/80 text-muted-foreground/70';
+      default: return 'bg-muted/80 text-muted-foreground';
     }
   };
 
@@ -432,13 +432,13 @@ export function AdminDashboard() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
         >
-          <div className="w-20 h-20 rounded-2xl bg-[#f87171]/10 border border-[#f87171]/20 flex items-center justify-center mx-auto mb-6">
-            <ShieldAlert className="w-10 h-10 text-[#f87171]" />
+          <div className="w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert className="w-10 h-10 text-red-500" />
           </div>
-          <h2 className="text-xl font-serif font-semibold text-[#e2e8f0] mb-2">
+          <h2 className="text-xl font-serif font-semibold text-foreground mb-2">
             Accès refusé
           </h2>
-          <p className="text-sm text-[#64748b] max-w-[320px] leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-[320px] leading-relaxed">
             Cette section est réservée aux administrateurs principaux (superadmin).
           </p>
         </motion.div>
@@ -453,7 +453,7 @@ export function AdminDashboard() {
         <div className="w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 flex items-center justify-center mx-auto mb-4">
           <Activity className="w-8 h-8 text-[var(--accent-primary)]" />
         </div>
-        <p className="text-sm text-[#64748b]">Erreur lors du chargement des données</p>
+        <p className="text-sm text-muted-foreground">Erreur lors du chargement des données</p>
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -485,7 +485,7 @@ export function AdminDashboard() {
             <h1 className="text-2xl md:text-3xl font-serif font-bold text-gradient-gold">
               Administration
             </h1>
-            <p className="text-sm text-[#64748b]">
+            <p className="text-sm text-muted-foreground">
               Vue d&apos;ensemble du système Maison Consciente
             </p>
           </div>
@@ -515,7 +515,7 @@ export function AdminDashboard() {
                   inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300
                   ${isActive
                     ? 'bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30'
-                    : 'text-[#64748b] hover:text-[#94a3b8] hover:bg-white/[0.04] border border-transparent'
+                    : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50 border border-transparent'
                   }
                 `}
               >
@@ -546,18 +546,18 @@ export function AdminDashboard() {
           <div className="glass rounded-xl p-4 inner-glow">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                 <Input
                   placeholder="Rechercher par email ou nom…"
                   value={usersSearch}
                   onChange={(e) => { setUsersSearch(e.target.value); setUsersPage(1); }}
-                  className="pl-10 bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-[#475569] focus:border-[var(--accent-primary)]/40 rounded-xl"
+                  className="pl-10 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/70 focus:border-[var(--accent-primary)]/40 rounded-xl"
                 />
               </div>
               <select
                 value={usersRoleFilter}
                 onChange={(e) => { setUsersRoleFilter(e.target.value); setUsersPage(1); }}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-[#e2e8f0] focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-muted/50 border border-border text-sm text-foreground focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer"
               >
                 <option value="">Tous les rôles</option>
                 <option value="member">Member</option>
@@ -568,7 +568,7 @@ export function AdminDashboard() {
                 variant="ghost"
                 size="icon"
                 onClick={() => fetchUsers()}
-                className="shrink-0 text-[#64748b] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                className="shrink-0 text-muted-foreground hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
               >
                 <RefreshCw className={`w-4 h-4 ${usersLoading ? 'animate-spin' : ''}`} />
               </Button>
@@ -577,19 +577,19 @@ export function AdminDashboard() {
 
           {/* Users Table */}
           <div className="glass rounded-xl overflow-hidden inner-glow">
-            <div className="p-5 pb-4 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="p-5 pb-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#c77d5a]/10 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-[#c77d5a]" />
+                <div className="w-8 h-8 rounded-lg bg-copper/10 flex items-center justify-center">
+                  <Users className="w-4 h-4 text-copper" />
                 </div>
                 <div>
                   <h2 className="text-lg font-serif font-semibold tracking-tight">Utilisateurs</h2>
-                  <p className="text-[10px] text-[#475569]">
+                  <p className="text-[10px] text-muted-foreground/70">
                     {usersLoading ? 'Chargement…' : `${usersTotal} utilisateur${usersTotal !== 1 ? 's' : ''} au total`}
                   </p>
                 </div>
               </div>
-              <Badge className="bg-[#c77d5a]/10 text-[#c77d5a] border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+              <Badge className="bg-copper/10 text-copper border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                 {users.length}
               </Badge>
             </div>
@@ -599,13 +599,13 @@ export function AdminDashboard() {
                 <div className="p-4 space-y-2">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-4 p-4 rounded-xl glass">
-                      <Skeleton className="h-10 w-10 rounded-xl bg-white/[0.06]" />
+                      <Skeleton className="h-10 w-10 rounded-xl bg-muted" />
                       <div className="flex-1 space-y-1.5">
-                        <Skeleton className="h-4 w-48 bg-white/[0.06]" />
-                        <Skeleton className="h-3 w-32 bg-white/[0.06]" />
+                        <Skeleton className="h-4 w-48 bg-muted" />
+                        <Skeleton className="h-3 w-32 bg-muted" />
                       </div>
-                      <Skeleton className="h-6 w-20 rounded-full bg-white/[0.06]" />
-                      <Skeleton className="h-8 w-24 rounded-lg bg-white/[0.06]" />
+                      <Skeleton className="h-6 w-20 rounded-full bg-muted" />
+                      <Skeleton className="h-8 w-24 rounded-lg bg-muted" />
                     </div>
                   ))}
                 </div>
@@ -617,7 +617,7 @@ export function AdminDashboard() {
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.04 + i * 0.03, duration: 0.35 }}
-                      className="group/u flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl hover:bg-white/[0.03] transition-all duration-300"
+                      className="group/u flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl hover:bg-muted/40 transition-all duration-300"
                     >
                       {/* Avatar */}
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-semibold ${getRoleBadgeStyle(u.role)}`}>
@@ -627,7 +627,7 @@ export function AdminDashboard() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{u.name || u.email}</p>
-                        <p className="text-xs text-[#475569] truncate">{u.email}</p>
+                        <p className="text-xs text-muted-foreground/70 truncate">{u.email}</p>
                       </div>
 
                       {/* Role Badge */}
@@ -636,10 +636,10 @@ export function AdminDashboard() {
                       </Badge>
 
                       {/* Household */}
-                      <span className="text-xs text-[#475569] hidden md:inline max-w-[120px] truncate">{u.householdName}</span>
+                      <span className="text-xs text-muted-foreground/70 hidden md:inline max-w-[120px] truncate">{u.householdName}</span>
 
                       {/* Created */}
-                      <span className="text-xs text-[#475569] hidden lg:inline whitespace-nowrap">{formatDate(u.createdAt)}</span>
+                      <span className="text-xs text-muted-foreground/70 hidden lg:inline whitespace-nowrap">{formatDate(u.createdAt)}</span>
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 shrink-0">
@@ -647,7 +647,7 @@ export function AdminDashboard() {
                           disabled={u.role === 'superadmin' || usersActionLoading === u.id}
                           value={u.role}
                           onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                          className="text-[11px] px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.08] text-[#e2e8f0] focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer disabled:opacity-40"
+                          className="text-[11px] px-2 py-1 rounded-lg bg-muted/50 border border-border text-foreground focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer disabled:opacity-40"
                         >
                           <option value="member">Member</option>
                           <option value="owner">Owner</option>
@@ -658,7 +658,7 @@ export function AdminDashboard() {
                           whileTap={{ scale: 0.95 }}
                           onClick={() => handleSuspendUser(u.id, u.email)}
                           disabled={usersActionLoading === u.id || u.role === 'superadmin'}
-                          className="p-1.5 rounded-lg text-[#64748b] hover:text-[#f87171] hover:bg-[#f87171]/10 transition-all disabled:opacity-40"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-40"
                           title="Réinitialiser sessions (forcer déconnexion)"
                         >
                           {usersActionLoading === u.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
@@ -668,7 +668,7 @@ export function AdminDashboard() {
                           whileTap={{ scale: 0.95 }}
                           onClick={() => handleResetSessions(u.id, u.email)}
                           disabled={usersActionLoading === u.id || u.role === 'superadmin'}
-                          className="p-1.5 rounded-lg text-[#64748b] hover:text-[#c77d5a] hover:bg-[#c77d5a]/10 transition-all disabled:opacity-40"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-copper hover:bg-copper/10 transition-all disabled:opacity-40"
                           title="Supprimer toutes les sessions"
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
@@ -679,18 +679,18 @@ export function AdminDashboard() {
                 </div>
               ) : (
                 <div className="p-10 text-center">
-                  <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-[#c77d5a]/[0.06] border border-[#c77d5a]/10 mb-4">
-                    <Users className="w-6 h-6 text-[#c77d5a]/50" />
+                  <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-copper/[0.06] border border-copper/10 mb-4">
+                    <Users className="w-6 h-6 text-copper/50" />
                   </div>
-                  <p className="text-sm font-medium text-[#64748b]">Aucun utilisateur trouvé</p>
+                  <p className="text-sm font-medium text-muted-foreground">Aucun utilisateur trouvé</p>
                 </div>
               )}
             </ScrollArea>
 
             {/* Pagination */}
             {usersTotal > 20 && (
-              <div className="p-4 border-t border-white/[0.06] flex items-center justify-between">
-                <p className="text-xs text-[#475569]">
+              <div className="p-4 border-t border-border flex items-center justify-between">
+                <p className="text-xs text-muted-foreground/70">
                   Page {usersPage} — {(usersPage - 1) * 20 + 1}–{Math.min(usersPage * 20, usersTotal)} sur {usersTotal}
                 </p>
                 <div className="flex gap-2">
@@ -699,7 +699,7 @@ export function AdminDashboard() {
                     size="sm"
                     disabled={usersPage <= 1}
                     onClick={() => setUsersPage((p) => p - 1)}
-                    className="text-[#64748b] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                    className="text-muted-foreground hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
                   >
                     <ChevronLeft className="w-4 h-4 mr-1" /> Préc.
                   </Button>
@@ -708,7 +708,7 @@ export function AdminDashboard() {
                     size="sm"
                     disabled={usersPage * 20 >= usersTotal}
                     onClick={() => setUsersPage((p) => p + 1)}
-                    className="text-[#64748b] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                    className="text-muted-foreground hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
                   >
                     Suiv. <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
@@ -731,14 +731,14 @@ export function AdminDashboard() {
           {/* Filters */}
           <div className="glass rounded-xl p-4 inner-glow">
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-              <div className="flex items-center gap-2 text-sm text-[#64748b]">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Filter className="w-4 h-4" />
                 <span>Filtrer par action :</span>
               </div>
               <select
                 value={logsActionFilter}
                 onChange={(e) => setLogsActionFilter(e.target.value)}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-[#e2e8f0] focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-muted/50 border border-border text-sm text-foreground focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer"
               >
                 <option value="">Toutes les actions</option>
                 <option value="login">Login</option>
@@ -757,13 +757,13 @@ export function AdminDashboard() {
 
           {/* Timeline */}
           <div className="glass rounded-xl overflow-hidden inner-glow">
-            <div className="p-5 pb-4 border-b border-white/[0.06] flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#8b5cf6]/10 flex items-center justify-center">
-                <ScrollText className="w-4 h-4 text-[#8b5cf6]" />
+            <div className="p-5 pb-4 border-b border-border flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                <ScrollText className="w-4 h-4 text-violet-500" />
               </div>
               <div>
                 <h2 className="text-lg font-serif font-semibold tracking-tight">Journal d&apos;audit</h2>
-                <p className="text-[10px] text-[#475569]">Activité système en temps réel</p>
+                <p className="text-[10px] text-muted-foreground/70">Activité système en temps réel</p>
               </div>
             </div>
 
@@ -772,10 +772,10 @@ export function AdminDashboard() {
                 <div className="p-4 space-y-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="flex items-start gap-3 p-3">
-                      <Skeleton className="h-8 w-20 rounded-full bg-white/[0.06] shrink-0" />
+                      <Skeleton className="h-8 w-20 rounded-full bg-muted shrink-0" />
                       <div className="flex-1 space-y-1.5">
-                        <Skeleton className="h-4 w-60 bg-white/[0.06]" />
-                        <Skeleton className="h-3 w-40 bg-white/[0.06]" />
+                        <Skeleton className="h-4 w-60 bg-muted" />
+                        <Skeleton className="h-3 w-40 bg-muted" />
                       </div>
                     </div>
                   ))}
@@ -788,7 +788,7 @@ export function AdminDashboard() {
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.03 + i * 0.02, duration: 0.3 }}
-                      className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/[0.02] transition-all duration-200 group/log"
+                      className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/30 transition-all duration-200 group/log"
                     >
                       {/* Action Badge */}
                       <Badge className={`shrink-0 text-[9px] font-semibold px-2.5 py-0.5 rounded-full border-0 mt-0.5 ${getActionBadgeStyle(log.action)}`}>
@@ -801,19 +801,19 @@ export function AdminDashboard() {
                           <span className="text-sm text-foreground font-medium">
                             {log.user ? (log.user.name || log.user.email) : 'Système'}
                           </span>
-                          <span className="text-xs text-[#475569]">
+                          <span className="text-xs text-muted-foreground/70">
                             — {log.householdName}
                           </span>
                         </div>
                         {log.details && (
-                          <p className="text-xs text-[#475569] mt-0.5 truncate max-w-[500px]" title={log.details}>
+                          <p className="text-xs text-muted-foreground/70 mt-0.5 truncate max-w-[500px]" title={log.details}>
                             {log.details.length > 80 ? log.details.slice(0, 80) + '…' : log.details}
                           </p>
                         )}
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] text-[#334155]">{formatDateTime(log.createdAt)}</span>
+                          <span className="text-[10px] text-muted-foreground/50">{formatDateTime(log.createdAt)}</span>
                           {log.ip && (
-                            <span className="text-[10px] text-[#334155] font-mono">{log.ip}</span>
+                            <span className="text-[10px] text-muted-foreground/50 font-mono">{log.ip}</span>
                           )}
                         </div>
                       </div>
@@ -822,10 +822,10 @@ export function AdminDashboard() {
                 </div>
               ) : (
                 <div className="p-10 text-center">
-                  <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-[#8b5cf6]/[0.06] border border-[#8b5cf6]/10 mb-4">
-                    <ScrollText className="w-6 h-6 text-[#8b5cf6]/50" />
+                  <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-violet-500/[0.06] border border-violet-500/10 mb-4">
+                    <ScrollText className="w-6 h-6 text-violet-500/50" />
                   </div>
-                  <p className="text-sm font-medium text-[#64748b]">Aucune entrée de log</p>
+                  <p className="text-sm font-medium text-muted-foreground">Aucune entrée de log</p>
                 </div>
               )}
             </ScrollArea>
@@ -846,32 +846,32 @@ export function AdminDashboard() {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <motion.div variants={fadeUp} custom={0.05} initial="hidden" animate="visible">
               <div className="glass rounded-xl p-4 inner-glow">
-                <p className="text-xs text-[#64748b] tracking-wide uppercase font-medium">MRR Estimé</p>
+                <p className="text-xs text-muted-foreground tracking-wide uppercase font-medium">MRR Estimé</p>
                 <p className="text-2xl font-serif font-bold mt-1 text-[var(--accent-primary)]">
                   {invoicesLoading ? '—' : formatCurrency(
                     allInvoices.filter((inv) => inv.status === 'paid').reduce((sum: number, inv) => sum + inv.amountCents, 0),
                     'eur'
                   )}
                 </p>
-                <p className="text-[10px] text-[#475569] mt-1">Total factures payées</p>
+                <p className="text-[10px] text-muted-foreground/70 mt-1">Total factures payées</p>
               </div>
             </motion.div>
             <motion.div variants={fadeUp} custom={0.1} initial="hidden" animate="visible">
               <div className="glass rounded-xl p-4 inner-glow">
-                <p className="text-xs text-[#64748b] tracking-wide uppercase font-medium">En retard</p>
-                <p className="text-2xl font-serif font-bold mt-1 text-[#f87171]">
+                <p className="text-xs text-muted-foreground tracking-wide uppercase font-medium">En retard</p>
+                <p className="text-2xl font-serif font-bold mt-1 text-red-500">
                   {invoicesLoading ? '—' : allInvoices.filter((inv) => inv.status === 'past_due').length}
                 </p>
-                <p className="text-[10px] text-[#475569] mt-1">Factures past_due</p>
+                <p className="text-[10px] text-muted-foreground/70 mt-1">Factures past_due</p>
               </div>
             </motion.div>
             <motion.div variants={fadeUp} custom={0.15} initial="hidden" animate="visible">
               <div className="glass rounded-xl p-4 inner-glow">
-                <p className="text-xs text-[#64748b] tracking-wide uppercase font-medium">Total factures</p>
-                <p className="text-2xl font-serif font-bold mt-1 text-[#e2e8f0]">
+                <p className="text-xs text-muted-foreground tracking-wide uppercase font-medium">Total factures</p>
+                <p className="text-2xl font-serif font-bold mt-1 text-foreground">
                   {invoicesLoading ? '—' : allInvoices.length}
                 </p>
-                <p className="text-[10px] text-[#475569] mt-1">{invoicesLoading ? '—' : `De ${allInvoices.length} foyer${allInvoices.length !== 1 ? 's' : ''}`}</p>
+                <p className="text-[10px] text-muted-foreground/70 mt-1">{invoicesLoading ? '—' : `De ${allInvoices.length} foyer${allInvoices.length !== 1 ? 's' : ''}`}</p>
               </div>
             </motion.div>
           </div>
@@ -879,14 +879,14 @@ export function AdminDashboard() {
           {/* Filters */}
           <div className="glass rounded-xl p-4 inner-glow">
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-              <div className="flex items-center gap-2 text-sm text-[#64748b]">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Filter className="w-4 h-4" />
                 <span>Filtrer par statut :</span>
               </div>
               <select
                 value={invoicesStatusFilter}
                 onChange={(e) => setInvoicesStatusFilter(e.target.value)}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-[#e2e8f0] focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-muted/50 border border-border text-sm text-foreground focus:outline-none focus:border-[var(--accent-primary)]/40 appearance-none cursor-pointer"
               >
                 <option value="">Tous les statuts</option>
                 <option value="paid">Payé</option>
@@ -898,7 +898,7 @@ export function AdminDashboard() {
                 variant="ghost"
                 size="icon"
                 onClick={() => fetchInvoices()}
-                className="shrink-0 text-[#64748b] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                className="shrink-0 text-muted-foreground hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
               >
                 <RefreshCw className={`w-4 h-4 ${invoicesLoading ? 'animate-spin' : ''}`} />
               </Button>
@@ -907,13 +907,13 @@ export function AdminDashboard() {
 
           {/* Invoices Table */}
           <div className="glass rounded-xl overflow-hidden inner-glow">
-            <div className="p-5 pb-4 border-b border-white/[0.06] flex items-center gap-2.5">
+            <div className="p-5 pb-4 border-b border-border flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center">
                 <CreditCard className="w-4 h-4 text-[var(--accent-primary)]" />
               </div>
               <div>
                 <h2 className="text-lg font-serif font-semibold tracking-tight">Factures</h2>
-                <p className="text-[10px] text-[#475569]">
+                <p className="text-[10px] text-muted-foreground/70">
                   {invoicesLoading ? 'Chargement…' : `${allInvoices.length} facture${allInvoices.length !== 1 ? 's' : ''}`}
                 </p>
               </div>
@@ -924,13 +924,13 @@ export function AdminDashboard() {
                 <div className="p-4 space-y-2">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-4 p-4 rounded-xl glass">
-                      <Skeleton className="h-10 w-10 rounded-xl bg-white/[0.06]" />
+                      <Skeleton className="h-10 w-10 rounded-xl bg-muted" />
                       <div className="flex-1 space-y-1.5">
-                        <Skeleton className="h-4 w-48 bg-white/[0.06]" />
-                        <Skeleton className="h-3 w-32 bg-white/[0.06]" />
+                        <Skeleton className="h-4 w-48 bg-muted" />
+                        <Skeleton className="h-3 w-32 bg-muted" />
                       </div>
-                      <Skeleton className="h-6 w-16 rounded-full bg-white/[0.06]" />
-                      <Skeleton className="h-8 w-20 rounded-lg bg-white/[0.06]" />
+                      <Skeleton className="h-6 w-16 rounded-full bg-muted" />
+                      <Skeleton className="h-8 w-20 rounded-lg bg-muted" />
                     </div>
                   ))}
                 </div>
@@ -942,7 +942,7 @@ export function AdminDashboard() {
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.04 + i * 0.03, duration: 0.35 }}
-                      className="group/inv flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl hover:bg-white/[0.03] transition-all duration-300"
+                      className="group/inv flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl hover:bg-muted/40 transition-all duration-300"
                     >
                       {/* Icon */}
                       <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center shrink-0">
@@ -953,14 +953,14 @@ export function AdminDashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{inv.householdName}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-[#475569]">{inv.subscriptionPlan}</span>
-                          <span className="text-[10px] text-[#334155]">•</span>
-                          <span className="text-xs text-[#475569]">{formatDate(inv.periodStart)} — {formatDate(inv.periodEnd)}</span>
+                          <span className="text-xs text-muted-foreground/70">{inv.subscriptionPlan}</span>
+                          <span className="text-[10px] text-muted-foreground/50">•</span>
+                          <span className="text-xs text-muted-foreground/70">{formatDate(inv.periodStart)} — {formatDate(inv.periodEnd)}</span>
                         </div>
                       </div>
 
                       {/* Amount */}
-                      <span className="text-sm font-semibold text-[#e2e8f0] whitespace-nowrap">
+                      <span className="text-sm font-semibold text-foreground whitespace-nowrap">
                         {formatCurrency(inv.amountCents, inv.currency)}
                       </span>
 
@@ -970,7 +970,7 @@ export function AdminDashboard() {
                       </Badge>
 
                       {/* Created */}
-                      <span className="text-xs text-[#475569] hidden lg:inline whitespace-nowrap">{formatDate(inv.createdAt)}</span>
+                      <span className="text-xs text-muted-foreground/70 hidden lg:inline whitespace-nowrap">{formatDate(inv.createdAt)}</span>
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 shrink-0">
@@ -979,7 +979,7 @@ export function AdminDashboard() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => window.open(inv.pdfUrl, '_blank')}
-                            className="p-1.5 rounded-lg text-[#64748b] hover:text-[#3b82f6] hover:bg-[#3b82f6]/10 transition-all"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-all"
                             title="Télécharger PDF"
                           >
                             <Mail className="w-3.5 h-3.5" />
@@ -990,7 +990,7 @@ export function AdminDashboard() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleSendReminder(inv.id)}
-                            className="p-1.5 rounded-lg text-[#64748b] hover:text-[#f87171] hover:bg-[#f87171]/10 transition-all"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all"
                             title="Envoyer rappel"
                           >
                             <Mail className="w-3.5 h-3.5" />
@@ -1005,7 +1005,7 @@ export function AdminDashboard() {
                   <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-[var(--accent-primary)]/[0.06] border border-[var(--accent-primary)]/10 mb-4">
                     <CreditCard className="w-6 h-6 text-[var(--accent-primary)]/50" />
                   </div>
-                  <p className="text-sm font-medium text-[#64748b]">Aucune facture trouvée</p>
+                  <p className="text-sm font-medium text-muted-foreground">Aucune facture trouvée</p>
                 </div>
               )}
             </ScrollArea>
@@ -1060,7 +1060,7 @@ export function AdminDashboard() {
                   <div className={`inline-flex items-center justify-center h-11 w-11 rounded-xl ${card.iconBg} transition-shadow duration-500 group-hover:shadow-[0_0_12px_oklch(0.78_0.14_85/15%)]`}>
                     <Icon className={`w-5 h-5 ${card.iconColor}`} />
                   </div>
-                  <p className="text-xs text-[#64748b] mt-4 tracking-wide uppercase font-medium">
+                  <p className="text-xs text-muted-foreground mt-4 tracking-wide uppercase font-medium">
                     {card.label}
                   </p>
                   <p className="text-3xl font-serif font-bold mt-0.5 tracking-tight text-foreground">
@@ -1082,7 +1082,7 @@ export function AdminDashboard() {
       >
         <div className="glass rounded-xl overflow-hidden inner-glow">
           {/* Header */}
-          <div className="p-5 pb-4 border-b border-white/[0.06] flex items-center justify-between">
+          <div className="p-5 pb-4 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center">
                 <Home className="w-4 h-4 text-[var(--accent-primary)]" />
@@ -1091,7 +1091,7 @@ export function AdminDashboard() {
                 <h2 className="text-lg font-serif font-semibold tracking-tight">
                   Foyers
                 </h2>
-                <p className="text-[10px] text-[#475569]">
+                <p className="text-[10px] text-muted-foreground/70">
                   {loading
                     ? 'Chargement…'
                     : `${households.length} foyer${households.length !== 1 ? 's' : ''} enregistré${households.length !== 1 ? 's' : ''}`}
@@ -1125,7 +1125,7 @@ export function AdminDashboard() {
                       duration: 0.4,
                       ease: 'easeOut',
                     }}
-                    className="group/hh flex items-center gap-4 p-4 rounded-xl hover:bg-white/[0.03] transition-all duration-300"
+                    className="group/hh flex items-center gap-4 p-4 rounded-xl hover:bg-muted/40 transition-all duration-300"
                   >
                     {/* Icon */}
                     <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center shrink-0 transition-shadow duration-500 group-hover/hh:shadow-[0_0_12px_oklch(0.78_0.14_85/15%)]">
@@ -1138,11 +1138,11 @@ export function AdminDashboard() {
                         {household.name}
                       </p>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-xs text-[#475569] flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
                           <Users className="w-3 h-3" />
                           {household.memberCount} membre{household.memberCount !== 1 ? 's' : ''}
                         </span>
-                        <span className="text-xs text-[#475569] flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
                           {household.zoneCount} zone{household.zoneCount !== 1 ? 's' : ''}
                         </span>
@@ -1155,14 +1155,14 @@ export function AdminDashboard() {
                         shrink-0 text-[9px] font-semibold px-2.5 py-0.5 rounded-full border-0
                         ${household.type === 'home'
                           ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
-                          : 'bg-[#c77d5a]/10 text-[#c77d5a]'
+                          : 'bg-copper/10 text-copper'
                         }
                       `}
                     >
                       {household.type === 'home' ? '🏠 Maison' : '🏨 Hospitalité'}
                     </Badge>
 
-                    <ChevronRight className="w-4 h-4 text-[#334155] shrink-0 transition-colors group-hover/hh:text-[#64748b]" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/50 shrink-0 transition-colors group-hover/hh:text-muted-foreground" />
                   </motion.div>
                 ))
               ) : (
@@ -1170,7 +1170,7 @@ export function AdminDashboard() {
                   <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-[var(--accent-primary)]/[0.06] border border-[var(--accent-primary)]/10 mb-4">
                     <Home className="w-6 h-6 text-[var(--accent-primary)]/50" />
                   </div>
-                  <p className="text-sm font-medium text-[#64748b]">
+                  <p className="text-sm font-medium text-muted-foreground">
                     Aucun foyer enregistré
                   </p>
                 </div>

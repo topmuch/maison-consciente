@@ -64,8 +64,8 @@ function getStatusConfig(status: string, isActive: boolean) {
     return {
       label: 'Inactif',
       icon: MinusCircle,
-      badgeClass: 'bg-[#64748b]/10 text-[#64748b]',
-      dotClass: 'bg-[#64748b]',
+      badgeClass: 'bg-muted/80 text-muted-foreground',
+      dotClass: 'bg-muted-foreground',
     };
   }
   switch (status) {
@@ -73,15 +73,15 @@ function getStatusConfig(status: string, isActive: boolean) {
       return {
         label: 'Configuré',
         icon: CheckCircle2,
-        badgeClass: 'bg-[#22c55e]/10 text-[#22c55e]',
-        dotClass: 'bg-[#22c55e]',
+        badgeClass: 'bg-emerald-500/10 text-emerald-500',
+        dotClass: 'bg-emerald-500',
       };
     case 'error':
       return {
         label: 'Erreur',
         icon: XCircle,
-        badgeClass: 'bg-[#f87171]/10 text-[#f87171]',
-        dotClass: 'bg-[#f87171]',
+        badgeClass: 'bg-red-500/10 text-red-500',
+        dotClass: 'bg-red-500',
       };
     case 'untested':
       return {
@@ -94,8 +94,8 @@ function getStatusConfig(status: string, isActive: boolean) {
       return {
         label: 'Inconnu',
         icon: MinusCircle,
-        badgeClass: 'bg-[#64748b]/10 text-[#64748b]',
-        dotClass: 'bg-[#64748b]',
+        badgeClass: 'bg-muted/80 text-muted-foreground',
+        dotClass: 'bg-muted-foreground',
       };
   }
 }
@@ -241,8 +241,8 @@ export function ApiConfigCard({
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
       className={`
         relative overflow-hidden rounded-2xl transition-all duration-300
-        bg-white/[0.03] backdrop-blur-xl border border-white/[0.08]
-        ${isActive ? 'hover:border-white/[0.12] hover:bg-white/[0.04]' : 'opacity-60'}
+        bg-muted/40 backdrop-blur-xl border border-border
+        ${isActive ? 'hover:border-border hover:bg-muted/50' : 'opacity-60'}
       `}
     >
       {/* ── Top accent line ── */}
@@ -261,7 +261,7 @@ export function ApiConfigCard({
               <h3 className="text-sm font-semibold text-foreground truncate">
                 {serviceName}
               </h3>
-              <p className="text-[11px] text-[#64748b] leading-snug mt-0.5 line-clamp-2">
+              <p className="text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">
                 {serviceDescription}
               </p>
             </div>
@@ -278,7 +278,7 @@ export function ApiConfigCard({
 
         {/* ── API Key input ── */}
         <div className="space-y-1.5">
-          <label className="text-[11px] text-[#64748b] uppercase tracking-wider font-medium flex items-center gap-1.5">
+          <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium flex items-center gap-1.5">
             <Lock className="w-3 h-3" />
             Clé API
           </label>
@@ -292,13 +292,13 @@ export function ApiConfigCard({
               }
               value={apiKey}
               onChange={(e) => handleApiKeyChange(e.target.value)}
-              className="pr-10 bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-[#475569] focus:border-[var(--accent-primary)]/40 rounded-xl text-sm"
+              className="pr-10 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/70 focus:border-[var(--accent-primary)]/40 rounded-xl text-sm"
               aria-label={`Clé API pour ${serviceName}`}
             />
             <button
               type="button"
               onClick={() => setShowKey((prev) => !prev)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-lg text-[#475569] hover:text-[#94a3b8] hover:bg-white/[0.06] transition-all"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-lg text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted transition-all"
               aria-label={showKey ? 'Masquer la clé' : 'Afficher la clé'}
             >
               {showKey ? (
@@ -312,24 +312,24 @@ export function ApiConfigCard({
 
         {/* ── Base URL (optional) ── */}
         <div className="space-y-1.5">
-          <label className="text-[11px] text-[#64748b] uppercase tracking-wider font-medium flex items-center gap-1.5">
+          <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium flex items-center gap-1.5">
             <Globe className="w-3 h-3" />
             URL de base
-            <span className="text-[#334155] normal-case">(optionnel)</span>
+            <span className="text-muted-foreground/50 normal-case">(optionnel)</span>
           </label>
           <Input
             type="url"
             placeholder="https://api.example.com"
             value={baseUrl}
             onChange={(e) => handleBaseUrlChange(e.target.value)}
-            className="bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-[#475569] focus:border-[var(--accent-primary)]/40 rounded-xl text-sm"
+            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/70 focus:border-[var(--accent-primary)]/40 rounded-xl text-sm"
             aria-label={`URL de base pour ${serviceName}`}
           />
         </div>
 
         {/* ── Active toggle ── */}
-        <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-          <span className="text-xs text-[#94a3b8] font-medium">
+        <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-muted/30 border border-border">
+          <span className="text-xs text-muted-foreground font-medium">
             Service actif
           </span>
           <button
@@ -340,15 +340,15 @@ export function ApiConfigCard({
             className={`
               relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background
-              ${isActive ? 'bg-[#22c55e]/30 border-[#22c55e]/50' : 'bg-white/[0.08] border-white/[0.12]'}
+              ${isActive ? 'bg-emerald-500/30 border-emerald-500/50' : 'bg-muted border-border'}
             `}
           >
             <span
               className={`
                 pointer-events-none block h-5 w-5 rounded-full shadow-lg transition-all duration-300
                 ${isActive
-                  ? 'translate-x-5 bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.4)]'
-                  : 'translate-x-0 bg-[#64748b]'
+                  ? 'translate-x-5 bg-emerald-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
+                  : 'translate-x-0 bg-muted-foreground'
                 }
               `}
             />
@@ -357,7 +357,7 @@ export function ApiConfigCard({
 
         {/* ── Last tested info ── */}
         {lastTested && (
-          <div className="flex items-center gap-1.5 text-[10px] text-[#475569]">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/70">
             <RefreshCw className="w-3 h-3" />
             <span>Dernier test : {formatLastTested(lastTested)}</span>
           </div>
@@ -374,7 +374,7 @@ export function ApiConfigCard({
               flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-300
               ${hasChanges
                 ? 'bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30 hover:bg-[var(--accent-primary)]/25'
-                : 'bg-white/[0.03] text-[#475569] border border-white/[0.06] cursor-not-allowed'
+                : 'bg-muted/40 text-muted-foreground/70 border border-border cursor-not-allowed'
               }
             `}
             aria-label={`Enregistrer la configuration ${serviceName}`}
@@ -394,8 +394,8 @@ export function ApiConfigCard({
             disabled={testing}
             className="
               inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold
-              bg-white/[0.03] text-[#94a3b8] border border-white/[0.06]
-              hover:bg-white/[0.06] hover:text-foreground hover:border-white/[0.12]
+              bg-muted/40 text-muted-foreground border border-border
+              hover:bg-muted hover:text-foreground hover:border-border
               transition-all duration-300 disabled:opacity-40
             "
             aria-label={`Tester la connexion ${serviceName}`}

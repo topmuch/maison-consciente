@@ -56,9 +56,9 @@ const CATEGORY_ICONS: Record<string, typeof Mail> = {
 };
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  smtp: { bg: 'bg-[#22c55e]/10', text: 'text-[#22c55e]', border: 'border-[#22c55e]/20' },
+  smtp: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' },
   sentry: { bg: 'bg-[#f43f5e]/10', text: 'text-[#f43f5e]', border: 'border-[#f43f5e]/20' },
-  general: { bg: 'bg-[#8b5cf6]/10', text: 'text-[#8b5cf6]', border: 'border-[#8b5cf6]/20' },
+  general: { bg: 'bg-violet-500/10', text: 'text-violet-500', border: 'border-violet-500/20' },
 };
 
 /* ═══════════════════════════════════════════════════════
@@ -86,19 +86,19 @@ function ConfigSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="rounded-xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] p-5 space-y-4">
+        <div key={i} className="rounded-xl bg-muted/40 backdrop-blur-xl border border-border p-5 space-y-4">
           <div className="flex items-center gap-3">
-            <Skeleton className="h-9 w-9 rounded-xl bg-white/[0.06]" />
+            <Skeleton className="h-9 w-9 rounded-xl bg-muted" />
             <div className="flex-1 space-y-1.5">
-              <Skeleton className="h-4 w-32 bg-white/[0.06]" />
-              <Skeleton className="h-3 w-48 bg-white/[0.06]" />
+              <Skeleton className="h-4 w-32 bg-muted" />
+              <Skeleton className="h-3 w-48 bg-muted" />
             </div>
           </div>
           <div className="space-y-3 pl-12">
             {Array.from({ length: 2 }).map((_, j) => (
               <div key={j} className="space-y-1.5">
-                <Skeleton className="h-3 w-24 bg-white/[0.06]" />
-                <Skeleton className="h-10 w-full rounded-xl bg-white/[0.06]" />
+                <Skeleton className="h-3 w-24 bg-muted" />
+                <Skeleton className="h-10 w-full rounded-xl bg-muted" />
               </div>
             ))}
           </div>
@@ -147,12 +147,12 @@ function ConfigField({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-[#94a3b8] flex items-center gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           {config.isSecret && <Lock className="w-3 h-3 text-[#f43f5e]/60" />}
           {config.label}
         </label>
         {config.isConfigured && (
-          <Badge className="bg-[#22c55e]/10 text-[#22c55e] border-0 text-[9px] font-semibold px-2 py-0 rounded-full">
+          <Badge className="bg-emerald-500/10 text-emerald-500 border-0 text-[9px] font-semibold px-2 py-0 rounded-full">
             Configuré
           </Badge>
         )}
@@ -164,7 +164,7 @@ function ConfigField({
           onChange={(e) => handleChange(e.target.value)}
           placeholder={config.placeholder}
           disabled={disabled}
-          className="bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-[#475569] focus:border-[var(--accent-primary)]/40 rounded-xl text-sm h-10"
+          className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/70 focus:border-[var(--accent-primary)]/40 rounded-xl text-sm h-10"
         />
         {config.isSecret && (
           <Button
@@ -172,7 +172,7 @@ function ConfigField({
             size="icon"
             onClick={() => setShowSecret(!showSecret)}
             disabled={disabled}
-            className="shrink-0 text-[#475569] hover:text-[#94a3b8] hover:bg-white/[0.04] w-10 h-10"
+            className="shrink-0 text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted/50 w-10 h-10"
           >
             {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </Button>
@@ -183,14 +183,14 @@ function ConfigField({
             size="icon"
             onClick={handleSave}
             disabled={disabled || saving}
-            className="shrink-0 text-[#22c55e] hover:text-[#22c55e] hover:bg-[#22c55e]/10 w-10 h-10"
+            className="shrink-0 text-emerald-500 hover:text-emerald-500 hover:bg-emerald-500/10 w-10 h-10"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           </Button>
         )}
       </div>
       {config.description && (
-        <p className="text-[10px] text-[#475569] leading-relaxed">{config.description}</p>
+        <p className="text-[10px] text-muted-foreground/70 leading-relaxed">{config.description}</p>
       )}
     </div>
   );
@@ -258,7 +258,7 @@ function CategorySection({
       {/* ── Header ── */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors"
       >
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center`}>
@@ -273,13 +273,13 @@ function CategorySection({
                 {group.configuredCount}/{group.totalCount}
               </Badge>
             </div>
-            <p className="text-[11px] text-[#475569] mt-0.5">{group.description}</p>
+            <p className="text-[11px] text-muted-foreground/70 mt-0.5">{group.description}</p>
           </div>
         </div>
         {expanded ? (
-          <ChevronUp className="w-5 h-5 text-[#475569]" />
+          <ChevronUp className="w-5 h-5 text-muted-foreground/70" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-[#475569]" />
+          <ChevronDown className="w-5 h-5 text-muted-foreground/70" />
         )}
       </button>
 
@@ -295,7 +295,7 @@ function CategorySection({
           >
             <div className="px-5 pb-5 space-y-4">
               {/* Divider */}
-              <div className="border-t border-white/[0.06]" />
+              <div className="border-t border-border" />
 
               {/* Config fields */}
               <div className="space-y-4">
@@ -312,7 +312,7 @@ function CategorySection({
               {/* Test buttons */}
               {(group.category === 'smtp' || group.category === 'sentry') && (
                 <>
-                  <div className="border-t border-white/[0.06]" />
+                  <div className="border-t border-border" />
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       variant="outline"
@@ -321,7 +321,7 @@ function CategorySection({
                       className={`
                         flex items-center gap-2 rounded-xl text-sm font-medium
                         ${testLoading ? 'opacity-60' : ''}
-                        border-white/[0.12] hover:bg-white/[0.04] text-[#e2e8f0]
+                        border-border hover:bg-muted/50 text-foreground
                       `}
                     >
                       {testLoading ? (
@@ -337,8 +337,8 @@ function CategorySection({
                       <div className="flex items-center gap-2 text-sm">
                         {testResult[group.category]!.success ? (
                           <>
-                            <CheckCircle2 className="w-4 h-4 text-[#22c55e]" />
-                            <span className="text-[#22c55e]">{testResult[group.category]!.message}</span>
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            <span className="text-emerald-500">{testResult[group.category]!.message}</span>
                           </>
                         ) : (
                           <>
@@ -346,7 +346,7 @@ function CategorySection({
                             <span className="text-[#f43f5e]">{testResult[group.category]!.message}</span>
                           </>
                         )}
-                        <span className="text-[10px] text-[#475569] ml-1">
+                        <span className="text-[10px] text-muted-foreground/70 ml-1">
                           ({testResult[group.category]!.latencyMs}ms)
                         </span>
                       </div>
@@ -357,7 +357,7 @@ function CategorySection({
                   {group.category === 'smtp' && (
                     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
                       <div className="flex-1 space-y-1.5 w-full sm:w-auto">
-                        <label className="text-xs font-medium text-[#94a3b8]">
+                        <label className="text-xs font-medium text-muted-foreground">
                           Envoyer un email de test
                         </label>
                         <Input
@@ -366,14 +366,14 @@ function CategorySection({
                           onChange={(e) => setTestEmail(e.target.value)}
                           placeholder="votre@email.com"
                           disabled={disabled || testEmailSending}
-                          className="bg-white/[0.04] border-white/[0.08] text-foreground placeholder:text-[#475569] focus:border-[var(--accent-primary)]/40 rounded-xl text-sm h-10"
+                          className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/70 focus:border-[var(--accent-primary)]/40 rounded-xl text-sm h-10"
                         />
                       </div>
                       <Button
                         variant="outline"
                         onClick={handleSendTestEmail}
                         disabled={disabled || testEmailSending || !testEmail}
-                        className="flex items-center gap-2 rounded-xl text-sm font-medium border-white/[0.12] hover:bg-white/[0.04] text-[#e2e8f0] shrink-0 h-10"
+                        className="flex items-center gap-2 rounded-xl text-sm font-medium border-border hover:bg-muted/50 text-foreground shrink-0 h-10"
                       >
                         {testEmailSending ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -389,9 +389,9 @@ function CategorySection({
 
               {/* General: platform info notice */}
               {group.category === 'general' && (
-                <div className="rounded-xl bg-[#8b5cf6]/[0.06] border border-[#8b5cf6]/10 p-4 flex items-start gap-2">
-                  <Globe className="w-4 h-4 text-[#8b5cf6] shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-[#94a3b8] leading-relaxed">
+                <div className="rounded-xl bg-violet-500/[0.06] border border-violet-500/10 p-4 flex items-start gap-2">
+                  <Globe className="w-4 h-4 text-violet-500 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Les paramètres généraux sont utilisés par l&apos;assistant vocal Maellis,
                     les emails transactionnels et les notifications système.
                     Les modifications prennent effet immédiatement.
@@ -527,14 +527,14 @@ export function SystemConfigPanel() {
               <h2 className="text-lg font-serif font-semibold tracking-tight text-foreground">
                 Configuration Système
               </h2>
-              <p className="text-[11px] text-[#475569] mt-0.5">
+              <p className="text-[11px] text-muted-foreground/70 mt-0.5">
                 SMTP, monitoring, paramètres globaux de la plateforme
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge className="bg-[#22c55e]/10 text-[#22c55e] border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+            <Badge className="bg-emerald-500/10 text-emerald-500 border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
               {totalConfigured}/{totalCount} configurés
             </Badge>
             <Button
@@ -542,7 +542,7 @@ export function SystemConfigPanel() {
               size="icon"
               onClick={() => fetchConfigs()}
               disabled={loading}
-              className="shrink-0 text-[#64748b] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+              className="shrink-0 text-muted-foreground hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
               aria-label="Rafraîchir les configurations"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -551,11 +551,11 @@ export function SystemConfigPanel() {
         </div>
 
         {/* Security notice */}
-        <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-start gap-2">
+        <div className="mt-4 pt-3 border-t border-border flex items-start gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-[var(--accent-primary)] shrink-0 mt-0.5" />
-          <p className="text-[10px] text-[#475569] leading-relaxed">
+          <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
             🔐 Les valeurs secrètes sont chiffrées (AES-256-GCM) en base de données et ne sont jamais
-            exposées côté client. La priorité est : <strong className="text-[#94a3b8]">Base de données → Variables d&apos;environnement (.env)</strong>.
+            exposées côté client. La priorité est : <strong className="text-muted-foreground">Base de données → Variables d&apos;environnement (.env)</strong>.
             Toute modification est tracée dans le journal d&apos;audit.
           </p>
         </div>
@@ -564,7 +564,7 @@ export function SystemConfigPanel() {
       {/* ── Error state ── */}
       {error && !loading && (
         <div className="glass rounded-xl p-6 text-center">
-          <p className="text-sm text-[#f87171]">{error}</p>
+          <p className="text-sm text-red-500">{error}</p>
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -600,8 +600,8 @@ export function SystemConfigPanel() {
 
       {/* ── Fallback notice ── */}
       <div className="glass rounded-xl p-4">
-        <p className="text-[11px] text-[#475569] leading-relaxed">
-          💡 <strong className="text-[#94a3b8]">Priorité de configuration :</strong> Le système lit d&apos;abord
+        <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+          💡 <strong className="text-muted-foreground">Priorité de configuration :</strong> Le système lit d&apos;abord
           les valeurs depuis la base de données (cette interface). Si aucune valeur n&apos;est configurée ici,
           il utilise les variables d&apos;environnement (.env) comme fallback. Cette approche permet de
           configurer la plateforme en production sans redéployer.

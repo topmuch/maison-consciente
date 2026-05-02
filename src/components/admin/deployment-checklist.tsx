@@ -244,7 +244,7 @@ export function DeploymentChecklist() {
             className="glass-strong rounded-2xl overflow-hidden"
           >
             {/* Category Header */}
-            <div className={`flex items-center gap-3 p-4 border-b border-white/5 ${catDone ? 'opacity-60' : ''}`}>
+            <div className={`flex items-center gap-3 p-4 border-b border-border ${catDone ? 'opacity-60' : ''}`}>
               <div className={`${category.color}`}>{category.icon}</div>
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-white">{category.title}</h3>
@@ -256,12 +256,12 @@ export function DeploymentChecklist() {
             </div>
 
             {/* Items */}
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-border">
               {category.items.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => toggleItem(category.id, item.id)}
-                  className="w-full flex items-start gap-3 p-4 text-left hover:bg-white/[0.02] transition-colors group"
+                  className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30 transition-colors group"
                 >
                   {item.checked ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />

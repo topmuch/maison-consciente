@@ -238,16 +238,16 @@ interface StatCardProps {
 
 function StatCard({ icon, label, value, colorClass, loading }: StatCardProps) {
   return (
-    <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 flex items-center gap-3.5">
+    <div className="bg-muted/40 border border-border rounded-xl p-4 flex items-center gap-3.5">
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-[#64748b] tracking-wide uppercase font-medium truncate">{label}</p>
+        <p className="text-xs text-muted-foreground tracking-wide uppercase font-medium truncate">{label}</p>
         {loading ? (
-          <Skeleton className="h-7 w-16 mt-1 bg-white/[0.06]" />
+          <Skeleton className="h-7 w-16 mt-1 bg-muted" />
         ) : (
-          <p className="text-xl font-bold text-[#e2e8f0] mt-0.5 font-mono tabular-nums">{value}</p>
+          <p className="text-xl font-bold text-foreground mt-0.5 font-mono tabular-nums">{value}</p>
         )}
       </div>
     </div>
@@ -271,7 +271,7 @@ function MobileLogCard({ log, index }: MobileLogCardProps) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.02 + index * 0.02, duration: 0.3 }}
-      className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3.5 space-y-2"
+      className="bg-muted/40 border border-border rounded-xl p-3.5 space-y-2"
     >
       {/* Top row: action + status + time */}
       <div className="flex items-center justify-between gap-2">
@@ -294,16 +294,16 @@ function MobileLogCard({ log, index }: MobileLogCardProps) {
 
       {/* User */}
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-[#e2e8f0] font-medium truncate">
+        <span className="text-foreground font-medium truncate">
           {log.user ? (log.user.name || log.user.email) : 'Système'}
         </span>
         {log.user?.role && (
-          <span className="text-[10px] text-[#475569]">({log.user.role})</span>
+          <span className="text-[10px] text-muted-foreground/70">({log.user.role})</span>
         )}
       </div>
 
       {/* Meta row */}
-      <div className="flex items-center gap-3 text-[10px] text-[#475569]">
+      <div className="flex items-center gap-3 text-[10px] text-muted-foreground/70">
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
           {formatDateTime(log.createdAt)}
@@ -321,7 +321,7 @@ function MobileLogCard({ log, index }: MobileLogCardProps) {
 
       {/* Details */}
       {log.details && (
-        <p className="text-xs text-[#64748b] truncate">{log.details}</p>
+        <p className="text-xs text-muted-foreground truncate">{log.details}</p>
       )}
     </motion.div>
   );
@@ -539,10 +539,10 @@ export function SecurityAuditPanel() {
             <Shield className="w-5 h-5 text-[#d4a853]" />
           </div>
           <div>
-            <h2 className="text-lg font-serif font-semibold tracking-tight text-[#e2e8f0]">
+            <h2 className="text-lg font-serif font-semibold tracking-tight text-foreground">
               Audit de sécurité
             </h2>
-            <p className="text-[10px] text-[#475569]">
+            <p className="text-[10px] text-muted-foreground/70">
               Journal d&apos;activité complet avec filtrage avancé
             </p>
           </div>
@@ -557,7 +557,7 @@ export function SecurityAuditPanel() {
             className={`text-xs gap-1.5 h-8 px-3 rounded-lg ${
               isAutoRefresh
                 ? 'text-emerald-400 bg-emerald-400/10 hover:bg-emerald-400/15'
-                : 'text-[#64748b] hover:text-[#94a3b8] hover:bg-white/[0.04]'
+                : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50'
             }`}
           >
             {isAutoRefresh && <PulseDot />}
@@ -585,7 +585,7 @@ export function SecurityAuditPanel() {
       {/* ═══ STATS CARDS ═══ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
-          icon={<FileText className="w-5 h-5 text-[#94a3b8]" />}
+          icon={<FileText className="w-5 h-5 text-muted-foreground" />}
           label="Total événements"
           value={loading ? '—' : stats.total}
           colorClass="bg-slate-500/10"
@@ -615,10 +615,10 @@ export function SecurityAuditPanel() {
       </div>
 
       {/* ═══ FILTER BAR ═══ */}
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-4">
+      <div className="bg-muted/40 border border-border rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="w-4 h-4 text-[#d4a853]" />
-          <span className="text-sm font-medium text-[#94a3b8]">Filtres</span>
+          <span className="text-sm font-medium text-muted-foreground">Filtres</span>
           {hasActiveFilters && (
             <Badge className="bg-[#d4a853]/10 text-[#d4a853] border-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ml-1">
               Actifs
@@ -631,7 +631,7 @@ export function SecurityAuditPanel() {
           <Select value={actionFilter} onValueChange={(v) => setActionFilter(v === '__all__' ? '' : v)}>
             <SelectTrigger
               size="sm"
-              className="w-full bg-white/[0.04] border-white/[0.08] text-[#e2e8f0] rounded-lg text-xs h-9"
+              className="w-full bg-muted/50 border-border text-foreground rounded-lg text-xs h-9"
             >
               <SelectValue placeholder="Type d'action" />
             </SelectTrigger>
@@ -648,7 +648,7 @@ export function SecurityAuditPanel() {
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === '__all__' ? '' : v)}>
             <SelectTrigger
               size="sm"
-              className="w-full bg-white/[0.04] border-white/[0.08] text-[#e2e8f0] rounded-lg text-xs h-9"
+              className="w-full bg-muted/50 border-border text-foreground rounded-lg text-xs h-9"
             >
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
@@ -663,12 +663,12 @@ export function SecurityAuditPanel() {
 
           {/* Country */}
           <div className="relative">
-            <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#475569]" />
+            <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/70" />
             <Input
               placeholder="Pays (ex: France)"
               value={countryFilter}
               onChange={(e) => setCountryFilter(e.target.value)}
-              className="pl-8 bg-white/[0.04] border-white/[0.08] text-[#e2e8f0] text-xs h-9 rounded-lg placeholder:text-[#475569]"
+              className="pl-8 bg-muted/50 border-border text-foreground text-xs h-9 rounded-lg placeholder:text-muted-foreground/70"
             />
           </div>
 
@@ -677,7 +677,7 @@ export function SecurityAuditPanel() {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="bg-white/[0.04] border-white/[0.08] text-[#e2e8f0] text-xs h-9 rounded-lg [color-scheme:dark]"
+            className="bg-muted/50 border-border text-foreground text-xs h-9 rounded-lg [color-scheme:dark]"
           />
 
           {/* End Date */}
@@ -685,19 +685,19 @@ export function SecurityAuditPanel() {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="bg-white/[0.04] border-white/[0.08] text-[#e2e8f0] text-xs h-9 rounded-lg [color-scheme:dark]"
+            className="bg-muted/50 border-border text-foreground text-xs h-9 rounded-lg [color-scheme:dark]"
           />
         </div>
 
         {/* Actions row */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
           <div className="flex items-center gap-2">
             {hasActiveFilters && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="text-xs h-7 px-2.5 text-[#64748b] hover:text-[#e2e8f0] hover:bg-white/[0.04]"
+                className="text-xs h-7 px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/50"
               >
                 Réinitialiser
               </Button>
@@ -708,13 +708,13 @@ export function SecurityAuditPanel() {
               variant="ghost"
               size="sm"
               onClick={() => fetchLogs()}
-              className="text-xs h-7 px-2.5 text-[#64748b] hover:text-[#d4a853] hover:bg-[#d4a853]/10"
+              className="text-xs h-7 px-2.5 text-muted-foreground hover:text-[#d4a853] hover:bg-[#d4a853]/10"
             >
               <RefreshCw className={`w-3 h-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
               Rafraîchir
             </Button>
             {lastRefresh && (
-              <span className="text-[10px] text-[#334155]">
+              <span className="text-[10px] text-muted-foreground/50">
                 Dernière MAJ : {lastRefresh.toLocaleTimeString('fr-FR')}
               </span>
             )}
@@ -725,16 +725,16 @@ export function SecurityAuditPanel() {
       {/* ═══ RESULTS TABLE ═══ */}
 
       {/* Desktop table (hidden on mobile) */}
-      <div className="hidden md:block bg-white/[0.03] border border-white/[0.08] rounded-xl overflow-hidden">
+      <div className="hidden md:block bg-muted/40 border border-border rounded-xl overflow-hidden">
         {/* Table header */}
-        <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#d4a853]/10 flex items-center justify-center">
               <Activity className="w-4 h-4 text-[#d4a853]" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#e2e8f0]">Résultats</h3>
-              <p className="text-[10px] text-[#475569]">
+              <h3 className="text-sm font-semibold text-foreground">Résultats</h3>
+              <p className="text-[10px] text-muted-foreground/70">
                 {loading ? 'Chargement…' : `${total} événement${total !== 1 ? 's' : ''} · Page ${page}/${totalPages}`}
               </p>
             </div>
@@ -745,35 +745,35 @@ export function SecurityAuditPanel() {
           {loading ? (
             <div className="p-4 space-y-3">
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full bg-white/[0.04] rounded-lg" />
+                <Skeleton key={i} className="h-12 w-full bg-muted/50 rounded-lg" />
               ))}
             </div>
           ) : logs.length > 0 ? (
             <Table>
               <TableHeader>
-                <TableRow className="border-white/[0.06] hover:bg-transparent">
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3">
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3">
                     Date
                   </TableHead>
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3">
                     Utilisateur
                   </TableHead>
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3">
                     Action
                   </TableHead>
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3">
                     IP
                   </TableHead>
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3">
                     Pays
                   </TableHead>
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3">
                     User-Agent
                   </TableHead>
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3">
                     Statut
                   </TableHead>
-                  <TableHead className="text-[10px] text-[#64748b] uppercase tracking-wider font-semibold px-4 py-3 w-10">
+                  <TableHead className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-4 py-3 w-10">
                     <span className="sr-only">Détails</span>
                   </TableHead>
                 </TableRow>
@@ -782,21 +782,21 @@ export function SecurityAuditPanel() {
                 {logs.map((log, i) => (
                   <TableRow
                     key={log.id}
-                    className="border-white/[0.06] hover:bg-white/[0.03] transition-colors"
+                    className="border-border hover:bg-muted/40 transition-colors"
                   >
-                    <TableCell className="px-4 py-3 text-xs text-[#94a3b8] whitespace-nowrap">
+                    <TableCell className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3 h-3 text-[#475569]" />
+                        <Clock className="w-3 h-3 text-muted-foreground/70" />
                         {formatDateTime(log.createdAt)}
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-[#e2e8f0] font-medium truncate max-w-[160px]">
+                        <span className="text-xs text-foreground font-medium truncate max-w-[160px]">
                           {log.user ? (log.user.name || log.user.email || 'Inconnu') : 'Système'}
                         </span>
                         {log.user?.email && (
-                          <span className="text-[10px] text-[#475569] truncate max-w-[160px]">
+                          <span className="text-[10px] text-muted-foreground/70 truncate max-w-[160px]">
                             {log.user.email}
                           </span>
                         )}
@@ -809,25 +809,25 @@ export function SecurityAuditPanel() {
                         {formatActionLabel(log.action)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-xs font-mono text-[#64748b]">
+                    <TableCell className="px-4 py-3 text-xs font-mono text-muted-foreground">
                       {log.ip || '—'}
                     </TableCell>
                     <TableCell className="px-4 py-3">
                       {log.country ? (
-                        <div className="flex items-center gap-1 text-xs text-[#94a3b8]">
-                          <Globe className="w-3 h-3 text-[#475569]" />
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Globe className="w-3 h-3 text-muted-foreground/70" />
                           <span>{log.country}</span>
                           {log.city && (
-                            <span className="text-[#475569]">· {log.city}</span>
+                            <span className="text-muted-foreground/70">· {log.city}</span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-[#475569]">—</span>
+                        <span className="text-xs text-muted-foreground/70">—</span>
                       )}
                     </TableCell>
                     <TableCell className="px-4 py-3">
-                      <div className="flex items-center gap-1 text-[10px] text-[#64748b] max-w-[140px] truncate" title={log.userAgent || undefined}>
-                        <Monitor className="w-3 h-3 shrink-0 text-[#475569]" />
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground max-w-[140px] truncate" title={log.userAgent || undefined}>
+                        <Monitor className="w-3 h-3 shrink-0 text-muted-foreground/70" />
                         <span className="truncate">{truncateUserAgent(log.userAgent)}</span>
                       </div>
                     </TableCell>
@@ -845,7 +845,7 @@ export function SecurityAuditPanel() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-[#475569] hover:text-[#d4a853] hover:bg-[#d4a853]/10"
+                        className="h-7 w-7 text-muted-foreground/70 hover:text-[#d4a853] hover:bg-[#d4a853]/10"
                         onClick={() => setSelectedLog(log)}
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -857,11 +857,11 @@ export function SecurityAuditPanel() {
             </Table>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-[#475569]" />
+              <div className="w-14 h-14 rounded-2xl bg-muted/40 border border-border flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-muted-foreground/70" />
               </div>
-              <p className="text-sm font-medium text-[#64748b]">Aucun événement trouvé</p>
-              <p className="text-xs text-[#475569] mt-1">
+              <p className="text-sm font-medium text-muted-foreground">Aucun événement trouvé</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
                 Ajustez vos filtres ou attendez de nouvelles activités
               </p>
             </div>
@@ -870,15 +870,15 @@ export function SecurityAuditPanel() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-white/[0.06] flex items-center justify-between">
-            <p className="text-[10px] text-[#475569]">
+          <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+            <p className="text-[10px] text-muted-foreground/70">
               {(page - 1) * 50 + 1}–{Math.min(page * 50, total)} sur {total}
             </p>
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-[#64748b] hover:text-[#d4a853] hover:bg-[#d4a853]/10 disabled:opacity-30"
+                className="h-7 w-7 text-muted-foreground hover:text-[#d4a853] hover:bg-[#d4a853]/10 disabled:opacity-30"
                 disabled={page <= 1}
                 onClick={() => goToPage(page - 1)}
               >
@@ -886,7 +886,7 @@ export function SecurityAuditPanel() {
               </Button>
               {pageNumbers.map((p, idx) =>
                 typeof p === 'string' ? (
-                  <span key={`ellipsis-${idx}`} className="text-[10px] text-[#475569] px-1">
+                  <span key={`ellipsis-${idx}`} className="text-[10px] text-muted-foreground/70 px-1">
                     …
                   </span>
                 ) : (
@@ -897,7 +897,7 @@ export function SecurityAuditPanel() {
                     className={`h-7 w-7 text-xs font-medium rounded-lg ${
                       p === page
                         ? 'bg-[#d4a853]/15 text-[#d4a853] hover:bg-[#d4a853]/20'
-                        : 'text-[#64748b] hover:text-[#e2e8f0] hover:bg-white/[0.04]'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                     }`}
                     onClick={() => goToPage(p)}
                   >
@@ -908,7 +908,7 @@ export function SecurityAuditPanel() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-[#64748b] hover:text-[#d4a853] hover:bg-[#d4a853]/10 disabled:opacity-30"
+                className="h-7 w-7 text-muted-foreground hover:text-[#d4a853] hover:bg-[#d4a853]/10 disabled:opacity-30"
                 disabled={page >= totalPages}
                 onClick={() => goToPage(page + 1)}
               >
@@ -924,7 +924,7 @@ export function SecurityAuditPanel() {
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 w-full bg-white/[0.04] rounded-xl" />
+              <Skeleton key={i} className="h-28 w-full bg-muted/50 rounded-xl" />
             ))}
           </div>
         ) : logs.length > 0 ? (
@@ -933,10 +933,10 @@ export function SecurityAuditPanel() {
           ))
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-4">
-              <Shield className="w-6 h-6 text-[#475569]" />
+            <div className="w-14 h-14 rounded-2xl bg-muted/40 border border-border flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-muted-foreground/70" />
             </div>
-            <p className="text-sm font-medium text-[#64748b]">Aucun événement</p>
+            <p className="text-sm font-medium text-muted-foreground">Aucun événement</p>
           </div>
         )}
 
@@ -948,12 +948,12 @@ export function SecurityAuditPanel() {
               size="sm"
               disabled={page <= 1}
               onClick={() => goToPage(page - 1)}
-              className="text-xs text-[#64748b] hover:text-[#d4a853] hover:bg-[#d4a853]/10"
+              className="text-xs text-muted-foreground hover:text-[#d4a853] hover:bg-[#d4a853]/10"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Préc.
             </Button>
-            <span className="text-xs text-[#94a3b8] font-medium px-3">
+            <span className="text-xs text-muted-foreground font-medium px-3">
               {page} / {totalPages}
             </span>
             <Button
@@ -961,7 +961,7 @@ export function SecurityAuditPanel() {
               size="sm"
               disabled={page >= totalPages}
               onClick={() => goToPage(page + 1)}
-              className="text-xs text-[#64748b] hover:text-[#d4a853] hover:bg-[#d4a853]/10"
+              className="text-xs text-muted-foreground hover:text-[#d4a853] hover:bg-[#d4a853]/10"
             >
               Suiv.
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -985,7 +985,7 @@ export function SecurityAuditPanel() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-              className="bg-[#0f172a] border border-white/[0.08] rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+              className="bg-[#0f172a] border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -994,14 +994,14 @@ export function SecurityAuditPanel() {
                   <div className="w-9 h-9 rounded-lg bg-[#d4a853]/10 flex items-center justify-center">
                     <Eye className="w-4.5 h-4.5 text-[#d4a853]" />
                   </div>
-                  <h3 className="text-base font-serif font-semibold text-[#e2e8f0]">
+                  <h3 className="text-base font-serif font-semibold text-foreground">
                     Détails de l&apos;événement
                   </h3>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-[#64748b] hover:text-[#e2e8f0] hover:bg-white/[0.06] rounded-lg"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
                   onClick={() => setSelectedLog(null)}
                 >
                   ✕
@@ -1055,8 +1055,8 @@ export function SecurityAuditPanel() {
               </div>
 
               {/* Footer */}
-              <div className="mt-5 pt-4 border-t border-white/[0.06]">
-                <p className="text-[10px] text-[#334155] font-mono">ID: {selectedLog.id}</p>
+              <div className="mt-5 pt-4 border-t border-border">
+                <p className="text-[10px] text-muted-foreground/50 font-mono">ID: {selectedLog.id}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -1080,12 +1080,12 @@ interface DetailRowProps {
 function DetailRow({ icon, label, value, isMono }: DetailRowProps) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-7 h-7 rounded-md bg-white/[0.04] flex items-center justify-center shrink-0 text-[#475569] mt-0.5">
+      <div className="w-7 h-7 rounded-md bg-muted/50 flex items-center justify-center shrink-0 text-muted-foreground/70 mt-0.5">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-[#475569] uppercase tracking-wider font-semibold mb-0.5">{label}</p>
-        <div className={`text-sm text-[#e2e8f0] break-all ${isMono ? 'font-mono text-xs' : ''}`}>
+        <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider font-semibold mb-0.5">{label}</p>
+        <div className={`text-sm text-foreground break-all ${isMono ? 'font-mono text-xs' : ''}`}>
           {value}
         </div>
       </div>

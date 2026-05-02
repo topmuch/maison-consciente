@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Home,
   Sparkles,
+  Crown,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -130,9 +131,11 @@ function ThemeToggle() {
 function SidebarNav({
   pathname,
   onItemClick,
+  userRole,
 }: {
   pathname: string;
   onItemClick?: () => void;
+  userRole?: string;
 }) {
   const showSettingsSubNav = pathname.startsWith('/dashboard/settings');
 
@@ -187,6 +190,26 @@ function SidebarNav({
           </div>
         );
       })}
+
+      {/* Admin — only for superadmin */}
+      {userRole === 'superadmin' && (
+        <>
+          <Separator className="my-2 bg-border" />
+          <Link
+            href="/dashboard/admin"
+            onClick={onItemClick}
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150',
+              isActive(pathname, '/dashboard/admin')
+                ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-foreground'
+            )}
+          >
+            <Crown className={cn('h-5 w-5 shrink-0', isActive(pathname, '/dashboard/admin') && 'text-amber-600 dark:text-amber-400')} />
+            <span>Administration</span>
+          </Link>
+        </>
+      )}
     </nav>
   );
 }
@@ -259,7 +282,7 @@ function SidebarContent({
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto px-1 py-2">
-        <SidebarNav pathname={pathname} onItemClick={onItemClick} />
+        <SidebarNav pathname={pathname} onItemClick={onItemClick} userRole={userRole} />
       </div>
 
       {/* Footer */}

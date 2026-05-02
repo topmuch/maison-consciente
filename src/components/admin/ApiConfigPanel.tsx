@@ -100,8 +100,8 @@ const SERVICE_REGISTRY: ServiceMetadata[] = [
     serviceName: 'Open-Meteo (Météo)',
     serviceDescription: 'Météo en temps réel — gratuit, sans clé API requise',
     icon: Sun,
-    iconBg: 'bg-[#22c55e]/15',
-    iconColor: 'text-[#22c55e]',
+    iconBg: 'bg-emerald-500/15',
+    iconColor: 'text-emerald-500',
   },
 
   // ── 🎵 Audio & Radio ──
@@ -110,8 +110,8 @@ const SERVICE_REGISTRY: ServiceMetadata[] = [
     serviceName: 'Icecast (Radio)',
     serviceDescription: 'Annuaire de stations radio en ligne',
     icon: Radio,
-    iconBg: 'bg-[#8b5cf6]/15',
-    iconColor: 'text-[#8b5cf6]',
+    iconBg: 'bg-violet-500/15',
+    iconColor: 'text-violet-500',
   },
   {
     serviceKey: 'RADIO_BROWSER',
@@ -268,8 +268,8 @@ const SERVICE_REGISTRY: ServiceMetadata[] = [
     serviceName: 'Resend',
     serviceDescription: 'Envoi d\'emails transactionnels et notifications',
     icon: Mail,
-    iconBg: 'bg-[#e2e8f0]/10',
-    iconColor: 'text-[#e2e8f0]',
+    iconBg: 'bg-foreground/10',
+    iconColor: 'text-foreground',
   },
   {
     serviceKey: 'HOLIDAYS',
@@ -338,26 +338,26 @@ const fadeUp = {
 
 function CardSkeleton() {
   return (
-    <div className="rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] p-5 space-y-4">
+    <div className="rounded-2xl bg-muted/40 backdrop-blur-xl border border-border p-5 space-y-4">
       <div className="flex items-start gap-3">
-        <Skeleton className="h-10 w-10 rounded-xl bg-white/[0.06] shrink-0" />
+        <Skeleton className="h-10 w-10 rounded-xl bg-muted shrink-0" />
         <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-28 bg-white/[0.06]" />
-          <Skeleton className="h-3 w-48 bg-white/[0.06]" />
+          <Skeleton className="h-4 w-28 bg-muted" />
+          <Skeleton className="h-3 w-48 bg-muted" />
         </div>
-        <Skeleton className="h-5 w-16 rounded-full bg-white/[0.06]" />
+        <Skeleton className="h-5 w-16 rounded-full bg-muted" />
       </div>
       <div className="space-y-1.5">
-        <Skeleton className="h-3 w-12 bg-white/[0.06]" />
-        <Skeleton className="h-10 w-full rounded-xl bg-white/[0.06]" />
+        <Skeleton className="h-3 w-12 bg-muted" />
+        <Skeleton className="h-10 w-full rounded-xl bg-muted" />
       </div>
       <div className="space-y-1.5">
-        <Skeleton className="h-3 w-16 bg-white/[0.06]" />
-        <Skeleton className="h-10 w-full rounded-xl bg-white/[0.06]" />
+        <Skeleton className="h-3 w-16 bg-muted" />
+        <Skeleton className="h-10 w-full rounded-xl bg-muted" />
       </div>
       <div className="flex gap-2 pt-1">
-        <Skeleton className="h-10 flex-1 rounded-xl bg-white/[0.06]" />
-        <Skeleton className="h-10 w-20 rounded-xl bg-white/[0.06]" />
+        <Skeleton className="h-10 flex-1 rounded-xl bg-muted" />
+        <Skeleton className="h-10 w-20 rounded-xl bg-muted" />
       </div>
     </div>
   );
@@ -452,8 +452,8 @@ export function ApiConfigPanel() {
         serviceName: serviceKey,
         serviceDescription: 'Service externe',
         icon: Plug,
-        iconBg: 'bg-[#64748b]/15',
-        iconColor: 'text-[#64748b]',
+        iconBg: 'bg-muted-foreground/15',
+        iconColor: 'text-muted-foreground',
       }
     );
   };
@@ -479,14 +479,14 @@ export function ApiConfigPanel() {
       <div className="glass rounded-xl p-5 inner-glow">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#8b5cf6]/10 flex items-center justify-center">
-              <Plug className="w-5 h-5 text-[#8b5cf6]" />
+            <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+              <Plug className="w-5 h-5 text-violet-500" />
             </div>
             <div>
               <h2 className="text-lg font-serif font-semibold tracking-tight text-foreground">
                 APIs & Intégrations
               </h2>
-              <p className="text-[11px] text-[#475569] mt-0.5">
+              <p className="text-[11px] text-muted-foreground/70 mt-0.5">
                 Configuration centralisée des services externes
               </p>
             </div>
@@ -495,11 +495,11 @@ export function ApiConfigPanel() {
           <div className="flex items-center gap-3">
             {/* Stats badges */}
             <div className="flex items-center gap-2">
-              <Badge className="bg-[#22c55e]/10 text-[#22c55e] border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+              <Badge className="bg-emerald-500/10 text-emerald-500 border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                 {configuredCount}/{totalCount} actifs
               </Badge>
               {errorCount > 0 && (
-                <Badge className="bg-[#f87171]/10 text-[#f87171] border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                <Badge className="bg-red-500/10 text-red-500 border-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                   {errorCount} erreur{errorCount > 1 ? 's' : ''}
                 </Badge>
               )}
@@ -511,7 +511,7 @@ export function ApiConfigPanel() {
               size="icon"
               onClick={() => fetchConfigs()}
               disabled={loading}
-              className="shrink-0 text-[#64748b] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+              className="shrink-0 text-muted-foreground hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
               aria-label="Rafraîchir les configurations"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -520,8 +520,8 @@ export function ApiConfigPanel() {
         </div>
 
         {/* Security notice */}
-        <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-start gap-2">
-          <span className="text-[10px] text-[#475569] leading-relaxed">
+        <div className="mt-4 pt-3 border-t border-border flex items-start gap-2">
+          <span className="text-[10px] text-muted-foreground/70 leading-relaxed">
             🔐 Les clés API sont chiffrées (AES-256-GCM) et ne sont jamais exposées côté client.
             Toute modification est tracée dans le journal d&apos;audit.
           </span>
@@ -531,7 +531,7 @@ export function ApiConfigPanel() {
       {/* ── Error state ── */}
       {error && !loading && (
         <div className="glass rounded-xl p-6 text-center">
-          <p className="text-sm text-[#f87171]">{error}</p>
+          <p className="text-sm text-red-500">{error}</p>
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -589,8 +589,8 @@ export function ApiConfigPanel() {
 
       {/* ── Fallback notice ── */}
       <div className="glass rounded-xl p-4">
-        <p className="text-[11px] text-[#475569] leading-relaxed">
-          💡 <strong className="text-[#94a3b8]">Fallback automatique :</strong> Si un service est inactif ou en erreur,
+        <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+          💡 <strong className="text-muted-foreground">Fallback automatique :</strong> Si un service est inactif ou en erreur,
           l&apos;application utilise automatiquement les données locales ou désactive la fonctionnalité correspondante
           sans interrompre l&apos;expérience utilisateur.
         </p>

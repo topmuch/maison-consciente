@@ -119,3 +119,124 @@ Stage Summary:
 - Best Value pricing card has eye-catching gold gradient border with animated shimmer sweep
 - All below-fold sections animate into view using framer-motion viewport detection
 - Maintains full compatibility with light/dark mode and mobile responsive design
+
+## Task 4: Admin Dashboard Color Token Migration
+
+**Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+**File**: `src/components/admin/admin-dashboard.tsx`
+
+### Changes Made
+Replaced all hardcoded dark-mode-only hex colors with semantic Tailwind tokens for proper light/dark mode support:
+
+#### Text Colors
+- `text-[#64748b]` → `text-muted-foreground` (general muted text)
+- `text-[#e2e8f0]` → `text-foreground` (light text)
+- `text-[#475569]` → `text-muted-foreground/70` (dimmer text)
+- `text-[#334155]` → `text-muted-foreground/50` (very dim text)
+- `text-[#94a3b8]` → `text-muted-foreground` (hover text, via hover variant)
+- `placeholder:text-[#475569]` → `placeholder:text-muted-foreground/70`
+
+#### Background Colors
+- `bg-white/[0.04]` → `bg-muted/50`
+- `bg-white/[0.06]` → `bg-muted`
+- `bg-white/[0.02]` → `bg-muted/30`
+- `bg-white/[0.03]` → `bg-muted/40`
+- `hover:bg-white/[0.02]` → `hover:bg-muted/30`
+- `hover:bg-white/[0.03]` → `hover:bg-muted/40`
+- `hover:bg-white/[0.04]` → `hover:bg-muted/50`
+
+#### Border Colors
+- `border-white/[0.06]` → `border-border`
+- `border-white/[0.08]` → `border-border`
+
+#### Badge/Status Colors
+- `bg-[#f87171]/10 text-[#f87171]` → `bg-red-500/10 text-red-500`
+- `bg-[#22c55e]/10 text-[#22c55e]` → `bg-emerald-500/10 text-emerald-500`
+- `bg-[#3b82f6]/10 text-[#3b82f6]` → `bg-blue-500/10 text-blue-500`
+- `bg-[#8b5cf6]/10 text-[#8b5cf6]` → `bg-violet-500/10 text-violet-500`
+- `bg-[#8b5cf6]/15 text-[#8b5cf6]` → `bg-amber-500/15 text-amber-500` (Zones card)
+- `bg-[#c77d5a]/10 text-[#c77d5a]` → `bg-copper/10 text-copper`
+- `bg-[#64748b]/10 text-[#64748b]` → `bg-muted/80 text-muted-foreground`
+
+#### Hover States
+- `hover:text-[#f87171] hover:bg-[#f87171]/10` → `hover:text-red-500 hover:bg-red-500/10`
+- `hover:text-[#3b82f6] hover:bg-[#3b82f6]/10` → `hover:text-blue-500 hover:bg-blue-500/10`
+- `hover:text-[#c77d5a] hover:bg-[#c77d5a]/10` → `hover:text-copper hover:bg-copper/10`
+
+#### Empty State Backgrounds
+- `bg-[#c77d5a]/[0.06] border-[#c77d5a]/10` → `bg-copper/[0.06] border-copper/10`
+- `bg-[#8b5cf6]/[0.06] border-[#8b5cf6]/10` → `bg-violet-500/[0.06] border-violet-500/10`
+- `text-[#c77d5a]/50` → `text-copper/50`
+- `text-[#8b5cf6]/50` → `text-violet-500/50`
+
+### Verification
+- No lint errors in modified file
+- No business logic changed
+- All imports, types, component structure preserved
+
+---
+
+## Task 4b: Fix Hardcoded Dark-Mode Colors in Admin Components (Batch 2)
+
+**Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+**Files**: 5 admin component files under `src/components/admin/`
+
+### Files Processed
+1. `ApiConfigCard.tsx` (422 lines)
+2. `ApiConfigPanel.tsx` (600 lines)
+3. `SecurityAuditPanel.tsx` (1095 lines)
+4. `deployment-checklist.tsx` (316 lines)
+5. `SystemConfigPanel.tsx` (612 lines)
+
+### Replacements Applied (across all 5 files)
+
+#### Text Colors
+- `text-[#e2e8f0]` → `text-foreground`
+- `text-[#64748b]` → `text-muted-foreground`
+- `text-[#94a3b8]` → `text-muted-foreground`
+- `text-[#475569]` → `text-muted-foreground/70`
+- `text-[#334155]` → `text-muted-foreground/50`
+- `bg-[#64748b]` (standalone) → `bg-muted-foreground`
+
+#### Background Colors
+- `bg-white/[0.02]` → `bg-muted/30`
+- `bg-white/[0.03]` → `bg-muted/40`
+- `bg-white/[0.04]` → `bg-muted/50`
+- `bg-white/[0.06]` → `bg-muted`
+- `bg-white/[0.08]` → `bg-muted`
+- `bg-[#64748b]/10 text-[#64748b]` → `bg-muted/80 text-muted-foreground`
+
+#### Border Colors
+- `border-white/[0.06]` → `border-border`
+- `border-white/[0.08]` → `border-border`
+- `border-white/[0.12]` → `border-border` (closest match)
+- `border-white/5` → `border-border` (closest match)
+- `divide-white/5` → `divide-border` (closest match)
+
+#### Compound Badge/Status Patterns
+- `bg-[#f87171]/10 text-[#f87171]` → `bg-red-500/10 text-red-500`
+- `bg-[#f87171]` (standalone) → `bg-red-500`
+- `text-[#f87171]` (standalone) → `text-red-500`
+- `bg-[#22c55e]/10 text-[#22c55e]` → `bg-emerald-500/10 text-emerald-500`
+- `bg-[#22c55e]` (standalone) → `bg-emerald-500`
+- `text-[#22c55e]` (standalone) → `text-emerald-500`
+- `border-[#22c55e]` → `border-emerald-500`
+- `bg-[#8b5cf6]/10 text-[#8b5cf6]` → `bg-violet-500/10 text-violet-500`
+- `bg-[#8b5cf6]` (standalone) → `bg-violet-500`
+- `text-[#8b5cf6]` (standalone) → `text-violet-500`
+- `border-[#8b5cf6]` → `border-violet-500`
+- `bg-[#e2e8f0]/10` → `bg-foreground/10`
+
+### Intentionally Unchanged
+- Service brand colors in SERVICE_REGISTRY (Foursquare pink, Google blue, etc.)
+- `#d4a853` custom gold theme in SecurityAuditPanel (not in replacement table)
+- `#f43f5e` rose-500 for Sentry category (not in replacement table)
+- `#eab308` yellow for "untested" status badge (not in replacement table)
+- `[var(--accent-primary)]` references (KEEP AS IS per instructions)
+
+### Lint Results
+```
+✖ 6 problems (6 errors, 0 warnings)
+```
+All 6 errors are **pre-existing** in unrelated files (ThemeToggle.tsx, useMaellisVoice.ts).
+**Zero new lint errors** introduced by this task.
