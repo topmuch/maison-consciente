@@ -30,9 +30,17 @@ interface AIConfigEntry {
   options?: string[];
 }
 
+interface AIConfigApiResponse {
+  key: string;
+  value: string;
+  label: string;
+  description: string;
+  type: string;
+}
+
 interface AIConfigData {
-  config: Record<string, string>;
-  apiEntries: Array<{
+  config: AIConfigApiResponse[];
+  apiConfigs: Array<{
     id: string;
     serviceKey: string;
     isActive: boolean;
@@ -121,10 +129,11 @@ export function AIConfigPanel() {
       if (res.ok) {
         const result = await res.json();
         setData(result);
-        // Initialize edited values
+        // Initialize edited values from array
         const initial: Record<string, string> = {};
-        for (const [k, v] of Object.entries(result.config || {})) {
-          initial[k] = v;
+        const configs = Array.isArray(result.config) ? result.config : [];
+        for (const entry of configs) {
+          initial[entry.key] = entry.value;
         }
         setEditedValues(initial);
       }
@@ -155,7 +164,14 @@ export function AIConfigPanel() {
     }
   };
 
-  const getValue = (field: AIConfigEntry) => editedValues[field.key] ?? data?.config?.[field.key] ?? field.value;
+  const getValue = (field: AIConfigEntry) => {
+    const edited = editedValues[field.key];
+    if (edited !== undefined) return edited;
+    const fromApi = Array.isArray(data?.config)
+      ? data.config.find((c) => c.key === field.key)?.value
+      : undefined;
+    return fromApi ?? field.value;
+  };
 
   return (
     <div className="space-y-6">
@@ -280,9 +296,9 @@ export function AIConfigPanel() {
             <Settings className="w-4 h-4 text-[var(--accent-primary)]" />
             Services IA connectés
           </h3>
-          {data?.apiEntries && data.apiEntries.length > 0 ? (
+          {data?.apiConfigs && data.apiConfigs.length > 0 ? (
             <div className="space-y-2">
-              {data.apiEntries.map((entry) => (
+              {data.apiConfigs.map((entry) => (
                 <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-3">
                     <Badge className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border-0 ${

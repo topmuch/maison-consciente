@@ -416,7 +416,7 @@ function LogsTab() {
    ═══════════════════════════════════════════════════════ */
 
 export function AdminDashboard() {
-  const { user } = useAuthStore();
+  const { user, setAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [initialStats, setInitialStats] = useState<EnhancedStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -440,7 +440,52 @@ export function AdminDashboard() {
     }
   }, []);
 
-  useEffect(() => { fetchInitialStats(); }, [fetchInitialStats]);
+  useEffect(() => {
+    // If auth store doesn't have the role yet, fetch it first
+    if (!user?.role) {
+      fetch('/api/auth/me')
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (data?.success && data.user) {
+            setAuth({
+              userId: data.user.id,
+              email: data.user.email,
+              role: data.user.role,
+              name: data.user.name,
+              avatar: data.user.avatar,
+              householdId: data.user.householdId,
+              householdName: data.household?.name,
+              householdType: data.household?.type,
+            } as any);
+          } else {
+            setError('access_denied');
+            setLoading(false);
+          }
+        })
+        .catch(() => {
+          setError('access_denied');
+          setLoading(false);
+        });
+    } else {
+      fetchInitialStats();
+    }
+  }, []); // Fetch auth if not available
+
+  // Also fetch stats when auth becomes available
+  useEffect(() => {
+    if (user?.role === 'superadmin' && !initialStats && loading) {
+      fetchInitialStats();
+    }
+  }, [user?.role, initialStats, loading, fetchInitialStats]);
+
+  /* ── Loading (auth not yet confirmed) ── */
+  if (loading && !user?.role) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
 
   /* ── Access denied ── */
   if (user?.role !== 'superadmin' || error === 'access_denied') {

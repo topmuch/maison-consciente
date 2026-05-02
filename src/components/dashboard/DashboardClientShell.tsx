@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useAuthStore } from '@/store/auth-store';
 import {
   LayoutDashboard,
   Package,
@@ -343,6 +344,22 @@ export function DashboardClientShell({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const initials = getInitials(userName);
+  const { setAuth, isAuthenticated } = useAuthStore();
+
+  // Propagate server-side auth data to client store on mount
+  useEffect(() => {
+    if (!isAuthenticated && userName && userRole) {
+      setAuth({
+        userId: '',  // Will be populated by /api/auth/me
+        email: '',
+        role: userRole as any,
+        name: userName,
+        avatar: userAvatar || null,
+        householdId: null,
+        householdName: householdName,
+      } as any);
+    }
+  }, []); // Set server-side auth on mount
 
   return (
     <TemplateProvider initialSlug={initialTemplateSlug}>
