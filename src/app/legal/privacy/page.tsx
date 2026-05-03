@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import {
-  Diamond,
+  Sparkles,
   ShieldCheck,
   Lock,
   Database,
@@ -11,32 +11,40 @@ import {
   Download,
   Server,
   UserCheck,
-  ArrowLeft,
+  ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
+import { SiteNavbar } from '@/components/layout/SiteNavbar';
+import { SiteFooter } from '@/components/layout/SiteFooter';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 /* ═══════════════════════════════════════════════════════
-   PRIVACY PAGE — Maison Consciente
+   PRIVACY PAGE — Maellis
    Politique de Confidentialité RGPD
    ═══════════════════════════════════════════════════════ */
 
 /* ─── Animation Variants ─── */
+const easeOut = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
   whileInView: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    transition: { duration: 0.6, ease: easeOut },
   },
-  viewport: { once: true },
+  viewport: { once: true, amount: 0.2 },
 };
 
-const staggerContainer = {
-  initial: {},
+const stagger = {
+  initial: { opacity: 0 },
   whileInView: {
+    opacity: 1,
     transition: { staggerChildren: 0.15 },
   },
-  viewport: { once: true },
+  viewport: { once: true, amount: 0.2 },
 };
 
 const staggerItem = {
@@ -44,7 +52,7 @@ const staggerItem = {
   whileInView: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    transition: { duration: 0.6, ease: easeOut },
   },
 };
 
@@ -52,270 +60,225 @@ const staggerItem = {
 const dataCategories = [
   {
     icon: ShieldCheck,
-    title: 'S\u00e9curit\u00e9 (Safe Arrival)',
-    description: "Nous collectons les heures de d\u00e9part et d\u2019arriv\u00e9e pour d\u00e9tecter les retards anormaux et d\u00e9clencher les alertes. Ces donn\u00e9es sont strictement n\u00e9cessaires au fonctionnement du service de s\u00e9curit\u00e9.",
+    title: 'Sécurité (Safe Arrival)',
+    description: "Nous collectons les heures de départ et d'arrivée pour détecter les retards anormaux et déclencher les alertes. Ces données sont strictement nécessaires au fonctionnement du service de sécurité.",
   },
   {
     icon: Lock,
     title: 'Vocal & IA',
-    description: "Les commandes vocales sont trait\u00e9es localement ou via nos partenaires s\u00e9curis\u00e9s (Google Gemini) pour am\u00e9liorer la reconnaissance. Les enregistrements audio bruts ne sont jamais stock\u00e9s sur nos serveurs.",
+    description: "Les commandes vocales sont traitées localement ou via nos partenaires sécurisés (Google Gemini) pour améliorer la reconnaissance. Les enregistrements audio bruts ne sont jamais stockés sur nos serveurs.",
   },
   {
     icon: UserCheck,
     title: 'Compte & Facturation',
-    description: "Email, nom et informations de facturation pour la gestion de l\u2019abonnement. Ces donn\u00e9es sont minimales et trait\u00e9es par notre prestataire de paiement s\u00e9curis\u00e9 (Stripe).",
+    description: "Email, nom et informations de facturation pour la gestion de l'abonnement. Ces données sont minimales et traitées par notre prestataire de paiement sécurisé (Stripe).",
   },
 ];
 
 const rights = [
   {
     icon: Eye,
-    title: 'Droit d\u2019acc\u00e8s',
-    description: 'Vous pouvez demander une copie de toutes vos donn\u00e9es personnelles \u00e0 tout moment.',
+    title: "Droit d'accès",
+    description: 'Vous pouvez demander une copie de toutes vos données personnelles à tout moment.',
   },
   {
     icon: Download,
-    title: 'Droit \u00e0 la portabilit\u00e9',
-    description: 'Exportez vos donn\u00e9es dans un format standard et r\u00e9utilisable.',
+    title: 'Droit à la portabilité',
+    description: 'Exportez vos données dans un format standard et réutilisable.',
   },
   {
     icon: Trash2,
-    title: 'Droit \u00e0 l\u2019oubli',
-    description: 'Supprimez d\u00e9finitivement votre compte et toutes les donn\u00e9es associ\u00e9es.',
+    title: "Droit à l'oubli",
+    description: 'Supprimez définitivement votre compte et toutes les données associées.',
   },
 ];
 
 const securityMeasures = [
   'Chiffrement AES-256 de bout en bout',
-  'H\u00e9bergement sur serveurs europ\u00e9ens (France)',
-  'Conformit\u00e9 RGPD totale',
-  'Audit de s\u00e9curit\u00e9 trimestriel',
-  'Aucune revente de donn\u00e9es',
-  'Acc\u00e8s aux donn\u00e9es limit\u00e9 par r\u00f4le',
+  'Hébergement sur serveurs européens (France)',
+  'Conformité RGPD totale',
+  'Audit de sécurité trimestriel',
+  'Aucune revente de données',
+  'Accès aux données limité par rôle',
 ];
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#020617] text-[#f1f5f9]">
-      {/* ═══ NAVBAR ═══ */}
-      <motion.nav
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-        className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/80 backdrop-blur-xl border-b border-white/[0.06]"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-gold glow-gold">
-              <Diamond className="w-4 h-4 text-[#020617]" />
-            </div>
-            <span className="font-serif text-gradient-gold text-lg tracking-wide">
-              Maison Consciente
-            </span>
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/demo"
-              className="px-3 sm:px-4 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
-            >
-              D\u00e9mo
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Accueil
-            </Link>
-          </div>
-        </div>
-      </motion.nav>
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <SiteNavbar activePage="/legal/privacy" />
 
-      {/* ═══ HEADER ═══ */}
-      <section className="relative pt-28 sm:pt-32 pb-12 px-4">
-        <div
-          className="absolute top-16 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full blur-[120px] opacity-12 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #d4a853 0%, transparent 70%)' }}
-        />
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-          className="max-w-4xl mx-auto text-center relative z-10"
-        >
+      <main className="flex-1">
+        {/* ═══ HEADER ═══ */}
+        <section className="relative pt-28 sm:pt-32 pb-12 px-4">
+          <div
+            className="absolute top-16 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full blur-[120px] opacity-20 pointer-events-none"
+            style={{ background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)' }}
+          />
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#d4a853]/10 border border-[#d4a853]/20 mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: easeOut }}
+            className="max-w-4xl mx-auto text-center relative z-10"
           >
-            <ShieldCheck className="w-8 h-8 text-[#d4a853]" strokeWidth={1.5} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200/60 dark:border-amber-700/40 mb-6"
+            >
+              <ShieldCheck className="w-8 h-8 text-amber-500 dark:text-amber-400" strokeWidth={1.5} />
+            </motion.div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight">
+              Politique de{' '}
+              <span className="text-amber-500">Confidentialité</span>
+            </h1>
+            <p className="text-muted-foreground text-base">
+              Dernière mise à jour : Janvier 2025
+            </p>
           </motion.div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif mb-4 tracking-tight">
-            Politique de{' '}
-            <span className="text-gradient-gold">Confidentialit\u00e9</span>
-          </h1>
-          <p className="text-[#64748b] text-base">
-            Derni\u00e8re mise \u00e0 jour : Janvier 2025
-          </p>
-        </motion.div>
-      </section>
+        </section>
 
-      {/* ═══ CONTENT ═══ */}
-      <section className="py-12 md:py-16 px-4">
-        <div className="max-w-4xl mx-auto space-y-12">
+        {/* ═══ CONTENT ═══ */}
+        <section className="py-12 md:py-16 px-4">
+          <div className="max-w-4xl mx-auto space-y-12">
 
-          {/* ─── Introduction ─── */}
-          <motion.div {...fadeUp} className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 md:p-8">
-            <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-xl bg-[#d4a853]/10 shrink-0">
-                <ShieldCheck className="w-5 h-5 text-[#d4a853]" strokeWidth={1.5} />
-              </div>
-              <div>
-                <h2 className="text-xl font-serif font-semibold text-[#f1f5f9] mb-3">
-                  1. Vos Donn\u00e9es Sensibles
-                </h2>
-                <p className="text-sm text-[#94a3b8] leading-relaxed">
-                  Maellis traite des donn\u00e9es critiques pour la s\u00e9curit\u00e9 de votre foyer : horaires de rentr\u00e9e,
-                  localisation, contacts d&rsquo;urgence et informations de sant\u00e9. Toutes ces donn\u00e9es sont{' '}
-                  <strong className="text-[#f1f5f9]">chiffr\u00e9es de bout en bout (AES-256)</strong> dans notre base
-                  de donn\u00e9es. Nous ne vendons jamais vos donn\u00e9es personnelles.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ─── Data Collection ─── */}
-          <motion.div {...fadeUp}>
-            <h2 className="text-xl font-serif font-semibold text-[#f1f5f9] mb-6 flex items-center gap-3">
-              <Database className="text-[#d4a853]" size={20} />
-              2. Collecte et Utilisation
-            </h2>
-            <motion.div {...staggerContainer} className="space-y-4">
-              {dataCategories.map((cat, i) => (
-                <motion.div
-                  key={i}
-                  variants={staggerItem}
-                  className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-[#d4a853]/15 transition-all duration-300"
-                >
+            {/* ─── Introduction ─── */}
+            <motion.div {...fadeUp}>
+              <Card className="border-amber-200/60 dark:border-amber-800/40 shadow-md">
+                <CardContent className="p-6 md:p-8">
                   <div className="flex items-start gap-4">
-                    <div className="p-2.5 rounded-xl bg-[#d4a853]/10 shrink-0">
-                      <cat.icon className="w-5 h-5 text-[#d4a853]" strokeWidth={1.5} />
+                    <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-[#f1f5f9] mb-2">{cat.title}</h3>
-                      <p className="text-sm text-[#94a3b8] leading-relaxed">{cat.description}</p>
+                      <h2 className="text-xl font-bold text-foreground mb-3">
+                        1. Vos Données Sensibles
+                      </h2>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Maellis traite des données critiques pour la sécurité de votre foyer : horaires de rentrée,
+                        localisation, contacts d&apos;urgence et informations de santé. Toutes ces données sont{' '}
+                        <strong className="text-foreground">chiffrées de bout en bout (AES-256)</strong> dans notre base
+                        de données. Nous ne vendons jamais vos données personnelles.
+                      </p>
                     </div>
                   </div>
-                </motion.div>
-              ))}
+                </CardContent>
+              </Card>
             </motion.div>
-          </motion.div>
 
-          {/* ─── GDPR Rights ─── */}
-          <motion.div {...fadeUp}>
-            <h2 className="text-xl font-serif font-semibold text-[#f1f5f9] mb-6">
-              3. Vos Droits (RGPD)
-            </h2>
-            <motion.div {...staggerContainer} className="grid md:grid-cols-3 gap-4">
-              {rights.map((right, i) => (
-                <motion.div
-                  key={i}
-                  variants={staggerItem}
-                  className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 text-center hover:border-[#d4a853]/15 transition-all duration-300"
-                >
-                  <div className="p-2.5 rounded-xl bg-[#d4a853]/10 w-fit mx-auto mb-3">
-                    <right.icon className="w-5 h-5 text-[#d4a853]" strokeWidth={1.5} />
+            {/* ─── Data Collection ─── */}
+            <motion.div {...fadeUp}>
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
+                <Database className="text-amber-500" size={20} />
+                2. Collecte et Utilisation
+              </h2>
+              <motion.div {...stagger} className="space-y-4">
+                {dataCategories.map((cat, i) => (
+                  <motion.div
+                    key={i}
+                    variants={staggerItem}
+                  >
+                    <Card className="hover:border-amber-200 dark:hover:border-amber-700/60 transition-all duration-300">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 shrink-0">
+                            <cat.icon className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
+                          </div>
+                          <div>
+                            <h3 className="text-base font-semibold text-foreground mb-2">{cat.title}</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{cat.description}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            {/* ─── GDPR Rights ─── */}
+            <motion.div {...fadeUp}>
+              <h2 className="text-xl font-bold text-foreground mb-6">
+                3. Vos Droits (RGPD)
+              </h2>
+              <motion.div {...stagger} className="grid md:grid-cols-3 gap-4">
+                {rights.map((right, i) => (
+                  <motion.div
+                    key={i}
+                    variants={staggerItem}
+                  >
+                    <Card className="hover:border-amber-200 dark:hover:border-amber-700/60 transition-all duration-300 text-center">
+                      <CardContent className="p-5">
+                        <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 w-fit mx-auto mb-3">
+                          <right.icon className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
+                        </div>
+                        <h3 className="text-sm font-semibold text-foreground mb-2">{right.title}</h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{right.description}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+              <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
+                Vous pouvez exercer ces droits depuis votre tableau de bord dans la section{' '}
+                <em className="text-amber-600 dark:text-amber-400">Paramètres &gt; Données</em>, ou en contactant notre DPO.
+              </p>
+            </motion.div>
+
+            {/* ─── Security ─── */}
+            <motion.div {...fadeUp}>
+              <Card className="border-amber-200/60 dark:border-amber-800/40 shadow-md">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 shrink-0">
+                      <Server className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-foreground mb-2">
+                        4. Mesures de Sécurité
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données.
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-semibold text-[#f1f5f9] mb-2">{right.title}</h3>
-                  <p className="text-xs text-[#94a3b8] leading-relaxed">{right.description}</p>
-                </motion.div>
-              ))}
+                  <ul className="space-y-3 pl-2">
+                    {securityMeasures.map((measure, i) => (
+                      <li key={i} className="flex items-center gap-3 text-sm">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                        <span className="text-muted-foreground">{measure}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             </motion.div>
-            <p className="text-sm text-[#94a3b8] mt-4 leading-relaxed">
-              Vous pouvez exercer ces droits depuis votre tableau de bord dans la section{' '}
-              <em className="text-[#f0d78c]">Param\u00e8tres &gt; Donn\u00e9es</em>, ou en contactant notre DPO.
-            </p>
-          </motion.div>
 
-          {/* ─── Security ─── */}
-          <motion.div {...fadeUp} className="bg-white/[0.03] backdrop-blur-xl border border-[#d4a853]/15 rounded-2xl p-6 md:p-8">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="p-2.5 rounded-xl bg-[#d4a853]/10 shrink-0">
-                <Server className="w-5 h-5 text-[#d4a853]" strokeWidth={1.5} />
-              </div>
-              <div>
-                <h2 className="text-xl font-serif font-semibold text-[#f1f5f9] mb-2">
-                  4. Mesures de S\u00e9curit\u00e9
-                </h2>
-                <p className="text-sm text-[#94a3b8]">
-                  Nous mettons en \u0153uvre des mesures techniques et organisationnelles pour prot\u00e9ger vos donn\u00e9es.
-                </p>
-              </div>
-            </div>
-            <ul className="space-y-3 pl-2">
-              {securityMeasures.map((measure, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#d4a853] shrink-0" />
-                  <span className="text-[#94a3b8]">{measure}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* ─── DPO Contact ─── */}
-          <motion.div {...fadeUp} className="bg-gradient-to-br from-[#d4a853]/5 to-transparent backdrop-blur-xl border border-[#d4a853]/15 rounded-2xl p-6 md:p-8 text-center">
-            <ShieldCheck className="w-10 h-10 text-[#d4a853] mx-auto mb-4" strokeWidth={1.5} />
-            <h3 className="text-xl font-serif font-bold text-[#f1f5f9] mb-2">Contact DPO</h3>
-            <p className="text-sm text-[#94a3b8] mb-4">
-              Pour toute question sur la protection de vos donn\u00e9es :
-            </p>
-            <a
-              href="mailto:privacy@maison-consciente.com"
-              className="inline-flex items-center gap-2 text-[#d4a853] hover:text-[#f0d78c] font-medium text-sm transition-colors"
-            >
-              privacy@maison-consciente.com
-            </a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ═══ FOOTER ═══ */}
-      <footer className="mt-auto py-8 border-t border-white/[0.05]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Diamond className="w-4 h-4 text-[#d4a853]/60" strokeWidth={1.5} />
-              <span className="text-xs text-[#64748b]">
-                &copy; 2025 Maison Consciente
-              </span>
-            </div>
-            <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
-              <Link href="/" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Accueil
-              </Link>
-              <Link href="/demo" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                D\u00e9mo
-              </Link>
-              <Link href="/pricing" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Tarifs
-              </Link>
-              <Link href="/about" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                \u00c0 propos
-              </Link>
-              <Link href="/contact" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Contact
-              </Link>
-              <Link href="/legal/privacy" className="text-xs text-[#d4a853]/80 hover:text-[#d4a853] transition-colors">
-                Confidentialit\u00e9
-              </Link>
-            </div>
-            <p className="text-xs text-[#475569]">
-              Con\u00e7u pour le confort et la privacy.
-            </p>
+            {/* ─── DPO Contact ─── */}
+            <motion.div {...fadeUp}>
+              <Card className="border-amber-200/60 dark:border-amber-800/40 bg-gradient-to-br from-amber-50/50 to-background dark:from-amber-900/20 dark:to-background shadow-md">
+                <CardContent className="p-6 md:p-8 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
+                    <ShieldCheck className="w-7 h-7 text-white" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Contact DPO</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Pour toute question sur la protection de vos données :
+                  </p>
+                  <a
+                    href="mailto:privacy@maison-consciente.com"
+                    className="inline-flex items-center gap-2 text-amber-600 dark:text-amber-400 hover:text-amber-500 font-medium text-sm transition-colors"
+                  >
+                    privacy@maison-consciente.com
+                  </a>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
-        </div>
-      </footer>
+        </section>
+      </main>
+
+      <SiteFooter />
     </div>
   );
 }
