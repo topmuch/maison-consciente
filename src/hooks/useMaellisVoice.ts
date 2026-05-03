@@ -103,13 +103,16 @@ export function useMaellisVoice(
     const hasSTT = !!SpeechRecognitionAPI;
     const hasTTS = "speechSynthesis" in window;
 
-    setCapabilities({ sttSupported: hasSTT, ttsSupported: hasTTS });
+    // Schedule capability update via rAF to avoid synchronous setState in effect body
+    const rafId = requestAnimationFrame(() => {
+      setCapabilities({ sttSupported: hasSTT, ttsSupported: hasTTS });
 
-    if (!hasSTT) {
-      setError(
-        "Reconnaissance vocale non supportée. Utilisez Chrome ou Edge."
-      );
-    }
+      if (!hasSTT) {
+        setError(
+          "Reconnaissance vocale non supportée. Utilisez Chrome ou Edge."
+        );
+      }
+    });
 
     // Charger les voix TTS
     if (hasTTS) {
@@ -123,6 +126,7 @@ export function useMaellisVoice(
 
     // Cleanup
     return () => {
+      cancelAnimationFrame(rafId);
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
       }

@@ -72,7 +72,7 @@ export function SiteFooter() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-background/40">
             <div className="flex items-center gap-2">
               <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>&copy; {new Date().getFullYear()} Maellis — Maison Consciente. Tous droits réservés.</span>
+              <span>&copy; {new Date().getFullYear()} Maellis. Tous droits réservés.</span>
             </div>
             <div className="flex items-center gap-4">
               <Link href="/legal/privacy" className="hover:text-amber-400 transition-colors">Confidentialité</Link>

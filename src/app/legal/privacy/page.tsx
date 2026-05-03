@@ -266,10 +266,10 @@ export default function PrivacyPage() {
                     Pour toute question sur la protection de vos données :
                   </p>
                   <a
-                    href="mailto:privacy@maison-consciente.com"
+                    href="mailto:privacy@maellis.com"
                     className="inline-flex items-center gap-2 text-amber-600 dark:text-amber-400 hover:text-amber-500 font-medium text-sm transition-colors"
                   >
-                    privacy@maison-consciente.com
+                    privacy@maellis.com
                   </a>
                 </CardContent>
               </Card>

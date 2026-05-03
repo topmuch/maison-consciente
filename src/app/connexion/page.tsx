@@ -3,7 +3,7 @@
 import { AuthPage } from '@/components/auth/auth-page';
 
 /* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE — Connexion Page
+   MAELLIS — Connexion Page
    Wraps AuthPage with a back link to homepage.
    ═══════════════════════════════════════════════════════ */
 

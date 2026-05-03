@@ -466,3 +466,35 @@ Stage Summary:
 - All public pages now use consistent Maellis branding with shared SiteNavbar + SiteFooter
 - Zero compilation errors, zero runtime errors
 - Auth functional logic fully preserved (login, register, session 3-layer fallback)
+
+---
+Task ID: 3
+Agent: Main Orchestrator
+Task: Comprehensive audit — lint fixes, brand cleanup, bug verification
+
+Work Log:
+- Read dev.log: all pages returning 200 OK, no compilation errors
+- Ran `bun run lint`: found 6 errors (2 in ThemeToggle.tsx, 2 in useMaellisVoice.ts, 2 in daemon.js/seed-superadmin.js)
+- Fixed ThemeToggle.tsx: replaced `useEffect + setState` with `useSyncExternalStore` (React 19 recommended pattern), replaced hardcoded `slate-*` colors with theme variables (`text-muted-foreground`, `hover:text-foreground`, `hover:bg-muted`)
+- Fixed useMaellisVoice.ts: wrapped `setCapabilities()` and `setError()` calls inside `requestAnimationFrame()` callback to avoid synchronous setState in effect body
+- Fixed eslint.config.mjs: added `daemon.js` and `seed-superadmin.js` to ignores (standalone Node.js scripts)
+- Fixed DemoSelection.tsx: AudioOrb systemPrompt changed "de Maison Consciente" → just "l'assistant intelligent"
+- Fixed /legal/privacy DPO email: `privacy@maison-consciente.com` → `privacy@maellis.com`
+- Fixed connexion/page.tsx comment: "MAISON CONSCIENTE" → "MAELLIS"
+- Fixed SiteFooter.tsx: removed "Maison Consciente" from copyright
+- Fixed DemoSelection.tsx footer: removed "Maison Consciente" from copyright
+- Fixed root layout.tsx: updated title to "Maellis — L'Assistant Intelligent", updated meta description and keywords
+- Fixed API demo chat route systemPrompt: "de Maison Consciente" → removed
+- Fixed API demo voice route systemPrompt: same fix
+- Fixed useGeminiLive.ts systemPrompt: same fix
+- Final lint: 0 errors ✅
+- All 7 public routes tested: 200 OK ✅
+
+Stage Summary:
+- 10 bugs/issues found and fixed
+- ESLint: 0 errors (down from 6)
+- All public pages use consistent Maellis branding
+- All demo AI system prompts use correct brand name
+- Browser tab title now shows "Maellis" instead of "Maison Consciente"
+- DPO contact email corrected to privacy@maellis.com
+- Note: remaining "Maison Consciente" references exist in backend email templates, invoice PDFs, dashboard sidebar, and authenticated-area components — these are a separate full rebranding effort

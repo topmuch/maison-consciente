@@ -16,10 +16,10 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Maison Consciente — L'Habitation Intelligente",
-  description: "Transformez votre demeure en espace intelligent et sensoriel. QR codes, suivi de présence, suggestions contextuelles.",
-  keywords: ["maison consciente", "smart home premium", "domotique luxe", "habitation intelligente"],
-  authors: [{ name: "Maison Consciente" }],
+  title: "Maellis — L'Assistant Intelligent",
+  description: "Conciergerie IA pour particuliers & hôtes Airbnb. Sécurité, voix, QR codes, suggestions contextuelles et bien plus.",
+  keywords: ["maellis", "assistant intelligent", "conciergerie IA", "airbnb", "smart home", "domotique"],
+  authors: [{ name: "Maellis" }],
   icons: {
     icon: "/logo.svg",
     apple: "/icon-192.png",
