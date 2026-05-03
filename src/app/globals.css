@@ -4,9 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ═══════════════════════════════════════════════════════
-   MAISON CONSCIENTE — LUXE LUMINEUX DESIGN SYSTEM
-   Light Mode Default: White/Cream + Or (Amber) + Violet Doux + Bleu Ciel
-   Dark Mode Fallback: Slate-950/Black + Or + Cuivre + Violet
+   MAELLIS — LIGHT SaaS DESIGN SYSTEM
+   Light Mode Default: White + Amber/Gold + Emerald
+   Dark Mode Fallback: Slate-950 + Amber + Emerald
    ═══════════════════════════════════════════════════════ */
 
 @theme inline {

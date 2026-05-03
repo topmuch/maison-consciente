@@ -498,3 +498,23 @@ Stage Summary:
 - Browser tab title now shows "Maellis" instead of "Maison Consciente"
 - DPO contact email corrected to privacy@maellis.com
 - Note: remaining "Maison Consciente" references exist in backend email templates, invoice PDFs, dashboard sidebar, and authenticated-area components — these are a separate full rebranding effort
+---
+Task ID: 1
+Agent: Main Agent
+Task: Diagnose and fix why landing pages and login page show old design
+
+Work Log:
+- Read dev logs: No compilation errors, all pages return 200 OK
+- Read all 6 page files (page.tsx, about, pricing, contact, demo, connexion) - ALL already have new Maellis light/amber design with SiteNavbar + SiteFooter
+- Read SiteNavbar, SiteFooter, AuthPage components - all use correct Maellis branding
+- Read globals.css - light theme variables correct, dark theme as fallback
+- Read providers.tsx - Found ThemeProvider had `enableSystem` which was forcing dark mode based on system preference
+- Checked all pages via curl - `<html>` element had NO `dark` class (light mode served correctly)
+- Verified Maellis branding elements present in all pages (amber-500, Sparkles, Maellis text)
+
+Stage Summary:
+- ROOT CAUSE: ThemeProvider had `enableSystem={true}` which made the site respect the preview panel's dark mode preference, making it look like the "old dark design"
+- FIX: Removed `enableSystem` from ThemeProvider to force light mode as default
+- Also updated globals.css comment from "MAISON CONSCIENTE" to "MAELLIS"
+- Verified: 0 lint errors, 0 compilation errors, all pages 200 OK
+- All pages confirmed using new Maellis design (amber/gold, Sparkles icon, SiteNavbar, SiteFooter)
