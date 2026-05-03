@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 /* ═══════════════════════════════════════════════════════
    ABOUT PAGE — Maellis
    Mission, valeurs, histoire et équipe
+   Design: Light SaaS with amber/gold accents
    ═══════════════════════════════════════════════════════ */
 
 /* ─── Animation Variants ─── */
