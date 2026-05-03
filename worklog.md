@@ -420,3 +420,27 @@ Stage Summary:
 - Superadmin credentials: superadmin@maellis.io / Maellis@Super2025!
 - Client admin credentials: admin@maison-consciente.com / MaisonAdmin2025!
 - All verified via API tests: cookie, ?s= param, x-session-id header all return 200
+
+---
+Task ID: 1
+Agent: Main Orchestrator
+Task: Redesign all landing pages and auth page to new Maellis design system
+
+Work Log:
+- Analyzed existing pages: found landing page (/) had new amber/gold design but all sub-pages (/about, /pricing, /contact, /demo) and auth page (/connexion) still used old dark "Maison Consciente" design with Diamond icon and bg-[#020617]
+- Created shared SiteNavbar component (src/components/layout/SiteNavbar.tsx) extracted from landing page - supports activePage, mobile menu, ThemeToggle
+- Created shared SiteFooter component (src/components/layout/SiteFooter.tsx) extracted from landing page
+- Updated landing page (src/app/page.tsx) to use shared SiteNavbar and SiteFooter
+- Redesigned About page (src/app/about/page.tsx) - light theme, shadcn/ui Cards, amber accents, dark mode support
+- Redesigned Pricing page (src/app/pricing/page.tsx) - light theme, shadcn/ui Cards, Global Host Pro bundle, individual plans, FAQ
+- Redesigned Contact page (src/app/contact/page.tsx) - light theme, shadcn/ui form components, info cards, FAQ
+- Redesigned Demo page (src/app/demo/page.tsx) - shared navbar, Maellis branding, kept routing logic
+- Redesigned Auth page (src/components/auth/auth-page.tsx) - light glassmorphism, Maellis branding with Sparkles, shadcn/ui components, preserved all 3-layer session fallback logic
+
+Stage Summary:
+- All 8 files modified/created: 2 new shared components + 6 redesigned pages
+- All pages verified: 200 OK on /, /about, /pricing, /contact, /demo, /connexion
+- Zero new lint errors (only pre-existing ThemeToggle and useMaellisVoice warnings)
+- Consistent Maellis branding with Sparkles icon, amber/gold accent colors, shadcn/ui components
+- Full light/dark mode support across all public pages
+- All functional logic preserved (auth session persistence, form validation, demo routing)

@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import {
-  Diamond,
   Check,
   Shield,
   Home,
@@ -27,26 +26,34 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
+import { SiteNavbar } from '@/components/layout/SiteNavbar';
+import { SiteFooter } from '@/components/layout/SiteFooter';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 /* ═══════════════════════════════════════════════════════
-   PRICING PAGE — Maison Consciente
+   PRICING PAGE — Maellis (Light SaaS Design System)
    Modular pricing: Base gratuite + Modules premium + Bundle Global Host Pro
    ═══════════════════════════════════════════════════════ */
 
 /* ─── Animation Variants ─── */
+const easeOut = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
   whileInView: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    transition: { duration: 0.6, ease: easeOut },
   },
-  viewport: { once: true },
+  viewport: { once: true, amount: 0.2 },
 };
 
-const staggerContainer = {
-  initial: {},
+const stagger = {
+  initial: { opacity: 0 },
   whileInView: {
+    opacity: 1,
     transition: { staggerChildren: 0.15 },
   },
   viewport: { once: true },
@@ -57,7 +64,7 @@ const staggerItem = {
   whileInView: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    transition: { duration: 0.6, ease: easeOut },
   },
 };
 
@@ -68,42 +75,40 @@ const plans = [
     name: 'Maellis Base',
     price: '0\u202F\u20AC',
     period: '/mois',
-    description: "L'essentiel pour une maison connect\u00e9e intelligente.",
+    description: "L'essentiel pour une maison connectée intelligente.",
     features: [
       { icon: MessageSquare, text: 'Assistant Vocal (Web Speech)' },
-      { icon: Star, text: 'M\u00e9t\u00e9o & Actualit\u00e9s' },
+      { icon: Star, text: 'Météo & Actualités' },
       { icon: ChefHat, text: 'Recettes basiques' },
-      { icon: Home, text: 'Contr\u00f4le domotique simple' },
+      { icon: Home, text: 'Contrôle domotique simple' },
       { icon: Users, text: 'Mur familial' },
       { icon: Heart, text: 'Support communautaire' },
     ],
     cta: 'Commencer gratuitement',
     ctaLink: '/connexion',
     popular: false,
-    borderClass: 'border-white/[0.08] hover:border-[#d4a853]/20',
-    badgeBg: 'bg-white/[0.06]',
-    iconColor: '#d4a853',
+    iconColor: 'text-amber-500',
+    iconBg: 'bg-amber-50 dark:bg-amber-500/10',
   },
   {
     id: 'safe-arrival',
-    name: 'Pack S\u00e9curit\u00e9',
+    name: 'Pack Sécurité',
     price: '6,90\u202F\u20AC',
     period: '/mois',
-    description: 'La tranquillit\u00e9 d\u2019esprit absolue pour votre famille.',
+    description: "La tranquillité d'esprit absolue pour votre famille.",
     features: [
       { icon: Shield, text: 'Safe Arrival (Surveillance enfants/parents)' },
-      { icon: Zap, text: 'Appel IA Urgence (Retell AI) aux secours' },
-      { icon: Lock, text: 'D\u00e9tection d\u2019intrusion & SOS' },
+      { icon: Zap, text: "Appel IA Urgence (Retell AI) aux secours" },
+      { icon: Lock, text: "Détection d'intrusion & SOS" },
       { icon: MessageSquare, text: 'Alertes SMS/Email automatiques' },
-      { icon: Clock, text: 'Historique des arriv\u00e9es/d\u00e9parts' },
+      { icon: Clock, text: 'Historique des arrivées/départs' },
       { icon: Heart, text: 'Support prioritaire 24/7' },
     ],
-    cta: 'Activer la S\u00e9curit\u00e9',
+    cta: 'Activer la Sécurité',
     ctaLink: '/connexion',
     popular: false,
-    borderClass: 'border-white/[0.08] hover:border-[#d4a853]/20',
-    badgeBg: 'bg-white/[0.06]',
-    iconColor: '#f59e0b',
+    iconColor: 'text-amber-600',
+    iconBg: 'bg-amber-50 dark:bg-amber-500/10',
   },
   {
     id: 'family-zen',
@@ -112,19 +117,18 @@ const plans = [
     period: '/mois',
     description: 'Tout pour organiser et apaiser le quotidien.',
     features: [
-      { icon: Shield, text: 'Inclut le Pack S\u00e9curit\u00e9' },
-      { icon: ChefHat, text: 'Recettes Avanc\u00e9es & Chef IA' },
-      { icon: Calendar, text: 'Agenda Familial Partag\u00e9' },
-      { icon: Heart, text: 'Bien-\u00eatre & M\u00e9ditation guid\u00e9e' },
-      { icon: Baby, text: 'Contr\u00f4le Parental Intelligent' },
+      { icon: Shield, text: 'Inclut le Pack Sécurité' },
+      { icon: ChefHat, text: 'Recettes Avancées & Chef IA' },
+      { icon: Calendar, text: 'Agenda Familial Partagé' },
+      { icon: Heart, text: 'Bien-être & Méditation guidée' },
+      { icon: Baby, text: 'Contrôle Parental Intelligent' },
       { icon: ShoppingBag, text: 'Liste de courses automatique' },
     ],
     cta: 'Choisir Famille Zen',
     ctaLink: '/connexion',
     popular: false,
-    borderClass: 'border-white/[0.08] hover:border-[#d4a853]/20',
-    badgeBg: 'bg-white/[0.06]',
-    iconColor: '#c77d5a',
+    iconColor: 'text-orange-500',
+    iconBg: 'bg-orange-50 dark:bg-orange-500/10',
   },
 ];
 
@@ -132,8 +136,8 @@ const plans = [
 const globalHostProFeatures = [
   { icon: Shield, text: 'Safe Departure & Security (Sauvetage avis)' },
   { icon: Clock, text: 'Daily Concierge (Audit quotidien 22h)' },
-  { icon: Brain, text: 'Guest Memory (M\u00e9moire pr\u00e9f\u00e9rences)' },
-  { icon: Sparkles, text: 'Auto Upsell Intelligent (Pr\u00e9sentation services)' },
+  { icon: Brain, text: 'Guest Memory (Mémoire préférences)' },
+  { icon: Sparkles, text: 'Auto Upsell Intelligent (Présentation services)' },
   { icon: CreditCard, text: 'Smart Late Checkout Seller (Vente heures libres)' },
   { icon: Globe, text: 'Auto Language Adapt (Polyglotte automatique)' },
   { icon: BarChart3, text: 'Analytics & Reports complets' },
@@ -142,101 +146,73 @@ const globalHostProFeatures = [
 /* ─── FAQ ─── */
 const faqItems = [
   {
-    q: 'Puis-je changer de formule \u00e0 tout moment ?',
-    a: 'Oui, vous pouvez upgrader ou downgrader votre abonnement en un clic depuis votre espace client. Le prorata est calcul\u00e9 automatiquement.',
+    q: 'Puis-je changer de formule à tout moment ?',
+    a: "Oui, vous pouvez upgrader ou downgrader votre abonnement en un clic depuis votre espace client. Le prorata est calculé automatiquement.",
   },
   {
     q: 'Y a-t-il un engagement minimum ?',
-    a: 'Aucun engagement. Tous nos plans sont sans engagement, vous pouvez r\u00e9silier \u00e0 tout moment.',
+    a: 'Aucun engagement. Tous nos plans sont sans engagement, vous pouvez résilier à tout moment.',
   },
   {
-    q: 'Comment fonctionne l\u2019essai gratuit ?',
-    a: 'Le plan Base est enti\u00e8rement gratuit et sans limite de temps. Les modules premium b\u00e9n\u00e9ficient de 14 jours d\u2019essai sans carte bancaire.',
+    q: "Comment fonctionne l'essai gratuit ?",
+    a: "Le plan Base est entièrement gratuit et sans limite de temps. Les modules premium bénéficient de 14 jours d'essai sans carte bancaire.",
   },
   {
-    q: 'Mes donn\u00e9es sont-elles s\u00e9curis\u00e9es ?',
-    a: 'Absolument. Toutes les donn\u00e9es sont chiffr\u00e9es AES-256. Nous sommes conformes RGPD et vos donn\u00e9es restent sur nos serveurs europ\u00e9ens.',
+    q: 'Mes données sont-elles sécurisées ?',
+    a: 'Absolument. Toutes les données sont chiffrées AES-256. Nous sommes conformes RGPD et vos données restent sur nos serveurs européens.',
   },
   {
-    q: 'Qu\u2019est-ce que le pack Global Host Pro ?',
-    a: 'C\u2019est la solution compl\u00e8te pour h\u00f4tes Airbnb professionnels. Il inclut TOUS les modules Maellis (S\u00e9curit\u00e9, Concierge, Upsell, Late Checkout, Memory, Langues, Analytics) \u00e0 un prix r\u00e9duit de 29,90\u202F\u20AC/mois au lieu de 38,30\u202F\u20AC.',
+    q: "Qu'est-ce que le pack Global Host Pro ?",
+    a: "C'est la solution complète pour hôtes Airbnb professionnels. Il inclut TOUS les modules Maellis (Sécurité, Concierge, Upsell, Late Checkout, Memory, Langues, Analytics) à un prix réduit de 29,90\u202F€/mois au lieu de 38,30\u202F€.",
   },
   {
-    q: 'Comment l\u2019IA vend-elle les services \u00e0 ma place ?',
-    a: '2 heures apr\u00e8s le check-in, l\u2019IA vocale pr\u00e9sente automatiquement vos services payants (m\u00e9nage, chef, transfert). Le jour du d\u00e9part, elle propose un Late Checkout si le logement est libre. Tout est automatis\u00e9 via Retell AI.',
+    q: "Comment l'IA vend-elle les services à ma place ?",
+    a: "2 heures après le check-in, l'IA vocale présente automatiquement vos services payants (ménage, chef, transfert). Le jour du départ, elle propose un Late Checkout si le logement est libre. Tout est automatisé via Retell AI.",
   },
 ];
 
 /* ─── Main Component ─── */
 export default function PricingPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#020617] text-[#f1f5f9]">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* ═══ NAVBAR ═══ */}
-      <motion.nav
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-        className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/80 backdrop-blur-xl border-b border-white/[0.06]"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-gold glow-gold">
-              <Diamond className="w-4 h-4 text-[#020617]" />
-            </div>
-            <span className="font-serif text-gradient-gold text-lg tracking-wide">
-              Maison Consciente
-            </span>
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/demo"
-              className="px-3 sm:px-4 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
-            >
-              D\u00e9mo
-            </Link>
-            <Link
-              href="/pricing"
-              className="px-3 sm:px-4 py-2 text-sm font-medium text-[#d4a853] hover:text-[#f0d78c] transition-colors duration-200"
-            >
-              Tarifs
-            </Link>
-            <Link
-              href="/connexion"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-gradient-gold text-[#020617] rounded-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
-            >
-              Connexion
-            </Link>
-          </div>
-        </div>
-      </motion.nav>
+      <SiteNavbar activePage="/pricing" />
 
       {/* ═══ HEADER ═══ */}
       <section className="relative pt-28 sm:pt-32 pb-12 px-4">
+        {/* Decorative glow */}
         <div
-          className="absolute top-16 left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full blur-[120px] opacity-15 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #d4a853 0%, transparent 70%)' }}
+          className="absolute top-16 left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full blur-[120px] opacity-20 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)' }}
         />
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+          transition={{ duration: 0.7, ease: easeOut }}
           className="max-w-4xl mx-auto text-center relative z-10"
         >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#d4a853]/10 border border-[#d4a853]/20 text-[#f0d78c] text-xs font-medium tracking-wide uppercase mb-6"
           >
-            <Sparkles className="w-3 h-3" />
-            Tarification Transparente
+            <Badge
+              variant="outline"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-medium tracking-wide uppercase mb-6"
+            >
+              <Sparkles className="w-3 h-3" />
+              Tarification Transparente
+            </Badge>
           </motion.div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif mb-4 tracking-tight">
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-['--font-playfair'] mb-4 tracking-tight text-foreground">
             Choisissez votre{' '}
-            <span className="text-gradient-gold">s\u00e9r\u00e9nit\u00e9</span>
+            <span className="text-amber-600 dark:text-amber-400">sérénité</span>
           </h1>
-          <p className="text-lg md:text-xl text-[#64748b] max-w-2xl mx-auto leading-relaxed">
-            Une base gratuite puissante. Des modules premium \u00e0 la carte pour composer le Maellis parfait pour votre foyer.
+
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Une base gratuite puissante. Des modules premium à la carte pour composer le Maellis parfait pour votre foyer.
           </p>
         </motion.div>
       </section>
@@ -249,83 +225,83 @@ export default function PricingPage() {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+            transition={{ duration: 0.7, delay: 0.1, ease: easeOut }}
             className="relative"
           >
-            {/* Background glow */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/5 via-purple-500/5 to-amber-500/5 rounded-3xl blur-2xl pointer-events-none" />
+            {/* Gradient border wrapper */}
+            <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 opacity-80 blur-[1px]" />
 
-            <div className="relative bg-white/[0.03] backdrop-blur-xl border border-[#d4a853]/30 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(212,168,83,0.08)]">
+            <Card className="relative bg-card rounded-2xl border-0 overflow-hidden shadow-lg">
               {/* Animated gradient top bar */}
               <div
                 className="h-1 w-full"
                 style={{
-                  background: 'linear-gradient(90deg, #d4af37, #7c3aed, #d4af37, #7c3aed)',
+                  background: 'linear-gradient(90deg, #f59e0b, #f97316, #f59e0b, #f97316)',
                   backgroundSize: '200% 100%',
                   animation: 'shimmer 3s linear infinite',
                 }}
               />
 
-              <div className="p-6 sm:p-10">
+              <CardContent className="p-6 sm:p-10">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: Content */}
                   <div>
                     {/* Badges */}
                     <div className="flex flex-wrap items-center gap-2 mb-4">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-purple-500/20 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider text-[#f0d78c]">
+                      <Badge className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-[10px] font-bold uppercase tracking-wider">
                         <Crown className="w-3 h-3" />
                         Best Value
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400">
-                        -22% vs modules s\u00e9par\u00e9s
-                      </span>
+                      </Badge>
+                      <Badge variant="outline" className="px-2.5 py-1 rounded-full border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold">
+                        -22% vs modules séparés
+                      </Badge>
                     </div>
 
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold mb-3">
-                      <span className="text-gradient-gold">Maellis</span>{' '}
-                      <span className="bg-gradient-to-r from-amber-300 via-rose-300 to-purple-300 bg-clip-text text-transparent">
-                        Global Host Pro
-                      </span>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-['--font-playfair'] font-bold mb-3">
+                      <span className="text-amber-600 dark:text-amber-400">Maellis</span>{' '}
+                      <span className="text-foreground">Global Host Pro</span>
                     </h2>
 
-                    <p className="text-sm sm:text-base text-[#94a3b8] leading-relaxed mb-6">
-                      La solution ultime pour h\u00f4tes professionnels Airbnb. S\u00e9curit\u00e9, Revenus Passifs et Exp\u00e9rience Client 5 \u00e9toiles — le tout pilot\u00e9 par l&apos;IA.
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6">
+                      La solution ultime pour hôtes professionnels Airbnb. Sécurité, Revenus Passifs et Expérience Client 5 étoiles — le tout piloté par l&apos;IA.
                     </p>
 
                     {/* Price */}
                     <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-5xl sm:text-6xl font-bold font-serif text-gradient-gold">29,90</span>
-                      <span className="text-xl text-[#64748b]">\u20AC/mois</span>
+                      <span className="text-5xl sm:text-6xl font-bold font-['--font-playfair'] text-amber-600 dark:text-amber-400">29,90</span>
+                      <span className="text-xl text-muted-foreground">€/mois</span>
                     </div>
-                    <p className="text-sm text-[#475569] mb-6">
-                      ou <span className="text-[#d4a853] font-medium">299\u20AC/an</span> — \u00e9conomisez 60\u20AC
+                    <p className="text-sm text-muted-foreground mb-6">
+                      ou <span className="text-amber-600 dark:text-amber-400 font-medium">299€/an</span> — économisez 60€
                     </p>
 
                     {/* CTA */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <Link
-                        href="/connexion"
-                        className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-semibold text-[#020617] transition-all duration-300 shadow-[0_0_32px_rgba(212,168,83,0.2)] hover:shadow-[0_0_48px_rgba(212,168,83,0.35)] hover:scale-[1.02] active:scale-[0.98]"
-                        style={{
-                          background: 'linear-gradient(135deg, #d4af37 0%, #7c3aed 100%)',
-                        }}
-                      >
-                        Choisir Global Host Pro
-                        <ArrowRight size={18} />
+                      <Link href="/connexion">
+                        <Button
+                          size="lg"
+                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 px-8 py-4 rounded-xl"
+                        >
+                          Choisir Global Host Pro
+                          <ArrowRight size={18} />
+                        </Button>
                       </Link>
-                      <Link
-                        href="/demo"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-medium text-[#94a3b8] bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-[#d4a853]/20 transition-all duration-300 text-sm"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Voir la d\u00e9mo
+                      <Link href="/demo">
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="text-muted-foreground hover:text-foreground px-6 py-4 rounded-xl"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          Voir la démo
+                        </Button>
                       </Link>
                     </div>
                   </div>
 
                   {/* Right: Features list */}
                   <div className="space-y-3">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
                       7 modules inclus
                     </h3>
                     {globalHostProFeatures.map((feat, i) => (
@@ -334,15 +310,15 @@ export default function PricingPage() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-[#d4a853]/15 transition-all duration-300 group"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border hover:border-amber-300 dark:hover:border-amber-500/30 transition-all duration-300 group"
                       >
-                        <div className="shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-[#d4a853]/10 to-purple-500/10 flex items-center justify-center group-hover:from-[#d4a853]/20 group-hover:to-purple-500/20 transition-colors">
-                          <feat.icon className="w-4 h-4 text-[#d4a853]" />
+                        <div className="shrink-0 w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-500/20 transition-colors">
+                          <feat.icon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                         </div>
-                        <span className="text-sm text-[#94a3b8] group-hover:text-[#e2e8f0] transition-colors">
+                        <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                           {feat.text}
                         </span>
-                        <Check className="w-4 h-4 text-emerald-400 shrink-0 ml-auto" />
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 ml-auto" />
                       </motion.div>
                     ))}
 
@@ -351,17 +327,17 @@ export default function PricingPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.9 }}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20"
                     >
-                      <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span className="text-xs text-emerald-400/90">
-                        Valeur totale : <strong className="text-emerald-300">38,30\u20AC/mois</strong> — vous payez 29,90\u20AC
+                      <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span className="text-xs text-emerald-700 dark:text-emerald-400">
+                        Valeur totale : <strong className="text-emerald-800 dark:text-emerald-300">38,30€/mois</strong> — vous payez 29,90€
                       </span>
                     </motion.div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
       </section>
@@ -370,58 +346,65 @@ export default function PricingPage() {
       <section className="py-12 md:py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-serif mb-3 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-['--font-playfair'] mb-3 tracking-tight text-foreground">
               Ou choisissez un{' '}
-              <span className="text-gradient-gold">module individuel</span>
+              <span className="text-amber-600 dark:text-amber-400">module individuel</span>
             </h2>
-            <p className="text-sm text-[#64748b] max-w-lg mx-auto">
-              Composez votre Maellis id\u00e9al en ajoutant uniquement les modules dont vous avez besoin.
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Composez votre Maellis idéal en ajoutant uniquement les modules dont vous avez besoin.
             </p>
           </motion.div>
 
-          <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
+          <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
             {plans.map((plan) => (
               <motion.div
                 key={plan.id}
                 variants={staggerItem}
-                className={`relative bg-white/[0.03] backdrop-blur-xl border ${plan.borderClass} rounded-2xl p-6 md:p-8 flex flex-col transition-all duration-300`}
               >
-                {/* Plan header */}
-                <div className="mb-6">
-                  <h3 className="text-xl md:text-2xl font-serif font-bold text-[#f1f5f9] mb-2">
-                    {plan.name}
-                  </h3>
-                  <p className="text-sm text-[#94a3b8] leading-relaxed">{plan.description}</p>
-                </div>
+                <Card className="group h-full hover:shadow-md hover:border-amber-300 dark:hover:border-amber-500/30 transition-all duration-300 rounded-2xl">
+                  <CardHeader>
+                    <CardTitle className="text-xl md:text-2xl font-['--font-playfair'] text-foreground">
+                      {plan.name}
+                    </CardTitle>
+                    <CardDescription className="leading-relaxed">
+                      {plan.description}
+                    </CardDescription>
+                  </CardHeader>
 
-                {/* Price */}
-                <div className="mb-8 flex items-baseline gap-1">
-                  <span className="text-4xl md:text-5xl font-bold text-[#f1f5f9]">{plan.price}</span>
-                  <span className="text-[#64748b] text-sm">{plan.period}</span>
-                </div>
+                  <CardContent className="flex-1">
+                    {/* Price */}
+                    <div className="mb-6 flex items-baseline gap-1">
+                      <span className="text-4xl md:text-5xl font-bold text-foreground">{plan.price}</span>
+                      <span className="text-muted-foreground text-sm">{plan.period}</span>
+                    </div>
 
-                {/* Features */}
-                <ul className="space-y-3 mb-8 flex-1">
-                  {plan.features.map((feat, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm">
-                      <div className={`mt-0.5 p-1 rounded-md ${plan.popular ? 'bg-[#d4a853]/10' : 'bg-white/[0.06]'}`}>
-                        <feat.icon
-                          className={`w-3.5 h-3.5 ${plan.popular ? 'text-[#d4a853]' : 'text-[#94a3b8]'}`}
-                          strokeWidth={2}
-                        />
-                      </div>
-                      <span className="text-[#94a3b8] leading-relaxed">{feat.text}</span>
-                    </li>
-                  ))}
-                </ul>
+                    {/* Features */}
+                    <ul className="space-y-3">
+                      {plan.features.map((feat, i) => (
+                        <li key={i} className="flex items-start gap-3 text-sm">
+                          <div className={`mt-0.5 p-1.5 rounded-md ${plan.iconBg}`}>
+                            <feat.icon
+                              className={`w-3.5 h-3.5 ${plan.iconColor}`}
+                              strokeWidth={2}
+                            />
+                          </div>
+                          <span className="text-muted-foreground leading-relaxed">{feat.text}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
 
-                {/* CTA */}
-                <Link
-                  href={plan.ctaLink}
-                  className="w-full py-3.5 rounded-xl font-semibold text-center transition-all duration-300 flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-[#f1f5f9] border border-white/[0.08] hover:border-[#d4a853]/20"
-                >
-                  {plan.cta} <ArrowRight size={16} />
-                </Link>
+                  <CardFooter>
+                    <Link href={plan.ctaLink} className="w-full">
+                      <Button
+                        variant="outline"
+                        className="w-full py-3 rounded-xl font-semibold group-hover:bg-amber-50 dark:group-hover:bg-amber-500/10 group-hover:border-amber-300 dark:group-hover:border-amber-500/30 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-all duration-300"
+                      >
+                        {plan.cta} <ArrowRight size={16} />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
               </motion.div>
             ))}
           </motion.div>
@@ -429,200 +412,226 @@ export default function PricingPage() {
       </section>
 
       {/* ═══ HOSPITALITY MODULES (Airbnb-specific) ═══ */}
-      <section className="py-12 md:py-16 px-4 bg-black/20">
+      <section className="py-12 md:py-16 px-4 bg-muted/40">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4"
             >
-              <Zap className="w-3 h-3" />
-              Pour h\u00f4tes Airbnb
+              <Badge
+                variant="outline"
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4"
+              >
+                <Zap className="w-3 h-3" />
+                Pour hôtes Airbnb
+              </Badge>
             </motion.div>
-            <h2 className="text-2xl sm:text-3xl font-serif mb-3 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-['--font-playfair'] mb-3 tracking-tight text-foreground">
               Modules{' '}
-              <span className="text-gradient-gold">Hospitality</span>
+              <span className="text-amber-600 dark:text-amber-400">Hospitality</span>
             </h2>
-            <p className="text-sm text-[#64748b] max-w-lg mx-auto">
-              Propuls\u00e9s par Retell AI et Gemini 2.0 Flash pour prot\u00e9ger votre r\u00e9putation et booster vos revenus.
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Propulsés par Retell AI et Gemini 2.0 Flash pour protéger votre réputation et booster vos revenus.
             </p>
           </motion.div>
 
-          <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             {/* Safe Departure */}
-            <motion.div
-              variants={staggerItem}
-              className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] hover:border-emerald-500/20 rounded-2xl p-6 md:p-8 flex flex-col transition-all duration-300"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-emerald-600/15 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-serif font-bold text-[#f1f5f9]">Safe Departure & Security</h3>
-                  <p className="text-[10px] text-[#64748b]">Check-out intelligent + sauvetage de r\u00e9putation</p>
-                </div>
-              </div>
+            <motion.div variants={staggerItem}>
+              <Card className="group h-full hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500/30 transition-all duration-300 rounded-2xl">
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+                      <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-['--font-playfair'] text-foreground">Safe Departure & Security</CardTitle>
+                      <CardDescription className="text-[10px]">Check-out intelligent + sauvetage de réputation</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
 
-              <div className="mb-6 flex items-baseline gap-1">
-                <span className="text-3xl font-bold font-serif text-gradient-gold">6,90</span>
-                <span className="text-sm text-[#64748b]">\u20AC/mois</span>
-              </div>
+                <CardContent className="flex-1">
+                  <div className="mb-6 flex items-baseline gap-1">
+                    <span className="text-3xl font-bold font-['--font-playfair'] text-amber-600 dark:text-amber-400">6,90</span>
+                    <span className="text-sm text-muted-foreground">€/mois</span>
+                  </div>
 
-              <ul className="space-y-2.5 mb-6 flex-1">
-                {[
-                  'Appel vocal Retell AI le jour du d\u00e9part',
-                  'D\u00e9tection insatisfaction en temps r\u00e9el',
-                  'Alerte imm\u00e9diate \u00e0 l\'h\u00f4te',
-                  'Rapport IA StayReview complet',
-                  'G\u00e9n\u00e9ration automatique d\'avis public',
-                ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span className="text-[#94a3b8] leading-relaxed">{f}</span>
-                  </li>
-                ))}
-              </ul>
+                  <ul className="space-y-2.5 mb-6">
+                    {[
+                      'Appel vocal Retell AI le jour du départ',
+                      'Détection insatisfaction en temps réel',
+                      "Alerte immédiate à l'hôte",
+                      'Rapport IA StayReview complet',
+                      "Génération automatique d'avis public",
+                    ].map((f, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground leading-relaxed">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
 
-              <Link
-                href="/connexion"
-                className="w-full py-3 rounded-xl font-semibold text-center flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-[#f1f5f9] border border-white/[0.08] hover:border-emerald-500/20 transition-all duration-300 text-sm"
-              >
-                Activer <ArrowRight size={14} />
-              </Link>
+                <CardFooter>
+                  <Link href="/connexion" className="w-full">
+                    <Button
+                      variant="outline"
+                      className="w-full py-3 rounded-xl font-semibold group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 group-hover:border-emerald-300 dark:group-hover:border-emerald-500/30 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-all duration-300 text-sm"
+                    >
+                      Activer <ArrowRight size={14} />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
             </motion.div>
 
             {/* Daily Concierge */}
-            <motion.div
-              variants={staggerItem}
-              className="bg-white/[0.03] backdrop-blur-xl border border-[#d4a853]/20 rounded-2xl p-6 md:p-8 flex flex-col transition-all duration-300 shadow-[0_0_40px_rgba(212,168,83,0.06)]"
-            >
-              {/* Popular badge */}
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                <div className="bg-gradient-gold text-[#020617] px-5 py-1 rounded-full text-xs font-bold shadow-[0_0_20px_rgba(212,168,83,0.3)]">
-                  Populaire
+            <motion.div variants={staggerItem}>
+              <Card className="relative group h-full border-amber-300 dark:border-amber-500/30 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl">
+                {/* Popular badge */}
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 px-5 py-1 rounded-full text-xs font-bold shadow-md">
+                    Populaire
+                  </Badge>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-[#d4a853]/15 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-[#d4a853]" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-serif font-bold text-[#f1f5f9]">Daily Concierge & Care</h3>
-                  <p className="text-[10px] text-[#64748b]">Audit quotidien \u00e0 22h + r\u00e9solution proactive</p>
-                </div>
-              </div>
+                <CardHeader className="pt-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-['--font-playfair'] text-foreground">Daily Concierge & Care</CardTitle>
+                      <CardDescription className="text-[10px]">Audit quotidien à 22h + résolution proactive</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
 
-              <div className="mb-6 flex items-baseline gap-1">
-                <span className="text-3xl font-bold font-serif text-gradient-gold">9,90</span>
-                <span className="text-sm text-[#64748b]">\u20AC/mois</span>
-              </div>
+                <CardContent className="flex-1">
+                  <div className="mb-6 flex items-baseline gap-1">
+                    <span className="text-3xl font-bold font-['--font-playfair'] text-amber-600 dark:text-amber-400">9,90</span>
+                    <span className="text-sm text-muted-foreground">€/mois</span>
+                  </div>
 
-              <ul className="space-y-2.5 mb-6 flex-1">
-                {[
-                  'Audit quotidien automatique \u00e0 22h',
-                  'Appel vocal respectueux (permission)',
-                  'Gestion du silence + relance 1h',
-                  'Analyse sentiment Gemini 2.0 Flash',
-                  'Alerte h\u00f4te si score < 4/5',
-                  'Dashboard analytics avec radar 6 axes',
-                ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm">
-                    <Check className="w-4 h-4 text-[#d4a853] shrink-0 mt-0.5" />
-                    <span className="text-[#94a3b8] leading-relaxed">{f}</span>
-                  </li>
-                ))}
-              </ul>
+                  <ul className="space-y-2.5 mb-6">
+                    {[
+                      'Audit quotidien automatique à 22h',
+                      'Appel vocal respectueux (permission)',
+                      'Gestion du silence + relance 1h',
+                      'Analyse sentiment Gemini 2.0 Flash',
+                      "Alerte hôte si score < 4/5",
+                      'Dashboard analytics avec radar 6 axes',
+                    ].map((f, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm">
+                        <Check className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground leading-relaxed">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
 
-              <Link
-                href="/connexion"
-                className="w-full py-3 rounded-xl font-semibold text-center flex items-center justify-center gap-2 bg-gradient-gold text-[#020617] shadow-[0_0_24px_rgba(212,168,83,0.2)] hover:shadow-[0_0_32px_rgba(212,168,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 text-sm"
-              >
-                Activer <ArrowRight size={14} />
-              </Link>
+                <CardFooter>
+                  <Link href="/connexion" className="w-full">
+                    <Button
+                      className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md hover:shadow-lg transition-all duration-300 text-sm"
+                    >
+                      Activer <ArrowRight size={14} />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
             </motion.div>
           </motion.div>
 
           {/* Bundle offer */}
           <motion.div {...fadeUp} className="mt-8">
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-[#d4a853]/15 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-              <div className="p-3 rounded-xl bg-[#d4a853]/10 shrink-0">
-                <Heart className="w-6 h-6 text-[#d4a853]" />
-              </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-sm font-serif font-semibold text-[#f1f5f9] mb-1">
-                  Bundle Hospitality — Safe Departure + Daily Concierge
-                </h3>
-                <p className="text-xs text-[#94a3b8]">
-                  Les deux modules pour une protection compl\u00e8te de votre r\u00e9putation Airbnb.
-                </p>
-              </div>
-              <div className="text-center shrink-0">
-                <div className="flex items-baseline gap-1 justify-center">
-                  <span className="text-2xl font-bold font-serif text-gradient-gold">14,90</span>
-                  <span className="text-sm text-[#64748b]">\u20AC/mois</span>
+            <Card className="border-amber-200 dark:border-amber-500/20 rounded-2xl overflow-hidden">
+              <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 shrink-0">
+                  <Heart className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
-                <p className="text-[10px] text-emerald-400 mt-1">
-                  \u00c9conomisez 1,90\u20AC/mois
-                </p>
-                <Link
-                  href="/connexion"
-                  className="mt-2 inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-gold text-[#020617] shadow-[0_4px_16px_rgba(212,168,83,0.2)] hover:shadow-[0_4px_24px_rgba(212,168,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 text-xs font-semibold"
-                >
-                  Activer le bundle
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
+                <div className="flex-1 text-center sm:text-left">
+                  <h3 className="text-sm font-['--font-playfair'] font-semibold text-foreground mb-1">
+                    Bundle Hospitality — Safe Departure + Daily Concierge
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Les deux modules pour une protection complète de votre réputation Airbnb.
+                  </p>
+                </div>
+                <div className="text-center shrink-0">
+                  <div className="flex items-baseline gap-1 justify-center">
+                    <span className="text-2xl font-bold font-['--font-playfair'] text-amber-600 dark:text-amber-400">14,90</span>
+                    <span className="text-sm text-muted-foreground">€/mois</span>
+                  </div>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">
+                    Économisez 1,90€/mois
+                  </p>
+                  <Link href="/connexion">
+                    <Button
+                      size="sm"
+                      className="mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-sm hover:shadow-md transition-all duration-300 text-xs font-semibold rounded-xl px-5"
+                    >
+                      Activer le bundle
+                      <ArrowRight className="w-3 h-3" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
       </section>
 
-      {/* ═══ CALCULATOR / VISUAL ═══ */}
+      {/* ═══ CUSTOM CTA ═══ */}
       <section className="py-16 md:py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl mb-4 tracking-tight">
-            Envie de <span className="text-gradient-gold">personnaliser</span> ?
+          <motion.h2 {...fadeUp} className="font-['--font-playfair'] text-3xl md:text-4xl mb-4 tracking-tight text-foreground">
+            Envie de <span className="text-amber-600 dark:text-amber-400">personnaliser</span> ?
           </motion.h2>
-          <motion.p {...fadeUp} className="text-[#64748b] text-base max-w-lg mx-auto mb-8">
-            Ajoutez uniquement ce dont vous avez besoin. Changez \u00e0 tout moment, sans engagement.
+          <motion.p {...fadeUp} className="text-muted-foreground text-base max-w-lg mx-auto mb-8">
+            Ajoutez uniquement ce dont vous avez besoin. Changez à tout moment, sans engagement.
           </motion.p>
           <motion.div {...fadeUp}>
-            <Link
-              href="/connexion"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-gold text-[#020617] rounded-xl font-semibold shadow-[0_0_24px_rgba(212,168,83,0.2)] hover:shadow-[0_0_40px_rgba(212,168,83,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
-            >
-              Construire mon pack sur mesure <Zap size={18} />
+            <Link href="/connexion">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 px-8 py-4 rounded-xl"
+              >
+                Construire mon pack sur mesure <Zap size={18} />
+              </Button>
             </Link>
           </motion.div>
         </div>
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section className="py-16 md:py-20 px-4 bg-black/20">
+      <section className="py-16 md:py-20 px-4 bg-muted/40">
         <div className="max-w-3xl mx-auto">
-          <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl text-center text-[#f1f5f9] mb-4 tracking-tight">
-            Questions <span className="text-gradient-gold">fr\u00e9quentes</span>
+          <motion.h2 {...fadeUp} className="font-['--font-playfair'] text-3xl md:text-4xl text-center text-foreground mb-4 tracking-tight">
+            Questions <span className="text-amber-600 dark:text-amber-400">fréquentes</span>
           </motion.h2>
-          <motion.p {...fadeUp} className="text-center text-[#64748b] text-base max-w-lg mx-auto mb-12">
+          <motion.p {...fadeUp} className="text-center text-muted-foreground text-base max-w-lg mx-auto mb-12">
             Tout ce que vous devez savoir sur nos tarifs.
           </motion.p>
 
-          <motion.div {...staggerContainer} className="space-y-4">
+          <motion.div {...stagger} className="space-y-4">
             {faqItems.map((faq, i) => (
               <motion.div
                 key={i}
                 variants={staggerItem}
-                className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-[#d4a853]/15 transition-all duration-300"
               >
-                <h3 className="text-base font-semibold text-[#f1f5f9] mb-2 flex items-start gap-3">
-                  <span className="text-[#d4a853] mt-0.5">Q.</span>
-                  {faq.q}
-                </h3>
-                <p className="text-sm text-[#94a3b8] leading-relaxed pl-7">{faq.a}</p>
+                <Card className="hover:border-amber-200 dark:hover:border-amber-500/20 transition-all duration-300 rounded-2xl">
+                  <CardContent className="p-6">
+                    <h3 className="text-base font-semibold text-foreground mb-2 flex items-start gap-3">
+                      <span className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0">Q.</span>
+                      {faq.q}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed pl-7">{faq.a}</p>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </motion.div>
@@ -630,41 +639,7 @@ export default function PricingPage() {
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="mt-auto py-8 border-t border-white/[0.05]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Diamond className="w-4 h-4 text-[#d4a853]/60" strokeWidth={1.5} />
-              <span className="text-xs text-[#64748b]">
-                &copy; 2025 Maison Consciente
-              </span>
-            </div>
-            <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
-              <Link href="/" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Accueil
-              </Link>
-              <Link href="/demo" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                D\u00e9mo
-              </Link>
-              <Link href="/pricing" className="text-xs text-[#d4a853]/80 hover:text-[#d4a853] transition-colors">
-                Tarifs
-              </Link>
-              <Link href="/about" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                \u00c0 propos
-              </Link>
-              <Link href="/contact" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Contact
-              </Link>
-              <Link href="/legal/privacy" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Confidentialit\u00e9
-              </Link>
-            </div>
-            <p className="text-xs text-[#475569]">
-              Con\u00e7u pour le confort et la privacy.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -10,32 +10,50 @@ import {
   Send,
   CheckCircle,
   Loader2,
-  Diamond,
   Clock,
-  Shield,
+  ShieldAlert,
+  HelpCircle,
 } from 'lucide-react';
-import Link from 'next/link';
 import { toast } from 'sonner';
 
-/* ═══════════════════════════════════════════════════════
-   CONTACT PAGE — Maison Consciente
-   Conversion-optimized contact page with form and info
-   ═══════════════════════════════════════════════════════ */
+import { SiteNavbar } from '@/components/layout/SiteNavbar';
+import { SiteFooter } from '@/components/layout/SiteFooter';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+/* ═══════════════════════════════════════════════════════════
+   CONTACT PAGE — Maellis
+   Light SaaS design with amber accents & dark mode support
+   ═══════════════════════════════════════════════════════════ */
 
 /* ─── Animation Variants ─── */
+const easeOut = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
   whileInView: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    transition: { duration: 0.6, ease: easeOut },
   },
-  viewport: { once: true },
+  viewport: { once: true, amount: 0.2 },
 };
 
-const staggerContainer = {
-  initial: {},
+const stagger = {
+  initial: { opacity: 0 },
   whileInView: {
+    opacity: 1,
     transition: { staggerChildren: 0.12 },
   },
   viewport: { once: true },
@@ -46,7 +64,7 @@ const staggerItem = {
   whileInView: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    transition: { duration: 0.5, ease: easeOut },
   },
 };
 
@@ -55,28 +73,24 @@ const contactMethods = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'support@maison-consciente.com',
-    href: 'mailto:support@maison-consciente.com',
-    color: '#f59e0b',
+    value: 'support@maellis.com',
+    href: 'mailto:support@maellis.com',
   },
   {
     icon: Phone,
     label: 'Téléphone',
     value: '+33 1 23 45 67 89',
     href: 'tel:+33123456789',
-    color: '#f59e0b',
   },
   {
     icon: MapPin,
     label: 'Adresse',
     value: 'Paris, France',
     href: '#',
-    color: '#f59e0b',
   },
 ];
 
 const subjectOptions = [
-  { value: '', label: 'Sélectionnez...' },
   { value: 'demo', label: 'Demande de démo' },
   { value: 'pricing', label: 'Question tarifaire' },
   { value: 'tech', label: 'Support technique' },
@@ -84,10 +98,16 @@ const subjectOptions = [
   { value: 'other', label: 'Autre' },
 ];
 
+const responseTimes = [
+  { icon: Mail, label: 'Email', time: '< 24h ouvrées' },
+  { icon: Phone, label: 'Téléphone', time: 'Lun-Ven, 9h-18h' },
+  { icon: MessageSquare, label: 'Chat', time: 'Immédiat' },
+];
+
 const faqItems = [
   {
-    q: 'Comment fonctionne l\'essai gratuit ?',
-    a: 'Créez votre compte et explorez toutes les fonctionnalités pendant 14 jours, sans carte bancaire requise.',
+    q: "Comment fonctionne l'essai gratuit ?",
+    a: "Créez votre compte et explorez toutes les fonctionnalités pendant 14 jours, sans carte bancaire requise.",
   },
   {
     q: 'Mes données sont-elles sécurisées ?',
@@ -95,7 +115,7 @@ const faqItems = [
   },
   {
     q: 'Puis-je changer de formule à tout moment ?',
-    a: 'Oui, vous pouvez upgrader ou downgrader votre abonnement en un clic depuis votre espace client.',
+    a: "Oui, vous pouvez upgrader ou downgrader votre abonnement en un clic depuis votre espace client.",
   },
 ];
 
@@ -114,7 +134,6 @@ export default function ContactPage() {
     setStatus('loading');
 
     try {
-      // Server action call for contact form submission
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -143,73 +162,39 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#020617] text-[#f1f5f9]">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* ═══ NAVBAR ═══ */}
-      <motion.nav
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-        className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/80 backdrop-blur-xl border-b border-white/[0.06]"
-      >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-gold glow-gold">
-                <Diamond className="w-4 h-4 text-[#020617]" strokeWidth={2} />
-              </div>
-              <span className="font-serif text-gradient-gold text-lg tracking-wide">
-                Maison Consciente
-              </span>
-            </Link>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Link
-              href="/demo"
-              className="px-2.5 sm:px-3 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
-            >
-              Démo
-            </Link>
-            <Link
-              href="/pricing"
-              className="px-2.5 sm:px-3 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
-            >
-              Tarifs
-            </Link>
-            <Link
-              href="/about"
-              className="hidden sm:block px-2.5 sm:px-3 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f1f5f9] transition-colors duration-200"
-            >
-              À propos
-            </Link>
-            <Link
-              href="/connexion"
-              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium bg-gradient-gold text-[#020617] rounded-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
-            >
-              Connexion
-            </Link>
-          </div>
-        </div>
-      </motion.nav>
+      <SiteNavbar activePage="/contact" />
 
       {/* ═══ HEADER ═══ */}
       <section className="relative pt-28 pb-12 px-4">
         {/* Amber glow */}
         <div
-          className="absolute top-16 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full blur-[120px] opacity-15 pointer-events-none"
+          className="absolute top-16 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full blur-[120px] opacity-20 pointer-events-none"
           style={{ background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)' }}
         />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-          className="max-w-6xl mx-auto text-center relative z-10"
+          transition={{ duration: 0.7, ease: easeOut }}
+          className="max-w-4xl mx-auto text-center relative z-10"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#f1f5f9] mb-4 tracking-tight">
-            Contactez-<span className="text-gradient-gold">nous</span>
+          <Badge
+            variant="secondary"
+            className="mb-6 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/50 px-3.5 py-1 text-sm font-medium"
+          >
+            <Mail className="w-3.5 h-3.5 mr-1.5" />
+            Nous sommes à votre écoute
+          </Badge>
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-['--font-playfair'] text-foreground mb-4 tracking-tight">
+            Contactez-{' '}
+            <span className="text-amber-600 dark:text-amber-400">nous</span>
           </h1>
-          <p className="text-lg md:text-xl text-[#64748b] max-w-2xl mx-auto leading-relaxed">
-            Une question ? Un projet ? Nous sommes là pour vous accompagner.
+
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Une question ? Un projet ? Notre équipe est là pour vous accompagner dans votre réussite.
           </p>
         </motion.div>
       </section>
@@ -222,233 +207,261 @@ export default function ContactPage() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-              className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 md:p-8"
+              transition={{ duration: 0.6, ease: easeOut }}
             >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 rounded-xl bg-[#f59e0b]/10">
-                  <MessageSquare className="w-5 h-5 text-[#f59e0b]" strokeWidth={1.5} />
-                </div>
-                <h2 className="text-xl md:text-2xl font-serif text-[#f1f5f9]">
-                  Envoyez-nous un message
-                </h2>
-              </div>
+              <Card className="border-amber-200/60 dark:border-amber-800/40 shadow-md">
+                <CardContent className="p-6 md:p-8 space-y-6">
+                  {/* Form header */}
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/30">
+                      <MessageSquare className="w-5 h-5 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-semibold text-foreground">
+                        Envoyez-nous un message
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Réponse garantie sous 24h
+                      </p>
+                    </div>
+                  </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Name */}
-                <div>
-                  <label className="block text-sm text-[#94a3b8] mb-2 font-medium">
-                    Nom complet
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => updateField('name', e.target.value)}
-                    className="w-full bg-black/30 border border-white/[0.08] rounded-xl px-4 py-3 text-[#f1f5f9] placeholder-[#475569] focus:outline-none focus:border-[#f59e0b]/40 focus:ring-1 focus:ring-[#f59e0b]/20 transition-all duration-200"
-                    placeholder="Jean Dupont"
-                  />
-                </div>
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-sm font-medium">
+                        Nom complet
+                      </Label>
+                      <Input
+                        id="name"
+                        required
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => updateField('name', e.target.value)}
+                        placeholder="Jean Dupont"
+                        className="bg-background"
+                      />
+                    </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-sm text-[#94a3b8] mb-2 font-medium">
-                    Email
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => updateField('email', e.target.value)}
-                    className="w-full bg-black/30 border border-white/[0.08] rounded-xl px-4 py-3 text-[#f1f5f9] placeholder-[#475569] focus:outline-none focus:border-[#f59e0b]/40 focus:ring-1 focus:ring-[#f59e0b]/20 transition-all duration-200"
-                    placeholder="jean@exemple.com"
-                  />
-                </div>
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        required
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => updateField('email', e.target.value)}
+                        placeholder="jean@exemple.com"
+                        className="bg-background"
+                      />
+                    </div>
 
-                {/* Subject */}
-                <div>
-                  <label className="block text-sm text-[#94a3b8] mb-2 font-medium">
-                    Sujet
-                  </label>
-                  <select
-                    value={formData.subject}
-                    onChange={(e) => updateField('subject', e.target.value)}
-                    className="w-full bg-black/30 border border-white/[0.08] rounded-xl px-4 py-3 text-[#f1f5f9] focus:outline-none focus:border-[#f59e0b]/40 focus:ring-1 focus:ring-[#f59e0b]/20 transition-all duration-200 appearance-none"
-                  >
-                    {subjectOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value} className="bg-[#0f172a] text-[#f1f5f9]">
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {/* Subject */}
+                    <div className="space-y-2">
+                      <Label htmlFor="subject" className="text-sm font-medium">
+                        Sujet
+                      </Label>
+                      <Select
+                        value={formData.subject}
+                        onValueChange={(value) => updateField('subject', value)}
+                      >
+                        <SelectTrigger id="subject" className="w-full bg-background">
+                          <SelectValue placeholder="Sélectionnez un sujet..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {subjectOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {/* Message */}
-                <div>
-                  <label className="block text-sm text-[#94a3b8] mb-2 font-medium">
-                    Message
-                  </label>
-                  <textarea
-                    required
-                    rows={5}
-                    value={formData.message}
-                    onChange={(e) => updateField('message', e.target.value)}
-                    className="w-full bg-black/30 border border-white/[0.08] rounded-xl px-4 py-3 text-[#f1f5f9] placeholder-[#475569] focus:outline-none focus:border-[#f59e0b]/40 focus:ring-1 focus:ring-[#f59e0b]/20 transition-all duration-200 resize-none"
-                    placeholder="Votre message..."
-                  />
-                </div>
+                    {/* Message */}
+                    <div className="space-y-2">
+                      <Label htmlFor="message" className="text-sm font-medium">
+                        Message
+                      </Label>
+                      <Textarea
+                        id="message"
+                        required
+                        rows={5}
+                        value={formData.message}
+                        onChange={(e) => updateField('message', e.target.value)}
+                        placeholder="Décrivez votre demande en quelques lignes..."
+                        className="bg-background resize-none"
+                      />
+                    </div>
 
-                {/* Submit button */}
-                <motion.button
-                  type="submit"
-                  disabled={status === 'loading' || status === 'success'}
-                  whileHover={{ scale: status === 'idle' ? 1.01 : 1 }}
-                  whileTap={{ scale: status === 'idle' ? 0.99 : 1 }}
-                  className={`w-full py-4 rounded-xl font-semibold flex items-center justify-center gap-2.5 transition-all duration-300 text-base ${
-                    status === 'success'
-                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.2)]'
-                      : 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-[#020617] shadow-[0_0_24px_rgba(245,158,11,0.2)] hover:shadow-[0_0_32px_rgba(245,158,11,0.3)]'
-                  } disabled:opacity-70 disabled:cursor-not-allowed`}
-                >
-                  {status === 'loading' ? (
-                    <>
-                      <Loader2 className="animate-spin" size={20} />
-                      Envoi en cours...
-                    </>
-                  ) : status === 'success' ? (
-                    <>
-                      <CheckCircle size={20} />
-                      Message envoyé !
-                    </>
-                  ) : (
-                    <>
-                      <Send size={20} />
-                      Envoyer le message
-                    </>
-                  )}
-                </motion.button>
-              </form>
+                    {/* Submit button */}
+                    <motion.div
+                      whileHover={status === 'idle' ? { scale: 1.01 } : {}}
+                      whileTap={status === 'idle' ? { scale: 0.99 } : {}}
+                    >
+                      <Button
+                        type="submit"
+                        disabled={status === 'loading' || status === 'success'}
+                        size="lg"
+                        className={`w-full font-semibold flex items-center justify-center gap-2.5 transition-all duration-300 text-base py-6 ${
+                          status === 'success'
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                            : 'bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 text-white shadow-md hover:shadow-lg'
+                        } disabled:opacity-70 disabled:cursor-not-allowed`}
+                      >
+                        {status === 'loading' ? (
+                          <>
+                            <Loader2 className="animate-spin" size={20} />
+                            Envoi en cours...
+                          </>
+                        ) : status === 'success' ? (
+                          <>
+                            <CheckCircle size={20} />
+                            Message envoyé !
+                          </>
+                        ) : (
+                          <>
+                            <Send size={20} />
+                            Envoyer le message
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  </form>
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* ─── RIGHT: Info Cards ─── */}
-            <div className="space-y-6">
-              {/* Contact methods */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-                className="bg-white/[0.03] backdrop-blur-xl border border-[#f59e0b]/15 rounded-2xl p-6 md:p-8"
-              >
-                <h3 className="text-xl font-serif text-[#f0d78c] mb-5">
-                  Informations de contact
-                </h3>
-                <div className="space-y-3">
-                  {contactMethods.map((c, i) => (
-                    <a
-                      key={i}
-                      href={c.href}
-                      className="flex items-center gap-4 p-4 bg-white/[0.03] rounded-xl hover:bg-white/[0.06] transition-colors duration-200 group border border-white/[0.04] hover:border-[#f59e0b]/20"
-                    >
-                      <div className="p-3 bg-[#f59e0b]/10 rounded-lg text-[#f59e0b] group-hover:bg-[#f59e0b]/15 transition-colors">
-                        <c.icon size={20} strokeWidth={1.5} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-[#64748b] uppercase tracking-wider font-medium">
-                          {c.label}
-                        </p>
-                        <p className="text-sm text-[#f1f5f9] font-medium">{c.value}</p>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: easeOut }}
+              className="space-y-6"
+            >
+              {/* Contact Methods Card */}
+              <Card className="border-amber-200/60 dark:border-amber-800/40 shadow-md">
+                <CardContent className="p-6 md:p-8">
+                  <h3 className="text-xl font-semibold text-foreground mb-5">
+                    Informations de contact
+                  </h3>
+                  <div className="space-y-3">
+                    {contactMethods.map((c, i) => (
+                      <a
+                        key={i}
+                        href={c.href}
+                        className="flex items-center gap-4 p-4 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors duration-200 group border border-border hover:border-amber-300 dark:hover:border-amber-700/60"
+                      >
+                        <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
+                          <c.icon size={20} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                            {c.label}
+                          </p>
+                          <p className="text-sm text-foreground font-medium">{c.value}</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* Response times */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-                className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 md:p-8"
-              >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10">
-                    <Clock className="w-5 h-5 text-emerald-400" strokeWidth={1.5} />
+              {/* Response Times Card */}
+              <Card className="shadow-md">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30">
+                      <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">
+                      Temps de réponse
+                    </h3>
                   </div>
-                  <h3 className="text-xl font-serif text-[#f1f5f9]">Temps de réponse</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
-                    <span className="text-sm text-[#94a3b8] flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-[#64748b]" size={14} /> Email
-                    </span>
-                    <span className="text-sm font-medium text-emerald-400">&lt; 24h ouvrées</span>
+                  <div className="space-y-3">
+                    {responseTimes.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
+                        <span className="text-sm text-muted-foreground flex items-center gap-2">
+                          <item.icon className="w-4 h-4" size={14} />
+                          {item.label}
+                        </span>
+                        <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                          {item.time}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
-                    <span className="text-sm text-[#94a3b8] flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-[#64748b]" size={14} /> Téléphone
-                    </span>
-                    <span className="text-sm font-medium text-emerald-400">Lun-Ven, 9h-18h</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
-                    <span className="text-sm text-[#94a3b8] flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4 text-[#64748b]" size={14} /> Chat
-                    </span>
-                    <span className="text-sm font-medium text-emerald-400">Immédiat (heures ouvrées)</span>
-                  </div>
-                </div>
-              </motion.div>
+                </CardContent>
+              </Card>
 
-              {/* Emergency */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-                className="bg-violet-500/[0.04] backdrop-blur-xl border border-violet-500/15 rounded-2xl p-6 md:p-8"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2.5 rounded-xl bg-violet-500/10">
-                    <Shield className="w-5 h-5 text-violet-400" strokeWidth={1.5} />
+              {/* Emergency Support Card */}
+              <Card className="border-red-200/60 dark:border-red-800/40 shadow-md">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30">
+                      <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">
+                      Urgence technique ?
+                    </h3>
                   </div>
-                  <h3 className="text-xl font-serif text-[#f1f5f9]">Urgence technique ?</h3>
-                </div>
-                <p className="text-sm text-[#94a3b8] mb-4 leading-relaxed">
-                  Notre équipe d&apos;astreinte est disponible 24/7 pour les incidents critiques.
-                </p>
-                <a
-                  href="tel:+33123456789"
-                  className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300 font-medium text-sm transition-colors"
-                >
-                  <Phone size={16} />
-                  +33 1 23 45 67 89
-                </a>
-              </motion.div>
-            </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Notre équipe d&apos;astreinte est disponible 24/7 pour les incidents critiques.
+                  </p>
+                  <a
+                    href="tel:+33123456789"
+                    className="inline-flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium text-sm transition-colors"
+                  >
+                    <Phone size={16} />
+                    +33 1 23 45 67 89
+                  </a>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section className="py-16 md:py-20 px-4 bg-black/20">
+      <section className="py-16 md:py-20 px-4 bg-muted/40">
         <div className="max-w-3xl mx-auto">
-          <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl text-center text-[#f1f5f9] mb-4 tracking-tight">
-            Questions <span className="text-gradient-gold">fréquentes</span>
-          </motion.h2>
-          <motion.p {...fadeUp} className="text-center text-[#64748b] text-base max-w-lg mx-auto mb-12">
-            Les réponses aux questions les plus courantes.
-          </motion.p>
+          <motion.div {...fadeUp} className="text-center mb-12">
+            <Badge
+              variant="secondary"
+              className="mb-4 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/50 px-3 py-1 text-sm"
+            >
+              <HelpCircle className="w-3.5 h-3.5 mr-1.5" />
+              FAQ
+            </Badge>
+            <h2 className="font-['--font-playfair'] text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
+              Questions{' '}
+              <span className="text-amber-600 dark:text-amber-400">fréquentes</span>
+            </h2>
+            <p className="text-muted-foreground text-base max-w-lg mx-auto">
+              Les réponses aux questions les plus courantes de nos utilisateurs.
+            </p>
+          </motion.div>
 
-          <motion.div {...staggerContainer} className="space-y-4">
+          <motion.div {...stagger} className="space-y-4">
             {faqItems.map((faq, i) => (
-              <motion.div
-                key={i}
-                variants={staggerItem}
-                className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-[#f59e0b]/15 transition-all duration-300"
-              >
-                <h3 className="text-base font-semibold text-[#f1f5f9] mb-2 flex items-start gap-3">
-                  <span className="text-[#f59e0b] mt-0.5">Q.</span>
-                  {faq.q}
-                </h3>
-                <p className="text-sm text-[#94a3b8] leading-relaxed pl-7">{faq.a}</p>
+              <motion.div key={i} variants={staggerItem}>
+                <Card className="hover:border-amber-200 dark:hover:border-amber-800/60 transition-all duration-300 shadow-sm hover:shadow-md">
+                  <CardContent className="p-6">
+                    <h3 className="text-base font-semibold text-foreground mb-2 flex items-start gap-3">
+                      <span className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0">Q.</span>
+                      {faq.q}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed pl-7">
+                      {faq.a}
+                    </p>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </motion.div>
@@ -456,41 +469,9 @@ export default function ContactPage() {
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="mt-auto py-8 border-t border-white/[0.05]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Diamond className="w-4 h-4 text-[#f59e0b]/60" strokeWidth={1.5} />
-              <span className="text-xs text-[#64748b]">
-                &copy; 2025 Maison Consciente
-              </span>
-            </div>
-            <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
-              <Link href="/" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Accueil
-              </Link>
-              <Link href="/demo" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Démo
-              </Link>
-              <Link href="/pricing" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Tarifs
-              </Link>
-              <Link href="/about" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                À propos
-              </Link>
-              <Link href="/contact" className="text-xs text-[#d4a853]/80 hover:text-[#d4a853] transition-colors">
-                Contact
-              </Link>
-              <Link href="/legal/privacy" className="text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
-                Confidentialité
-              </Link>
-            </div>
-            <p className="text-xs text-[#475569]">
-              Conçu pour le confort et la privacy.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <div className="mt-auto">
+        <SiteFooter />
+      </div>
     </div>
   );
 }

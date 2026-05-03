@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Diamond, Mail, Lock, User, Eye, EyeOff, Home, Hotel } from 'lucide-react';
+import { Sparkles, Mail, Lock, User, Eye, EyeOff, Home, Hotel, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -59,24 +60,12 @@ const formVariants = {
   }),
 };
 
-const orbFloat = {
-  animate: (i: number) => ({
-    y: [0, -12, 0, 8, 0],
-    x: [0, 6, -4, 0],
-    transition: {
-      duration: 8 + i * 2,
-      repeat: Infinity,
-      ease: 'easeInOut',
-    },
-  }),
-};
-
-/* ─── Gold Spinner ─── */
-function GoldSpinner() {
+/* ─── Amber Spinner ─── */
+function AmberSpinner() {
   return (
     <span className="relative flex items-center justify-center w-5 h-5">
-      <span className="absolute inset-0 rounded-full border-2 border-[oklch(0.12_0.02_260)]" />
-      <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-[var(--accent-primary)] animate-spin" />
+      <span className="absolute inset-0 rounded-full border-2 border-amber-200 dark:border-amber-800" />
+      <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-amber-500 animate-spin" />
     </span>
   );
 }
@@ -253,65 +242,33 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-animated-gradient overflow-hidden noise-overlay">
-      {/* ─── Decorative Glow Orbs ─── */}
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 bg-muted/50 overflow-hidden">
+      {/* ─── Decorative Background ─── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        {/* Top-right gold orb */}
-        <motion.div
-          custom={0}
-          variants={orbFloat as any}
-          animate="animate"
-          className="absolute -top-32 -right-32 w-[420px] h-[420px] rounded-full opacity-[0.07]"
-          style={{
-            background:
-              'radial-gradient(circle, var(--accent-primary) 0%, transparent 70%)',
-          }}
-        />
-        {/* Bottom-left copper orb */}
-        <motion.div
-          custom={1}
-          variants={orbFloat as any}
-          animate="animate"
-          className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-[0.06]"
-          style={{
-            background:
-              'radial-gradient(circle, #c77d5a 0%, transparent 70%)',
-          }}
-        />
-        {/* Center-left violet orb */}
-        <motion.div
-          custom={2}
-          variants={orbFloat as any}
-          animate="animate"
-          className="absolute top-1/3 -left-20 w-[320px] h-[320px] rounded-full opacity-[0.05]"
-          style={{
-            background:
-              'radial-gradient(circle, #8b5cf6 0%, transparent 70%)',
-          }}
-        />
-        {/* Top-left subtle gold */}
-        <motion.div
-          custom={3}
-          variants={orbFloat as any}
-          animate="animate"
-          className="absolute top-20 left-1/4 w-[200px] h-[200px] rounded-full opacity-[0.04]"
-          style={{
-            background:
-              'radial-gradient(circle, var(--accent-primary-light) 0%, transparent 70%)',
-          }}
-        />
-        {/* Bottom-right faint violet */}
-        <motion.div
-          custom={4}
-          variants={orbFloat as any}
-          animate="animate"
-          className="absolute bottom-10 right-1/4 w-[260px] h-[260px] rounded-full opacity-[0.04]"
-          style={{
-            background:
-              'radial-gradient(circle, #8b5cf6 0%, transparent 70%)',
-          }}
-        />
+        {/* Warm amber gradient wash */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50/80 via-background to-orange-50/50 dark:from-amber-950/20 dark:via-background dark:to-orange-950/10" />
+
+        {/* Top-right soft orb */}
+        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-amber-200/20 dark:bg-amber-500/5 blur-[120px]" />
+
+        {/* Bottom-left soft orb */}
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full bg-orange-200/15 dark:bg-orange-500/5 blur-[140px]" />
+
+        {/* Center-right subtle glow */}
+        <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] rounded-full bg-amber-100/20 dark:bg-amber-600/5 blur-[100px]" />
       </div>
+
+      {/* ─── Back to Home Link ─── */}
+      {onBack && (
+        <Link
+          href="/"
+          onClick={(e) => { e.preventDefault(); onBack(); }}
+          className="absolute top-6 left-6 z-20 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour
+        </Link>
+      )}
 
       {/* ─── Content Container ─── */}
       <motion.div
@@ -327,36 +284,29 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
           animate="visible"
           className="text-center mb-8"
         >
-          {/* Diamond Logo */}
+          {/* Sparkles Logo */}
           <motion.div
             variants={logoVariants}
             initial="hidden"
             animate="visible"
-            className="inline-flex items-center justify-center w-18 h-18 rounded-full mb-5 glow-gold"
-            style={{
-              background:
-                'linear-gradient(145deg, oklch(0.78 0.14 85 / 20%), oklch(0.78 0.14 85 / 5%))',
-              border: '1px solid oklch(0.78 0.14 85 / 25%)',
-              width: '4.5rem',
-              height: '4.5rem',
-            }}
+            className="inline-flex items-center justify-center w-[4.5rem] h-[4.5rem] rounded-2xl mb-5 bg-amber-100 dark:bg-amber-900/30 border border-amber-200/60 dark:border-amber-700/40 shadow-lg shadow-amber-500/10"
           >
-            <Diamond className="w-8 h-8 text-[var(--accent-primary)]" strokeWidth={1.5} />
+            <Sparkles className="w-8 h-8 text-amber-500 dark:text-amber-400" strokeWidth={1.5} />
           </motion.div>
 
           {/* Brand Name */}
-          <h1 className="font-serif text-gradient-gold text-[1.75rem] leading-tight tracking-wide">
-            Maison Consciente
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Maellis
           </h1>
 
           {/* Subtitle */}
-          <p className="font-sans text-sm text-[oklch(0.60_0.02_260)] mt-2 tracking-widest uppercase">
+          <p className="text-sm text-muted-foreground mt-2 tracking-wide">
             L&apos;Habitation Intelligente
           </p>
         </motion.div>
 
         {/* ─── Auth Card ─── */}
-        <Card className="w-full glass-strong rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
+        <Card className="w-full bg-background/80 backdrop-blur-md border border-border rounded-2xl overflow-hidden shadow-xl shadow-black/5 dark:shadow-black/20">
           <CardContent className="p-6 pt-5 space-y-5">
             {/* Tabs */}
             <Tabs
@@ -364,33 +314,21 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
               onValueChange={handleTabChange}
               className="w-full"
             >
-              <TabsList className="relative w-full grid grid-cols-2 h-11 rounded-xl p-1 glass">
-                {/* Sliding indicator */}
-                <motion.div
-                  layout
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-lg bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-primary-light)] shadow-lg shadow-[oklch(0.78_0.14_85/20%)]"
-                  style={{
-                    left: activeTab === 'login' ? '4px' : 'calc(50%)',
-                  }}
-                />
+              <TabsList className="relative w-full grid grid-cols-2 h-11 rounded-xl p-1 bg-muted">
                 <TabsTrigger
                   value="login"
-                  className="relative z-10 text-sm font-medium transition-colors duration-200 data-[state=active]:text-[oklch(0.12_0.02_260)] data-[state=inactive]:text-[oklch(0.60_0.02_260)] rounded-lg cursor-pointer"
+                  className="relative z-10 text-sm font-medium transition-colors duration-200 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground rounded-lg cursor-pointer"
                 >
                   Connexion
                 </TabsTrigger>
                 <TabsTrigger
                   value="register"
-                  className="relative z-10 text-sm font-medium transition-colors duration-200 data-[state=active]:text-[oklch(0.12_0.02_260)] data-[state=inactive]:text-[oklch(0.60_0.02_260)] rounded-lg cursor-pointer"
+                  className="relative z-10 text-sm font-medium transition-colors duration-200 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground rounded-lg cursor-pointer"
                 >
                   Inscription
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-
-            {/* Gold Divider */}
-            <div className="divider-gold" />
 
             {/* Animated Form Content */}
             <AnimatePresence mode="wait" custom={direction}>
@@ -409,12 +347,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="login-email"
-                      className="text-xs font-medium text-[oklch(0.70_0.02_260)] uppercase tracking-wider"
+                      className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
                     >
                       Adresse e-mail
                     </Label>
                     <div className="relative group">
-                      <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.50_0.02_260)] transition-colors group-focus-within:text-[var(--accent-primary)]" />
+                      <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-amber-500" />
                       <Input
                         id="login-email"
                         type="email"
@@ -422,7 +360,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         disabled={isLoading}
-                        className="h-11 pl-10 rounded-xl glass border-[oklch(1_0_0/10%)] bg-transparent text-[oklch(0.95_0.01_260)] placeholder:text-[oklch(0.45_0.02_260)] focus:border-[var(--accent-primary)]/40 focus:ring-[var(--accent-primary)]/20 transition-all duration-300"
+                        className="h-11 pl-10 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-amber-500 focus:ring-amber-500/20 transition-all duration-300"
                       />
                     </div>
                   </div>
@@ -431,12 +369,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="login-password"
-                      className="text-xs font-medium text-[oklch(0.70_0.02_260)] uppercase tracking-wider"
+                      className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
                     >
                       Mot de passe
                     </Label>
                     <div className="relative group">
-                      <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.50_0.02_260)] transition-colors group-focus-within:text-[var(--accent-primary)]" />
+                      <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-amber-500" />
                       <Input
                         id="login-password"
                         type={showPassword ? 'text' : 'password'}
@@ -444,12 +382,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         disabled={isLoading}
-                        className="h-11 pl-10 pr-10 rounded-xl glass border-[oklch(1_0_0/10%)] bg-transparent text-[oklch(0.95_0.01_260)] placeholder:text-[oklch(0.45_0.02_260)] focus:border-[var(--accent-primary)]/40 focus:ring-[var(--accent-primary)]/20 transition-all duration-300"
+                        className="h-11 pl-10 pr-10 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-amber-500 focus:ring-amber-500/20 transition-all duration-300"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.50_0.02_260)] hover:text-[var(--accent-primary)] transition-colors duration-200"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-amber-500 transition-colors duration-200"
                         aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                       >
                         {showPassword ? (
@@ -466,11 +404,11 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full h-11 rounded-xl bg-gradient-gold text-[oklch(0.12_0.02_260)] font-semibold text-sm tracking-wide border-0 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full h-11 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm tracking-wide border-0 mt-2 shadow-sm shadow-amber-500/20 hover:shadow-md hover:shadow-amber-500/25 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
                     >
                       {isLoading ? (
                         <span className="flex items-center justify-center gap-2.5">
-                          <GoldSpinner />
+                          <AmberSpinner />
                           Connexion…
                         </span>
                       ) : (
@@ -494,12 +432,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="reg-name"
-                      className="text-xs font-medium text-[oklch(0.70_0.02_260)] uppercase tracking-wider"
+                      className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
                     >
                       Nom complet
                     </Label>
                     <div className="relative group">
-                      <User className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.50_0.02_260)] transition-colors group-focus-within:text-[var(--accent-primary)]" />
+                      <User className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-amber-500" />
                       <Input
                         id="reg-name"
                         type="text"
@@ -507,14 +445,14 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
                         disabled={isLoading}
-                        className="h-11 pl-10 rounded-xl glass border-[oklch(1_0_0/10%)] bg-transparent text-[oklch(0.95_0.01_260)] placeholder:text-[oklch(0.45_0.02_260)] focus:border-[var(--accent-primary)]/40 focus:ring-[var(--accent-primary)]/20 transition-all duration-300"
+                        className="h-11 pl-10 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-amber-500 focus:ring-amber-500/20 transition-all duration-300"
                       />
                     </div>
                   </div>
 
                   {/* Household Type Selector */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-[oklch(0.70_0.02_260)] uppercase tracking-wider">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Type de foyer
                     </Label>
                     <div className="grid grid-cols-2 gap-3">
@@ -523,16 +461,16 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         onClick={() => setRegHouseholdType('home')}
                         className={`relative flex flex-col items-center gap-2 p-3.5 rounded-xl border transition-all duration-300 cursor-pointer ${
                           regHouseholdType === 'home'
-                            ? 'border-[var(--accent-primary)]/40 bg-[var(--accent-primary)]/[0.06]'
-                            : 'border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]'
+                            ? 'border-amber-500/40 bg-amber-50 dark:bg-amber-900/20'
+                            : 'border-border bg-background hover:bg-muted'
                         }`}
                       >
-                        <Home className={`w-5 h-5 ${regHouseholdType === 'home' ? 'text-[var(--accent-primary)]' : 'text-[oklch(0.50_0.02_260)]'} transition-colors duration-300`} />
-                        <span className={`text-xs font-medium ${regHouseholdType === 'home' ? 'text-[var(--accent-primary)]' : 'text-[oklch(0.60_0.02_260)]'} transition-colors duration-300`}>
+                        <Home className={`w-5 h-5 ${regHouseholdType === 'home' ? 'text-amber-500' : 'text-muted-foreground'} transition-colors duration-300`} />
+                        <span className={`text-xs font-medium ${regHouseholdType === 'home' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'} transition-colors duration-300`}>
                           Personnel
                         </span>
                         {regHouseholdType === 'home' && (
-                          <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
+                          <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
                         )}
                       </button>
                       <button
@@ -540,16 +478,16 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         onClick={() => setRegHouseholdType('hospitality')}
                         className={`relative flex flex-col items-center gap-2 p-3.5 rounded-xl border transition-all duration-300 cursor-pointer ${
                           regHouseholdType === 'hospitality'
-                            ? 'border-[var(--accent-primary)]/40 bg-[var(--accent-primary)]/[0.06]'
-                            : 'border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]'
+                            ? 'border-amber-500/40 bg-amber-50 dark:bg-amber-900/20'
+                            : 'border-border bg-background hover:bg-muted'
                         }`}
                       >
-                        <Hotel className={`w-5 h-5 ${regHouseholdType === 'hospitality' ? 'text-[var(--accent-primary)]' : 'text-[oklch(0.50_0.02_260)]'} transition-colors duration-300`} />
-                        <span className={`text-xs font-medium ${regHouseholdType === 'hospitality' ? 'text-[var(--accent-primary)]' : 'text-[oklch(0.60_0.02_260)]'} transition-colors duration-300`}>
+                        <Hotel className={`w-5 h-5 ${regHouseholdType === 'hospitality' ? 'text-amber-500' : 'text-muted-foreground'} transition-colors duration-300`} />
+                        <span className={`text-xs font-medium ${regHouseholdType === 'hospitality' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'} transition-colors duration-300`}>
                           Hospitalité
                         </span>
                         {regHouseholdType === 'hospitality' && (
-                          <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
+                          <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
                         )}
                       </button>
                     </div>
@@ -559,12 +497,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="reg-email"
-                      className="text-xs font-medium text-[oklch(0.70_0.02_260)] uppercase tracking-wider"
+                      className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
                     >
                       Adresse e-mail
                     </Label>
                     <div className="relative group">
-                      <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.50_0.02_260)] transition-colors group-focus-within:text-[var(--accent-primary)]" />
+                      <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-amber-500" />
                       <Input
                         id="reg-email"
                         type="email"
@@ -572,7 +510,7 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
                         disabled={isLoading}
-                        className="h-11 pl-10 rounded-xl glass border-[oklch(1_0_0/10%)] bg-transparent text-[oklch(0.95_0.01_260)] placeholder:text-[oklch(0.45_0.02_260)] focus:border-[var(--accent-primary)]/40 focus:ring-[var(--accent-primary)]/20 transition-all duration-300"
+                        className="h-11 pl-10 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-amber-500 focus:ring-amber-500/20 transition-all duration-300"
                       />
                     </div>
                   </div>
@@ -581,12 +519,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="reg-password"
-                      className="text-xs font-medium text-[oklch(0.70_0.02_260)] uppercase tracking-wider"
+                      className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
                     >
                       Mot de passe
                     </Label>
                     <div className="relative group">
-                      <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.50_0.02_260)] transition-colors group-focus-within:text-[var(--accent-primary)]" />
+                      <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-amber-500" />
                       <Input
                         id="reg-password"
                         type={showPassword ? 'text' : 'password'}
@@ -594,12 +532,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         disabled={isLoading}
-                        className="h-11 pl-10 pr-10 rounded-xl glass border-[oklch(1_0_0/10%)] bg-transparent text-[oklch(0.95_0.01_260)] placeholder:text-[oklch(0.45_0.02_260)] focus:border-[var(--accent-primary)]/40 focus:ring-[var(--accent-primary)]/20 transition-all duration-300"
+                        className="h-11 pl-10 pr-10 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-amber-500 focus:ring-amber-500/20 transition-all duration-300"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.50_0.02_260)] hover:text-[var(--accent-primary)] transition-colors duration-200"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-amber-500 transition-colors duration-200"
                         aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                       >
                         {showPassword ? (
@@ -615,12 +553,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="reg-confirm"
-                      className="text-xs font-medium text-[oklch(0.70_0.02_260)] uppercase tracking-wider"
+                      className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
                     >
                       Confirmer le mot de passe
                     </Label>
                     <div className="relative group">
-                      <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.50_0.02_260)] transition-colors group-focus-within:text-[var(--accent-primary)]" />
+                      <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-amber-500" />
                       <Input
                         id="reg-confirm"
                         type={showConfirmPassword ? 'text' : 'password'}
@@ -628,12 +566,12 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                         value={regConfirmPassword}
                         onChange={(e) => setRegConfirmPassword(e.target.value)}
                         disabled={isLoading}
-                        className="h-11 pl-10 pr-10 rounded-xl glass border-[oklch(1_0_0/10%)] bg-transparent text-[oklch(0.95_0.01_260)] placeholder:text-[oklch(0.45_0.02_260)] focus:border-[var(--accent-primary)]/40 focus:ring-[var(--accent-primary)]/20 transition-all duration-300"
+                        className="h-11 pl-10 pr-10 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-amber-500 focus:ring-amber-500/20 transition-all duration-300"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.50_0.02_260)] hover:text-[var(--accent-primary)] transition-colors duration-200"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-amber-500 transition-colors duration-200"
                         aria-label={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                       >
                         {showConfirmPassword ? (
@@ -650,11 +588,11 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full h-11 rounded-xl bg-gradient-gold text-[oklch(0.12_0.02_260)] font-semibold text-sm tracking-wide border-0 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full h-11 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm tracking-wide border-0 mt-2 shadow-sm shadow-amber-500/20 hover:shadow-md hover:shadow-amber-500/25 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
                     >
                       {isLoading ? (
                         <span className="flex items-center justify-center gap-2.5">
-                          <GoldSpinner />
+                          <AmberSpinner />
                           Inscription…
                         </span>
                       ) : (
@@ -668,25 +606,17 @@ export function AuthPage({ onBack, prefillType, onRegisterSuccess }: { onBack?: 
           </CardContent>
         </Card>
 
-        {/* ─── Gold Divider ─── */}
-        <div className="divider-gold w-64 my-6" />
+        {/* ─── Divider ─── */}
+        <div className="w-64 my-6 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {/* ─── Footer ─── */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-center text-xs text-[oklch(0.45_0.02_260)] tracking-wide"
+          className="text-center text-xs text-muted-foreground tracking-wide"
         >
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="inline-flex items-center gap-1.5 mb-3 text-[oklch(0.50_0.02_260)] hover:text-[var(--accent-primary)] transition-colors duration-200"
-            >
-              ← Retour
-            </button>
-          )}
-          © 2025 Maison Consciente — Tous droits réservés
+          © 2025 Maellis — Tous droits réservés
         </motion.p>
       </motion.div>
     </div>
